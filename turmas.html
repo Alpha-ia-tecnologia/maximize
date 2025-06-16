@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turmas - SAG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="js/pagination.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="min-h-screen flex flex-col">
+        <!-- Navbar -->
+        <nav class="bg-blue-600 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <span class="text-xl font-bold">SAG</span>
+                        </div>
+                        <div class="hidden md:ml-6 md:flex md:items-center md:space-x-4">
+                            <a href="dashboard.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Dashboard</a>
+                            <a href="escolas.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Escolas</a>
+                            <a href="turmas.html" class="px-3 py-2 rounded-md text-sm font-medium bg-blue-700">Turmas</a>
+                            <a href="alunos.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Alunos</a>
+                            <a href="provas.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Provas</a>
+                            <a href="usuarios.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Usuários</a>
+                            <a href="gabaritos_geracao.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Gabaritos</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="userName" class="mr-4"></span>
+                        <button id="logoutBtn" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div class="md:hidden hidden" id="mobileMenu">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="dashboard.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Dashboard</a>
+                    <a href="escolas.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Escolas</a>
+                    <a href="turmas.html" class="block px-3 py-2 rounded-md text-base font-medium bg-blue-700">Turmas</a>
+                    <a href="alunos.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Alunos</a>
+                    <a href="provas.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Provas</a>
+                    <a href="usuarios.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Usuários</a>
+                    <a href="gabaritos_geracao.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Gabaritos</a>
+                    <a href="gabaritos_correcao.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Correção</a>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main content -->
+        <main class="flex-grow">
+            <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <!-- Page header -->
+                <div class="px-4 py-5 sm:px-6 bg-white shadow rounded-lg mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Turmas</h1>
+                        <p class="mt-1 max-w-2xl text-sm text-gray-500">Gerenciamento de turmas</p>
+                    </div>
+                    <button id="addClassBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-plus mr-2"></i> Nova Turma
+                    </button>
+                </div>
+                
+                <!-- Filter section -->
+                <div class="bg-white shadow px-4 py-5 sm:px-6 rounded-lg mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="filterSchool" class="block text-sm font-medium text-gray-700">Filtrar por Escola</label>
+                            <select id="filterSchool" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="">Todas as escolas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="searchClass" class="block text-sm font-medium text-gray-700">Buscar Turmas</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <input type="text" id="searchClass" placeholder="Digite o nome da turma" 
+                                    class="block w-full pr-10 pl-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Classes List -->
+                <div class="bg-white shadow overflow-hidden sm:rounded-md">
+                    <ul id="classesList" class="divide-y divide-gray-200">
+                        <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                            Nenhuma turma cadastrada
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div id="classesPaginationControls" class="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button id="classesPrevPageMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Anterior
+                        </button>
+                        <div class="text-sm text-gray-700 py-2">
+                            <span id="classesCurrentPageMobile">1</span>
+                        </div>
+                        <button id="classesNextPageMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Próxima
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Mostrando <span id="classesStartItem" class="font-medium">1</span> a <span id="classesEndItem" class="font-medium">10</span> de <span id="classesTotalItems" class="font-medium">0</span> turmas
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button id="classesPrevPage" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Anterior</span>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div id="classesPaginationContainer" class="flex">
+                                    <!-- Page buttons will be inserted here -->
+                                </div>
+                                <button id="classesNextPage" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Próxima</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-white">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-sm text-gray-500">SAG - Sistema de Avaliação e Gerenciamento © 2023</p>
+            </div>
+        </footer>
+        
+        <!-- Add Class Modal -->
+        <div id="addClassModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Adicionar Nova Turma</h3>
+                    <button id="closeClassModal" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="addClassForm" class="space-y-4">
+                    <div>
+                        <label for="classSchool" class="block text-sm font-medium text-gray-700">Escola</label>
+                        <select id="classSchool" name="classSchool" required
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="">Selecione uma escola</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="className" class="block text-sm font-medium text-gray-700">Nome da Turma</label>
+                        <input type="text" id="className" name="className" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="classSeries" class="block text-sm font-medium text-gray-700">Série</label>
+                        <select id="classSeries" name="classSeries" required
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="">Selecione a série</option>
+                            <option value="PRIMEIRO_ANO">1° ano</option>
+                            <option value="SEGUNDO_ANO">2° ano</option>
+                            <option value="TERCEIRO_ANO">3° ano</option>
+                            <option value="QUARTO_ANO">4° ano</option>
+                            <option value="QUINTO_ANO">5° ano</option>
+                            <option value="SEXTO_ANO">6° ano</option>
+                            <option value="SETIMO_ANO">7° ano</option>
+                            <option value="OITAVO_ANO">8° ano</option>
+                            <option value="NONO_ANO">9° ano</option>
+                            <option value="PRIMEIRA_SERIE">1ª série</option>
+                            <option value="SEGUNDA_SERIE">2ª série</option>
+                            <option value="TERCEIRA_SERIE">3ª série</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="classShift" class="block text-sm font-medium text-gray-700">Turno</label>
+                        <select id="classShift" name="classShift" required
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="">Selecione o turno</option>
+                            <option value="MANHA">Matutino</option>
+                            <option value="TARDE">Vespertino</option>
+                            <option value="NOITE">Noturno</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="cancelClassBtn" class="mr-3 bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Answer Sheets Management Modal -->
+        <div id="answerSheetsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Gerenciar Gabaritos: <span id="answerSheetsClassName"></span></h3>
+                    <button id="closeAnswerSheetsModal" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Select an exam section -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-gray-700 mb-3">1. Selecione uma prova para gerenciar gabaritos</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="examSelect" class="block text-sm font-medium text-gray-700">Prova</label>
+                            <select id="examSelect" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="">Selecione uma prova</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="loadExamBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-sync-alt mr-2"></i> Carregar Prova
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Exam info and actions section -->
+                <div id="examInfoSection" class="mb-6 p-4 bg-gray-50 rounded-lg hidden">
+                    <h4 class="font-medium text-gray-700 mb-3">2. Informações da Prova</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="block text-sm font-medium text-gray-700">Nome da Prova:</span>
+                            <span id="examName" class="block mt-1 text-sm text-gray-900"></span>
+                        </div>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-700">Número de Questões:</span>
+                            <span id="questionCount" class="block mt-1 text-sm text-gray-900"></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="generateSheetsBtn" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-file-alt mr-1"></i> Gerar Gabaritos
+                        </button>
+                        <button id="importSheetsBtn" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Importar Respostas
+                        </button>
+                        <button id="automaticCorrectionBtn" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                            <i class="fas fa-magic mr-1"></i> Correção Automática
+                        </button>
+                        <button id="resultsReportBtn" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <i class="fas fa-chart-bar mr-1"></i> Relatório de Resultados
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Students answer sheets section -->
+                <div id="studentsAnswersSection" class="hidden">
+                    <h4 class="font-medium text-gray-700 mb-3">3. Gabaritos dos Alunos</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Aluno
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Respostas
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Acertos
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Nota
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentAnswersTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Student answers will be loaded here -->
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                        Selecione uma prova e gere os gabaritos para visualizar as informações
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Student Answers Pagination -->
+                    <div id="studentAnswersPaginationControls" class="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-2">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            <button id="studentAnswersPrevPageMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Anterior
+                            </button>
+                            <div class="text-sm text-gray-700 py-2">
+                                <span id="studentAnswersCurrentPageMobile">1</span>
+                            </div>
+                            <button id="studentAnswersNextPageMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Próxima
+                            </button>
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Mostrando <span id="studentAnswersStartItem" class="font-medium">1</span> a <span id="studentAnswersEndItem" class="font-medium">10</span> de <span id="studentAnswersTotalItems" class="font-medium">0</span> alunos
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                    <button id="studentAnswersPrevPage" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Anterior</span>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div id="studentAnswersPaginationContainer" class="flex">
+                                        <!-- Page buttons will be inserted here -->
+                                    </div>
+                                    <button id="studentAnswersNextPage" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Próxima</span>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button id="closeAnswerSheetsBtn" class="bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Student Answers Modal -->
+        <div id="editAnswersModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Editar Respostas: <span id="editAnswersStudentName"></span></h3>
+                    <button id="closeEditAnswersModal" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <span class="block text-sm font-medium text-gray-700">Prova: <span id="editAnswersExamName"></span></span>
+                </div>
+                <div class="grid grid-cols-5 gap-2 mb-6" id="answersGrid">
+                    <!-- Answer options will be generated here -->
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="cancelEditAnswersBtn" class="mr-3 bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancelar
+                    </button>
+                    <button type="button" id="saveAnswersBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- File Input for Import (Hidden) -->
+        <input type="file" id="importAnswersFile" accept=".csv,.txt" class="hidden">
+    </div>
+    
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Atualizar nome do usuário
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+            }
+            
+            // Inicializar listas no localStorage se não existirem
+            if (!localStorage.getItem('classes')) {
+                localStorage.setItem('classes', JSON.stringify([]));
+            }
+            
+            // Carregar turmas da API com paginação do backend (página 1, 10 itens por página)
+            loadClassesFromAPI();
+            
+            // Preencher seletores de escolas
+            populateSchoolSelectors();
+            
+            // Eventos dos modais
+            const addClassBtn = document.getElementById('addClassBtn');
+            const addClassModal = document.getElementById('addClassModal');
+            const closeClassModal = document.getElementById('closeClassModal');
+            const cancelClassBtn = document.getElementById('cancelClassBtn');
+            const addClassForm = document.getElementById('addClassForm');
+            
+            addClassBtn.addEventListener('click', function() {
+                addClassModal.classList.remove('hidden');
+            });
+            
+            closeClassModal.addEventListener('click', function() {
+                addClassModal.classList.add('hidden');
+            });
+            
+            cancelClassBtn.addEventListener('click', function() {
+                addClassModal.classList.add('hidden');
+            });
+            
+            // Filtro por escola
+            document.getElementById('filterSchool').addEventListener('change', function() {
+                const escolaId = this.value;
+                const searchTerm = document.getElementById('searchClass').value.toLowerCase().trim();
+                
+                if (searchTerm !== '') {
+                    // Se já temos uma busca, aplicar os dois filtros juntos
+                    applySearchFilter();
+                } else {
+                    // Caso contrário, filtrar apenas por escola
+                if (escolaId) {
+                    // Se um filtro foi selecionado, adicionamos o parâmetro escola_id à chamada da API
+                    loadClassesFromAPI(1, 10, escolaId);
+                } else {
+                    // Se "Todas as escolas" foi selecionado, chamar sem filtro
+                    loadClassesFromAPI(1, 10);
+                    }
+                }
+            });
+            
+            // Adicionar evento para busca de turmas com atraso para evitar muitas chamadas
+            let searchTimeout;
+            document.getElementById('searchClass').addEventListener('keyup', function() {
+                clearTimeout(searchTimeout);
+                const searchTerm = this.value.trim();
+                
+                // Mostrar indicador de "buscando..." para feedback instantâneo
+                if (searchTerm.length > 0) {
+                    document.getElementById('classesList').innerHTML = `
+                        <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Buscando "${searchTerm}"...
+                        </li>`;
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    // Verificar se temos turmas no localStorage
+                    const classes = JSON.parse(localStorage.getItem('classes')) || [];
+                    
+                    if (classes.length === 0 && searchTerm.length > 0) {
+                        // Se não houver turmas no localStorage, carregar da API primeiro
+                        console.log("Não há turmas no localStorage. Carregando da API antes de buscar...");
+                        
+                        loadClassesFromAPI(1, 10).then(() => {
+                            setTimeout(() => {
+                                applySearchFilter();
+                            }, 300);
+                        });
+                    } else {
+                        applySearchFilter();
+                    }
+                }, 300); // 300ms de atraso para evitar muitas chamadas durante a digitação
+            });
+            
+            // Para limpar a busca quando o campo ficar vazio
+            document.getElementById('searchClass').addEventListener('input', function() {
+                if (this.value === '') {
+                    clearTimeout(searchTimeout);
+                    const escolaId = document.getElementById('filterSchool').value;
+                    if (escolaId) {
+                        loadClassesFromAPI(1, 10, escolaId);
+                    } else {
+                        loadClassesFromAPI(1, 10);
+                    }
+                }
+            });
+            
+            addClassForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const escolaId = parseInt(document.getElementById('classSchool').value);
+                const nome = document.getElementById('className').value;
+                const serie = document.getElementById('classSeries').value;
+                const turno = document.getElementById('classShift').value;
+                
+                if (nome.trim() !== '' && escolaId && serie && turno) {
+                    // Chamar a API para criar a turma
+                    createClassAPI(nome, serie, escolaId, turno);
+                } else {
+                    alert('Por favor, preencha todos os campos.');
+                }
+            });
+            
+            // Adicionar listener para o evento de paginação renderizada
+            document.addEventListener('paginationRendered', function(e) {
+                if (e.detail.selector === '#classesList') {
+                    console.log('Paginação de turmas renderizada, reattaching event handlers');
+                    setTimeout(() => {
+                        document.querySelectorAll('.editClass').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const classId = parseInt(this.getAttribute('data-id'));
+                                console.log('Botão editar clicado para turma ID:', classId);
+                                openEditClassModal(classId);
+                            });
+                        });
+                        
+                        document.querySelectorAll('.deleteClass').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const classId = parseInt(this.getAttribute('data-id'));
+                                console.log('Botão excluir clicado para turma ID:', classId);
+                                
+                                // Implementar exclusão
+                                if (confirm('Tem certeza que deseja excluir esta turma?')) {
+                                    deleteClass(classId);
+                                }
+                            });
+                        });
+                    }, 50);
+                }
+            });
+        });
+        
+        // Função para preencher os seletores de escolas
+        function populateSchoolSelectors() {
+            const schools = getSchools();
+            const filterSelector = document.getElementById('filterSchool');
+            const formSelector = document.getElementById('classSchool');
+            
+            // Limpar opções existentes
+            filterSelector.innerHTML = '<option value="">Todas as escolas</option>';
+            formSelector.innerHTML = '<option value="">Selecione uma escola</option>';
+            
+            schools.forEach(school => {
+                const filterOption = document.createElement('option');
+                filterOption.value = school.id;
+                filterOption.textContent = school.name;
+                filterSelector.appendChild(filterOption);
+                
+                const formOption = document.createElement('option');
+                formOption.value = school.id;
+                formOption.textContent = school.name;
+                formSelector.appendChild(formOption);
+            });
+        }
+        
+        // Variable to store the pagination controller
+        let classesPagination = null;
+
+        // Function to initialize pagination
+        function initClassesPagination(classes) {
+            classesPagination = createPagination({
+                data: classes,
+                itemsPerPage: 10,
+                renderItemCallback: (container, cls, startIndex) => {
+                    const school = getSchools().find(s => s.id === cls.schoolId);
+                    const schoolName = school ? school.name : 'Escola não encontrada';
+                    
+                    // Função para traduzir série e turno para exibição
+                    const seriesDisplay = translateSeries(cls.series);
+                    const shiftDisplay = translateShift(cls.shift);
+                    
+                    const li = document.createElement('li');
+                    li.className = 'block hover:bg-gray-50';
+                    li.innerHTML = `
+                        <div class="flex items-center px-4 py-4 sm:px-6">
+                            <div class="min-w-0 flex-1 flex items-center">
+                                <div class="flex-shrink-0">
+                                    <span class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                        <i class="fas fa-users text-green-600 text-lg"></i>
+                                    </span>
+                                </div>
+                                <div class="min-w-0 flex-1 px-4">
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-600 truncate">${cls.name}</p>
+                                        <p class="mt-1 text-sm text-gray-500">
+                                            Escola: ${schoolName} | Série: ${seriesDisplay} | Turno: ${shiftDisplay}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="text-indigo-600 hover:text-indigo-900 editClass" data-id="${cls.id}" title="Editar Turma">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="ml-4 text-red-600 hover:text-red-900 deleteClass" data-id="${cls.id}" title="Excluir Turma">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(li);
+                },
+                containerSelector: '#classesList',
+                paginationContainerSelector: '#classesPaginationContainer',
+                emptyCallback: (container) => {
+                    container.innerHTML = `
+                        <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                            Nenhuma turma cadastrada
+                        </li>`;
+                },
+                countElements: {
+                    start: document.getElementById('classesStartItem'),
+                    end: document.getElementById('classesEndItem'),
+                    total: document.getElementById('classesTotalItems')
+                },
+                prevBtnSelector: '#classesPrevPage',
+                nextBtnSelector: '#classesNextPage',
+                prevBtnMobileSelector: '#classesPrevPageMobile',
+                nextBtnMobileSelector: '#classesNextPageMobile'
+            });
+            
+            // Render the pagination
+            classesPagination.render();
+            
+            // Adicionar eventos para os botões de edição e exclusão
+            setTimeout(() => {
+                console.log('Adicionando eventos aos botões após renderização');
+                document.querySelectorAll('.editClass').forEach(button => {
+                    // Remover event listeners existentes para evitar duplicatas
+                    button.replaceWith(button.cloneNode(true));
+                });
+                
+                document.querySelectorAll('.deleteClass').forEach(button => {
+                    // Remover event listeners existentes para evitar duplicatas
+                    button.replaceWith(button.cloneNode(true));
+                });
+                
+                // Adicionar novos event listeners
+                document.querySelectorAll('.editClass').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const classId = parseInt(this.getAttribute('data-id'));
+                        console.log('Botão editar clicado para turma ID:', classId);
+                        openEditClassModal(classId);
+                    });
+                });
+                
+                document.querySelectorAll('.deleteClass').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const classId = parseInt(this.getAttribute('data-id'));
+                        console.log('Botão excluir clicado para turma ID:', classId);
+                        
+                        // Implementar exclusão
+                        if (confirm('Tem certeza que deseja excluir esta turma?')) {
+                            deleteClass(classId);
+                        }
+                    });
+                });
+            }, 100); // Pequeno delay para garantir que a renderização foi concluída
+        }
+        
+        // Função para renderizar a lista de turmas
+        function renderClassesList() {
+            const classesList = document.getElementById('classesList');
+            const filterSchoolId = ensureNumber(document.getElementById('filterSchool').value);
+            
+            console.log(`Aplicando filtro de escola: ID=${filterSchoolId || 'nenhuma'}`);
+            
+            // Adicionar um banner informativo sobre os filtros aplicados
+            const filterBanner = document.getElementById('filterBanner') || document.createElement('div');
+            filterBanner.id = 'filterBanner';
+            filterBanner.className = 'bg-blue-50 border-l-4 border-blue-500 p-4 mb-4';
+            
+            let classes;
+            let filterMessage = "";
+            
+            // Obter a lista filtrada de turmas com base no filtro selecionado
+            if (filterSchoolId) {
+                // Filtrar por escola
+                classes = getClasses().filter(cls => ensureNumber(cls.schoolId) === filterSchoolId);
+                
+                // Obter nome da escola para a mensagem
+                const escola = getSchools().find(s => s.id === filterSchoolId);
+                filterMessage = "<strong>Filtro aplicado:</strong> Escola \"" + (escola?.name || "Desconhecida") + 
+                                "\" (" + classes.length + " turmas)";
+            } else {
+                // Sem filtros aplicados
+                classes = getClasses();
+                filterMessage = "<strong>Sem filtros aplicados</strong> - Mostrando todas as " + classes.length + " turmas";
+            }
+            
+            console.log("Total de turmas após filtro: " + classes.length);
+            
+            // Atualizar o banner informativo
+            filterBanner.innerHTML = filterMessage;
+            
+            // Adicionar o banner antes da lista de turmas se ainda não existir
+            const classesListContainer = classesList.parentElement;
+            if (!document.getElementById('filterBanner')) {
+                classesListContainer.insertBefore(filterBanner, classesList);
+            }
+            
+            // Se não houver turmas, mostrar mensagem e esconder paginação
+            if (classes.length === 0) {
+                classesList.innerHTML = '<li class="px-4 py-4 sm:px-6 text-center text-gray-500">' +
+                    '<i class="fas fa-search text-xl mb-2"></i><br>' +
+                    'Nenhuma turma encontrada para o filtro selecionado</li>';
+                document.getElementById('classesPaginationControls').classList.add('hidden');
+                return;
+            }
+            
+            // Mostrar os controles de paginação
+            document.getElementById('classesPaginationControls').classList.remove('hidden');
+            
+            // Limpar a lista atual e a paginação
+            classesList.innerHTML = '';
+            document.getElementById('classesPaginationContainer').innerHTML = '';
+            
+            // Destruir o controlador anterior se existir
+            if (classesPagination) {
+                console.log("Recriando controlador de paginação para exibir " + classes.length + " turmas filtradas");
+            }
+            
+            // Sempre criar um novo controlador de paginação com as turmas filtradas
+            classesPagination = null;
+            
+            // Inicializar a paginação com as turmas filtradas
+            initClassesPagination(classes);
+        }
+        
+        // Função para excluir uma turma
+        function deleteClass(id) {
+            // Procurar turma no armazenamento local
+            let classes = JSON.parse(localStorage.getItem('classes'));
+            const classToDelete = classes.find(cls => cls.id === id);
+            
+            if (!classToDelete) {
+                alert('Turma não encontrada.');
+                return;
+            }
+            
+            // Se a turma tiver um ID da API, tentar excluir na API primeiro
+            if (classToDelete.apiId) {
+                // Chamar função para excluir na API
+                deleteClassAPI(classToDelete.apiId, id);
+            } else {
+                // Não tem ID da API, então apenas exclui localmente
+                removeClassLocally(id);
+            }
+        }
+        
+        // Função para remover turma localmente
+        function removeClassLocally(id) {
+            let classes = JSON.parse(localStorage.getItem('classes'));
+            
+            // Verificar dependências antes de excluir (por exemplo, se há alunos)
+            const result = checkClassDependencies(id);
+            
+            if (result && !result.success) {
+                alert(result.reason);
+                return;
+            }
+            
+            classes = classes.filter(cls => cls.id !== id);
+            localStorage.setItem('classes', JSON.stringify(classes));
+            renderClassesList();
+        }
+        
+        // Função para verificar dependências da turma
+        function checkClassDependencies(classId) {
+            // Verificar se existem alunos associados a esta turma
+            try {
+                const students = JSON.parse(localStorage.getItem('students')) || [];
+                const hasStudents = students.some(s => s.classId === classId);
+                
+                if (hasStudents) {
+                    return { success: false, reason: 'Esta turma possui alunos associados e não pode ser excluída.' };
+                }
+                
+                return { success: true };
+            } catch (error) {
+                console.error('Erro ao verificar dependências da turma:', error);
+                return { success: true }; // Em caso de erro, permitir exclusão
+            }
+        }
+        
+        // Função para excluir turma na API
+        async function deleteClassAPI(apiId, localId) {
+            try {
+                console.log(`Tentando excluir turma com API ID: ${apiId}, Local ID: ${localId}`);
+                
+                const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/turmas/${apiId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('Status da resposta de exclusão:', response.status);
+                
+                // Log da resposta completa para debug
+                const responseText = await response.text();
+                console.log('Resposta da API (exclusão):', responseText);
+                
+                // Tentar converter para JSON se possível
+                let data;
+                try {
+                    if (responseText) {
+                        data = JSON.parse(responseText);
+                    }
+                } catch (e) {
+                    console.log('Resposta não é um JSON válido');
+                }
+                
+                if (response.ok) {
+                    // Verificar dependências antes de excluir localmente
+                    const result = checkClassDependencies(localId);
+                    
+                    if (result && !result.success) {
+                        alert(result.reason);
+                        return;
+                    }
+                    
+                    // Excluir localmente após sucesso na API
+                    removeClassLocally(localId);
+                    alert('Turma excluída com sucesso!');
+                } else {
+                    const errorMessage = data ? data.message || 'Erro ao excluir turma.' : 'Erro ao excluir turma.';
+                    alert(errorMessage);
+                }
+            } catch (error) {
+                console.error('Erro ao excluir turma:', error);
+                alert('Ocorreu um erro ao tentar excluir a turma: ' + error.message);
+            }
+        }
+        
+        // Função para criar turma via API
+        async function createClassAPI(nome, serie, escolaId, turno) {
+            try {
+                // Exibir indicador de carregamento
+                const submitBtn = document.querySelector('#addClassForm button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                submitBtn.disabled = true;
+                
+                // Preparar payload no formato correto que a API espera
+                const payload = {
+                    nome: nome,
+                    serie: serie,
+                    turno: turno,
+                    escola_id: escolaId
+                };
+                
+                console.log('Enviando dados para API:', payload);
+                
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/turmas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Restaurar botão
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                
+                console.log('Status da resposta:', response.status);
+                
+                // Log da resposta completa para debug
+                const responseText = await response.text();
+                console.log('Resposta da API:', responseText);
+                
+                // Tentar converter para JSON se possível
+                let data;
+                try {
+                    if (responseText) {
+                        data = JSON.parse(responseText);
+                    }
+                } catch (e) {
+                    console.log('Resposta não é um JSON válido');
+                }
+                
+                if (response.ok) {
+                    console.log('Turma criada com sucesso:', data);
+                    
+                    // Adicionar a turma recebida da API à lista local
+                    addClass(
+                        data?.nome || nome,
+                        data?.serie || serie,
+                        data?.escola_id || escolaId,
+                        data?.turno || turno,
+                        data?.id
+                    );
+                    
+                    // Atualizar a lista de turmas usando paginação do backend
+                    loadClassesFromAPI();
+                    
+                    // Fechar o modal e resetar o formulário
+                    document.getElementById('addClassModal').classList.add('hidden');
+                    document.getElementById('addClassForm').reset();
+                    
+                    alert('Turma cadastrada com sucesso!');
+                } else {
+                    const errorMessage = data ? data.message || 'Erro ao cadastrar turma.' : 'Erro ao cadastrar turma.';
+                    alert(errorMessage);
+                }
+            } catch (error) {
+                console.error('Erro ao cadastrar turma:', error);
+                alert('Ocorreu um erro ao tentar cadastrar a turma: ' + error.message);
+                
+                // Restaurar botão em caso de erro
+                const submitBtn = document.querySelector('#addClassForm button[type="submit"]');
+                submitBtn.innerHTML = 'Salvar';
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // Função para adicionar turma
+        function addClass(name, series, schoolId, shift, apiId = null) {
+            let classes = JSON.parse(localStorage.getItem('classes')) || [];
+            const newId = apiId || (classes.length > 0 ? Math.max(...classes.map(c => c.id)) + 1 : 1);
+            
+            const newClass = {
+                id: newId,
+                name: name,
+                series: series,
+                schoolId: schoolId,
+                shift: shift,
+                apiId: apiId // Armazenar o ID da API se fornecido
+            };
+            
+            classes.push(newClass);
+            localStorage.setItem('classes', JSON.stringify(classes));
+            return newClass;
+        }
+        
+        // Função para carregar turmas da API
+        async function loadClassesFromAPI(page = 1, limit = 10, escolaId = null) {
+            try {
+                // Verificar se temos uma busca ativa
+                const searchTerm = document.getElementById('searchClass').value.toLowerCase().trim();
+                if (searchTerm !== '') {
+                    // Se tivermos um termo de busca, usar a filtragem local em vez da API
+                    console.log(`Termo de busca ativo: "${searchTerm}". Usando filtragem local.`);
+                    applySearchFilter();
+                    return Promise.resolve(false);
+                }
+                
+                console.log(`Carregando turmas da API (página ${page}, limite ${limit}${escolaId ? ', escola ' + escolaId : ''})...`);
+                
+                // Mostrar indicador de carregamento
+                document.getElementById('classesList').innerHTML = `
+                    <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Carregando turmas da API...
+                    </li>`;
+                
+                // Construir URL com parâmetros de paginação e filtro
+                let apiUrl = `https://sag-sag.rak8a3.easypanel.host/api/turmas?page=${page}&limit=${limit}`;
+                
+                // Adicionar filtro de escola, se informado
+                if (escolaId) {
+                    apiUrl += `&escola_id=${escolaId}`;
+                }
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log('Resposta da API carregada com sucesso:', responseData);
+                    
+                    // Verificar o formato da resposta com paginação
+                    if (responseData && responseData.data && Array.isArray(responseData.data)) {
+                        // Extrair os dados de turmas do campo "data"
+                        const turmasData = responseData.data;
+                        
+                        // Limpar turmas existentes e adicionar as novas
+                        localStorage.setItem('classes', JSON.stringify([]));
+                        
+                        // Se a API retornou dados, usá-los
+                        if (turmasData.length > 0) {
+                            console.log(`Recebidas ${turmasData.length} turmas da API`);
+                            
+                            turmasData.forEach(turma => {
+                                console.log("Dados da turma recebida da API:", turma);
+                            addClass(
+                                turma.nome,
+                                turma.serie,
+                                turma.escola_id,
+                                turma.turno,
+                                turma.id
+                            );
+                        });
+                        
+                            console.log('Carregadas ' + turmasData.length + ' turmas da API (página ' + 
+                                      responseData.page + ' de ' + responseData.totalPages + 
+                                      ', total: ' + responseData.total + ' turmas)');
+                            
+                            // Renderizar a lista com a paginação do backend
+                            renderClassesListWithBackendPagination(turmasData, responseData);
+                            
+                            return Promise.resolve(true);
+                        } else {
+                            console.log('Nenhuma turma retornada da API.');
+                            // Mostrar mensagem de nenhuma turma encontrada
+                            document.getElementById('classesList').innerHTML = `
+                                <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                                    Nenhuma turma cadastrada
+                                </li>`;
+                            document.getElementById('classesPaginationControls').classList.add('hidden');
+                            
+                            return Promise.resolve(false);
+                        }
+                    } else {
+                        // Formato antigo (sem paginação)
+                        console.log('Resposta da API não contém metadados de paginação, usando formato antigo');
+                        if (Array.isArray(responseData)) {
+                            // Limpar turmas existentes e adicionar as novas
+                            localStorage.setItem('classes', JSON.stringify([]));
+                            
+                            responseData.forEach(turma => {
+                                addClass(
+                                    turma.nome,
+                                    turma.serie,
+                                    turma.escola_id,
+                                    turma.turno,
+                                    turma.id
+                                );
+                            });
+                            
+                            // Renderizar a lista normalmente
+                        renderClassesList();
+                            
+                            return Promise.resolve(true);
+                    } else {
+                            console.error('Formato da resposta da API não é o esperado:', responseData);
+                            return Promise.resolve(false);
+                        }
+                    }
+                } else {
+                    console.error('Erro ao carregar turmas da API:', response.status);
+                    renderClassesList(); // Fallback para renderização local
+                    return Promise.resolve(false);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar turmas da API:', error);
+                renderClassesList(); // Fallback para renderização local
+                return Promise.resolve(false);
+            }
+        }
+        
+        // Função para renderizar a lista de turmas usando a paginação do backend
+        function renderClassesListWithBackendPagination(turmasData, paginationData) {
+            const classesList = document.getElementById('classesList');
+            const filterSchoolId = ensureNumber(document.getElementById('filterSchool').value);
+            
+            console.log("Renderizando turmas com paginação do backend");
+            
+            // Adicionar um banner informativo sobre os filtros aplicados
+            const filterBanner = document.getElementById('filterBanner') || document.createElement('div');
+            filterBanner.id = 'filterBanner';
+            filterBanner.className = 'bg-blue-50 border-l-4 border-blue-500 p-4 mb-4';
+            
+            let filterMessage = "";
+            
+            // Se temos um filtro de escola, mostrar informação sobre o filtro aplicado
+            if (filterSchoolId) {
+                // Obter nome da escola para a mensagem
+                const escola = getSchools().find(s => s.id === filterSchoolId);
+                filterMessage = "<strong>Filtro aplicado:</strong> Escola \"" + (escola?.name || "Desconhecida") + 
+                                    "\" - Mostrando página " + paginationData.page + " de " + paginationData.totalPages + 
+                                    " - Total: " + paginationData.total + " turmas";
+            } else {
+                // Sem filtros aplicados
+                filterMessage = "<strong>Mostrando página " + paginationData.page + " de " + paginationData.totalPages + 
+                              "</strong> - Total: " + paginationData.total + " turmas";
+            }
+            
+            // Atualizar o banner informativo
+            filterBanner.innerHTML = filterMessage;
+            
+            // Adicionar o banner antes da lista de turmas se ainda não existir
+            const classesListContainer = classesList.parentElement;
+            if (!document.getElementById('filterBanner')) {
+                classesListContainer.insertBefore(filterBanner, classesList);
+            }
+            
+            // Se não houver turmas, mostrar mensagem e esconder paginação
+            if (turmasData.length === 0) {
+                classesList.innerHTML = '<li class="px-4 py-4 sm:px-6 text-center text-gray-500">' +
+                    '<i class="fas fa-search text-xl mb-2"></i><br>' +
+                    'Nenhuma turma encontrada para o filtro selecionado</li>';
+                document.getElementById('classesPaginationControls').classList.add('hidden');
+                return;
+            }
+            
+            // Mostrar os controles de paginação
+            const paginationControls = document.getElementById('classesPaginationControls');
+            paginationControls.classList.remove('hidden');
+            
+            // Limpar a lista atual
+            classesList.innerHTML = '';
+            
+            // Renderizar as turmas na página atual
+            turmasData.forEach(turma => {
+                // Buscar escola
+                const school = getSchools().find(s => s.id === ensureNumber(turma.escola_id));
+                const schoolName = school ? school.name : 'Escola não encontrada';
+                
+                // Função para traduzir série e turno para exibição
+                const seriesDisplay = translateSeries(turma.serie);
+                const shiftDisplay = translateShift(turma.turno);
+                
+                const li = document.createElement('li');
+                li.className = 'block hover:bg-gray-50';
+                li.innerHTML = `
+                    <div class="flex items-center px-4 py-4 sm:px-6">
+                        <div class="min-w-0 flex-1 flex items-center">
+                            <div class="flex-shrink-0">
+                                <span class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                    <i class="fas fa-users text-green-600 text-lg"></i>
+                                </span>
+                        </div>
+                            <div class="min-w-0 flex-1 px-4">
+                            <div>
+                                    <p class="text-sm font-medium text-blue-600 truncate">${turma.nome}</p>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Escola: ${schoolName} | Série: ${seriesDisplay} | Turno: ${shiftDisplay}
+                                    </p>
+                            </div>
+                            </div>
+                            </div>
+                            <div>
+                            <button class="text-indigo-600 hover:text-indigo-900 editClass" data-id="${turma.id}" title="Editar Turma">
+                                <i class="fas fa-edit"></i>
+                                </button>
+                            <button class="ml-4 text-red-600 hover:text-red-900 deleteClass" data-id="${turma.id}" title="Excluir Turma">
+                                <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                    </div>
+                `;
+                
+                classesList.appendChild(li);
+            });
+            
+            // Atualizar os contadores de paginação
+            document.getElementById('classesStartItem').textContent = ((paginationData.page - 1) * paginationData.limit) + 1;
+            document.getElementById('classesEndItem').textContent = Math.min(
+                (paginationData.page * paginationData.limit), 
+                paginationData.total
+            );
+            document.getElementById('classesTotalItems').textContent = paginationData.total;
+            
+            // Atualizar os botões de paginação
+            updateBackendPaginationControls(paginationData);
+            
+            // Adicionar event listeners para os botões de editar e excluir
+            document.querySelectorAll('.editClass').forEach(button => {
+                button.addEventListener('click', function() {
+                    const classId = parseInt(this.getAttribute('data-id'));
+                    openEditClassModal(classId);
+                });
+            });
+            
+            document.querySelectorAll('.deleteClass').forEach(button => {
+                button.addEventListener('click', function() {
+                    const classId = parseInt(this.getAttribute('data-id'));
+                    
+                    // Implementar exclusão
+                    if (confirm('Tem certeza que deseja excluir esta turma?')) {
+                        deleteClass(classId);
+                    }
+                });
+            });
+        }
+        
+        // Função para atualizar os controles de paginação do backend
+        function updateBackendPaginationControls(paginationData) {
+            const paginationContainer = document.getElementById('classesPaginationContainer');
+            paginationContainer.innerHTML = '';
+            
+            // Obter o filtro de escola atual
+            const escolaId = document.getElementById('filterSchool').value;
+            
+            // Configurar botões de página anterior/próxima
+            const prevPageBtn = document.getElementById('classesPrevPage');
+            const nextPageBtn = document.getElementById('classesNextPage');
+            const prevPageMobileBtn = document.getElementById('classesPrevPageMobile');
+            const nextPageMobileBtn = document.getElementById('classesNextPageMobile');
+            const currentPageMobile = document.getElementById('classesCurrentPageMobile');
+            
+            // Atualizar paginação móvel
+            if (currentPageMobile) {
+                currentPageMobile.textContent = paginationData.page;
+            }
+            
+            // Desabilitar botão anterior se estiver na primeira página
+            if (paginationData.page <= 1) {
+                prevPageBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                prevPageMobileBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                prevPageBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                prevPageMobileBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Desabilitar botão próximo se estiver na última página
+            if (paginationData.page >= paginationData.totalPages) {
+                nextPageBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                nextPageMobileBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                nextPageBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextPageMobileBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Adicionar event listeners para os botões de paginação
+            prevPageBtn.onclick = function() {
+                if (paginationData.page > 1) {
+                    loadClassesFromAPI(paginationData.page - 1, paginationData.limit, escolaId);
+                }
+            };
+            
+            nextPageBtn.onclick = function() {
+                if (paginationData.page < paginationData.totalPages) {
+                    loadClassesFromAPI(paginationData.page + 1, paginationData.limit, escolaId);
+                }
+            };
+            
+            prevPageMobileBtn.onclick = function() {
+                if (paginationData.page > 1) {
+                    loadClassesFromAPI(paginationData.page - 1, paginationData.limit, escolaId);
+                }
+            };
+            
+            nextPageMobileBtn.onclick = function() {
+                if (paginationData.page < paginationData.totalPages) {
+                    loadClassesFromAPI(paginationData.page + 1, paginationData.limit, escolaId);
+                }
+            };
+            
+            // Criar a paginação numérica (limitar para não ficar muito grande)
+            let startPage = Math.max(1, paginationData.page - 2);
+            let endPage = Math.min(paginationData.totalPages, paginationData.page + 2);
+            
+            // Ajustar para sempre mostrar 5 páginas (se possível)
+            if (endPage - startPage < 4 && paginationData.totalPages >= 5) {
+                if (startPage === 1) {
+                    endPage = Math.min(5, paginationData.totalPages);
+                } else if (endPage === paginationData.totalPages) {
+                    startPage = Math.max(1, paginationData.totalPages - 4);
+                }
+            }
+            
+            // Botão para a primeira página (se não estiver próximo)
+            if (startPage > 1) {
+                const firstPageBtn = document.createElement('button');
+                firstPageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+                firstPageBtn.textContent = '1';
+                firstPageBtn.onclick = function() {
+                    loadClassesFromAPI(1, paginationData.limit, escolaId);
+                };
+                paginationContainer.appendChild(firstPageBtn);
+                
+                // Adicionar reticências se não estiver na página 2
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+                    ellipsis.textContent = '...';
+                    paginationContainer.appendChild(ellipsis);
+                }
+            }
+            
+            // Criar botões para cada página no intervalo
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                
+                if (i === paginationData.page) {
+                    pageBtn.className = 'z-10 relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600';
+                } else {
+                    pageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+                }
+                
+                pageBtn.textContent = i.toString();
+                pageBtn.onclick = function() {
+                    loadClassesFromAPI(i, paginationData.limit, escolaId);
+                };
+                
+                paginationContainer.appendChild(pageBtn);
+            }
+            
+            // Botão para a última página (se não estiver próximo)
+            if (endPage < paginationData.totalPages) {
+                // Adicionar reticências se não estiver na penúltima página
+                if (endPage < paginationData.totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+                    ellipsis.textContent = '...';
+                    paginationContainer.appendChild(ellipsis);
+                }
+                
+                const lastPageBtn = document.createElement('button');
+                lastPageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+                lastPageBtn.textContent = paginationData.totalPages.toString();
+                lastPageBtn.onclick = function() {
+                    loadClassesFromAPI(paginationData.totalPages, paginationData.limit, escolaId);
+                };
+                paginationContainer.appendChild(lastPageBtn);
+            }
+        }
+        
+        // Funções auxiliares para tradução de enums
+        function translateSeries(series) {
+            const seriesMap = {
+                'PRIMEIRO_ANO': '1° ano',
+                'SEGUNDO_ANO': '2° ano',
+                'TERCEIRO_ANO': '3° ano',
+                'QUARTO_ANO': '4° ano',
+                'QUINTO_ANO': '5° ano',
+                'SEXTO_ANO': '6° ano',
+                'SETIMO_ANO': '7° ano',
+                'OITAVO_ANO': '8° ano',
+                'NONO_ANO': '9° ano',
+                'PRIMEIRA_SERIE': '1ª série',
+                'SEGUNDA_SERIE': '2ª série',
+                'TERCEIRA_SERIE': '3ª série',
+                // Manter compatibilidade com valores antigos
+                '1': '1° ano',
+                '2': '2° ano',
+                '3': '3° ano',
+                '4': '4° ano',
+                '5': '5° ano',
+                '6': '6° ano',
+                '7': '7° ano',
+                '8': '8° ano',
+                '9': '9° ano'
+            };
+            
+            return seriesMap[series] || series;
+        }
+        
+        function translateShift(shift) {
+            const shiftMap = {
+                'MANHA': 'Matutino',
+                'TARDE': 'Vespertino',
+                'NOITE': 'Noturno',
+                // Manter compatibilidade com valores antigos
+                'Matutino': 'Matutino',
+                'Vespertino': 'Vespertino',
+                'Noturno': 'Noturno'
+            };
+            
+            return shiftMap[shift] || shift;
+        }
+
+        // Variables for student answers pagination
+        let studentAnswersPagination = null;
+
+        // Function to populate the student answers table with pagination
+        function populateStudentAnswers(generatedAnswers) {
+            const container = document.getElementById('studentAnswersTable');
+            
+            if (!generatedAnswers || generatedAnswers.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            Não há gabaritos de alunos gerados para esta avaliação
+                        </td>
+                    </tr>`;
+                
+                // Hide pagination controls
+                document.getElementById('studentAnswersPaginationControls').classList.add('hidden');
+                return;
+            }
+            
+            // Show pagination controls
+            document.getElementById('studentAnswersPaginationControls').classList.remove('hidden');
+            
+            // Initialize pagination if not already done
+            if (!studentAnswersPagination) {
+                initStudentAnswersPagination(generatedAnswers);
+            } else {
+                studentAnswersPagination.updateData(generatedAnswers);
+            }
+        }
+
+        // Function to initialize pagination for student answers
+        function initStudentAnswersPagination(generatedAnswers) {
+            studentAnswersPagination = createPagination({
+                data: generatedAnswers,
+                itemsPerPage: 10,
+                renderItemCallback: (container, studentAnswer, startIndex) => {
+                    const tr = document.createElement('tr');
+                    
+                    // Calculate status class and icon
+                    let statusClass, statusIcon, statusText;
+                    
+                    if (studentAnswer.isCompleted) {
+                        statusClass = 'text-green-600';
+                        statusIcon = 'fa-check-circle';
+                        statusText = 'Finalizado';
+                    } else {
+                        statusClass = 'text-yellow-600';
+                        statusIcon = 'fa-clock';
+                        statusText = 'Pendente';
+                    }
+                    
+                    // Calculate score class
+                    const scoreClass = studentAnswer.score >= 70 ? 'text-green-600' : (studentAnswer.score < 60 ? 'text-red-600' : 'text-yellow-600');
+                    
+                    // Prepare answers display
+                    const answers = studentAnswer.answers || {};
+                    let answersDisplay = '<div class="flex flex-wrap gap-1">';
+                    
+                    for (let i = 1; i <= Object.keys(answers).length; i++) {
+                        const answer = answers[i] || '-';
+                        answersDisplay += `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">${i}: ${answer}</span>`;
+                    }
+                    
+                    answersDisplay += '</div>';
+                    
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${studentAnswer.student.name}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${statusClass}">
+                            <span class="inline-flex items-center">
+                                <i class="fas ${statusIcon} mr-1"></i> ${statusText}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            ${answersDisplay}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${scoreClass}">
+                            ${studentAnswer.isCompleted ? `${studentAnswer.correctAnswers}/${Object.keys(answers).length}` : '-'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${scoreClass}">
+                            ${studentAnswer.isCompleted ? `${studentAnswer.score}%` : '-'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <button class="text-blue-600 hover:text-blue-900 editAnswers" data-id="${studentAnswer.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    container.appendChild(tr);
+                },
+                containerSelector: '#studentAnswersTable',
+                paginationContainerSelector: '#studentAnswersPaginationContainer',
+                emptyCallback: (container) => {
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                Não há gabaritos de alunos gerados para esta avaliação
+                            </td>
+                        </tr>`;
+                },
+                countElements: {
+                    start: document.getElementById('studentAnswersStartItem'),
+                    end: document.getElementById('studentAnswersEndItem'),
+                    total: document.getElementById('studentAnswersTotalItems')
+                },
+                prevBtnSelector: '#studentAnswersPrevPage',
+                nextBtnSelector: '#studentAnswersNextPage',
+                prevBtnMobileSelector: '#studentAnswersPrevPageMobile',
+                nextBtnMobileSelector: '#studentAnswersNextPageMobile'
+            });
+            
+            // Render the pagination
+            studentAnswersPagination.render();
+            
+            // Add event handlers for the edit buttons
+            document.querySelectorAll('.editAnswers').forEach(button => {
+                button.addEventListener('click', function() {
+                    const answerId = this.getAttribute('data-id');
+                    editStudentAnswers(answerId);
+                });
+            });
+        }
+
+        // Função para abrir o modal de edição de turma
+        function openEditClassModal(classId) {
+            // Buscar dados da turma
+            const classes = JSON.parse(localStorage.getItem('classes')) || [];
+            const classToEdit = classes.find(cls => cls.id === classId);
+            
+            if (!classToEdit) {
+                alert('Turma não encontrada.');
+                return;
+            }
+            
+            // Atualizar o título do modal
+            const modalTitle = document.querySelector('#addClassModal .text-lg');
+            modalTitle.textContent = 'Editar Turma';
+            
+            // Preencher o formulário com os dados da turma
+            document.getElementById('className').value = classToEdit.name;
+            
+            // Preencher seletor de escola
+            const schoolSelect = document.getElementById('classSchool');
+            populateSchoolSelectors(); // Garantir que o seletor está preenchido
+            schoolSelect.value = classToEdit.schoolId;
+            
+            // Preencher seletor de série
+            document.getElementById('classSeries').value = classToEdit.series;
+            
+            // Preencher seletor de turno
+            document.getElementById('classShift').value = classToEdit.shift;
+            
+            // Modificar o comportamento do formulário para atualizar em vez de criar
+            const form = document.getElementById('addClassForm');
+            
+            // Armazenar o ID da turma sendo editada como um atributo de dados no formulário
+            form.setAttribute('data-editing-id', classId);
+            
+            // Remover event listeners existentes para evitar duplicação
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+            
+            // Adicionar novo event listener
+            newForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const nome = document.getElementById('className').value;
+                const serie = document.getElementById('classSeries').value;
+                const escolaId = parseInt(document.getElementById('classSchool').value);
+                const turno = document.getElementById('classShift').value;
+                const editingId = parseInt(this.getAttribute('data-editing-id'));
+                
+                if (nome.trim() !== '' && escolaId && serie && turno) {
+                    // Chamar função para atualizar a turma
+                    updateClassAPI(editingId, nome, serie, escolaId, turno);
+                } else {
+                    alert('Por favor, preencha todos os campos.');
+                }
+            });
+            
+            // Exibir o modal
+            document.getElementById('addClassModal').classList.remove('hidden');
+        }
+        
+        // Função para atualizar turma via API
+        async function updateClassAPI(classId, nome, serie, escolaId, turno) {
+            try {
+                // Obter o ID da API para essa turma
+                const classes = JSON.parse(localStorage.getItem('classes')) || [];
+                const classToUpdate = classes.find(cls => cls.id === classId);
+                
+                if (!classToUpdate) {
+                    alert('Turma não encontrada.');
+                    return;
+                }
+                
+                const apiId = classToUpdate.apiId || classId;
+                
+                // Exibir indicador de carregamento
+                const submitBtn = document.querySelector('#addClassForm button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                submitBtn.disabled = true;
+                
+                // Preparar payload no formato correto que a API espera
+                const payload = {
+                    nome: nome,
+                    serie: serie,
+                    turno: turno,
+                    escola_id: escolaId
+                };
+                
+                console.log('Enviando dados para API (atualização):', payload);
+                
+                const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/turmas/${apiId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Restaurar botão
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                
+                console.log('Status da resposta de atualização:', response.status);
+                
+                // Log da resposta completa para debug
+                const responseText = await response.text();
+                console.log('Resposta da API (atualização):', responseText);
+                
+                // Tentar converter para JSON se possível
+                let data;
+                try {
+                    if (responseText) {
+                        data = JSON.parse(responseText);
+                    }
+                } catch (e) {
+                    console.log('Resposta não é um JSON válido');
+                }
+                
+                if (response.ok) {
+                    console.log('Turma atualizada com sucesso:', data);
+                    
+                    // Atualizar a turma na lista local
+                    updateClass(
+                        classId,
+                        data?.nome || nome,
+                        data?.serie || serie,
+                        data?.escola_id || escolaId,
+                        data?.turno || turno,
+                        data?.id || apiId
+                    );
+                    
+                    // Atualizar a lista de turmas
+                    loadClassesFromAPI();
+                    
+                    // Fechar o modal e resetar o formulário
+                    document.getElementById('addClassModal').classList.add('hidden');
+                    document.getElementById('addClassForm').reset();
+                    
+                    // Restaurar o título e comportamento original do modal
+                    const modalTitle = document.querySelector('#addClassModal .text-lg');
+                    modalTitle.textContent = 'Adicionar Nova Turma';
+                    
+                    // Remover o atributo de dados do ID sendo editado
+                    document.getElementById('addClassForm').removeAttribute('data-editing-id');
+                    
+                    alert('Turma atualizada com sucesso!');
+                } else {
+                    const errorMessage = data ? data.message || 'Erro ao atualizar turma.' : 'Erro ao atualizar turma.';
+                    alert(errorMessage);
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar turma:', error);
+                alert('Ocorreu um erro ao tentar atualizar a turma: ' + error.message);
+                
+                // Restaurar botão em caso de erro
+                const submitBtn = document.querySelector('#addClassForm button[type="submit"]');
+                submitBtn.innerHTML = 'Salvar';
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // Função para atualizar turma localmente
+        function updateClass(id, name, series, schoolId, shift, apiId = null) {
+            let classes = JSON.parse(localStorage.getItem('classes')) || [];
+            const index = classes.findIndex(cls => cls.id === id);
+            
+            if (index !== -1) {
+                classes[index] = {
+                    ...classes[index],
+                    name: name,
+                    series: series,
+                    schoolId: schoolId,
+                    shift: shift,
+                    apiId: apiId // Manter ou atualizar o ID da API
+                };
+                
+                localStorage.setItem('classes', JSON.stringify(classes));
+                return classes[index];
+            }
+            
+            return null;
+        }
+
+        // Função para aplicar o filtro de busca
+        function applySearchFilter() {
+            const searchTerm = document.getElementById('searchClass').value.toLowerCase().trim();
+            const escolaId = document.getElementById('filterSchool').value;
+            
+            if (searchTerm === '') {
+                // Se a busca estiver vazia, apenas carregamos as turmas normalmente
+                if (escolaId) {
+                    loadClassesFromAPI(1, 10, escolaId);
+                } else {
+                    loadClassesFromAPI(1, 10);
+                }
+                return;
+            }
+            
+            console.log(`Buscando turmas que contenham: "${searchTerm}"`);
+            
+            // Obter todas as turmas do localStorage
+            const allClasses = JSON.parse(localStorage.getItem('classes')) || [];
+            console.log(`Total de turmas no sistema: ${allClasses.length}`);
+            
+            // Debug: mostrar as primeiras 5 turmas para verificar seus nomes
+            allClasses.slice(0, 5).forEach((cls, index) => {
+                console.log(`Turma ${index+1}: Nome="${cls.name}", ID=${cls.id}, EscolaID=${cls.schoolId}`);
+            });
+            
+            // Abordagem direta: verificar se o nome da turma inclui o termo de busca
+            // Tentamos diferentes formatos para maior robustez
+            let filteredClasses = allClasses.filter(cls => {
+                if (!cls || !cls.name) return false;
+                
+                // Verificar se o nome da turma contém o termo de busca
+                const nameMatch = cls.name.toLowerCase().includes(searchTerm);
+                
+                // Também verificar se o termo de busca pode estar em um nome alternativo (nome vs nome)
+                const altNameMatch = cls.nome && cls.nome.toLowerCase().includes(searchTerm);
+                
+                // Log de debug para entender o que está acontecendo
+                if (nameMatch || altNameMatch) {
+                    console.log(`Turma encontrada: "${cls.name}" corresponde a "${searchTerm}"`);
+                }
+                
+                return nameMatch || altNameMatch;
+            });
+            
+            // Se também temos um filtro de escola, aplicá-lo
+            if (escolaId) {
+                const escolaIdNum = ensureNumber(escolaId);
+                filteredClasses = filteredClasses.filter(cls => {
+                    const classSchoolId = ensureNumber(cls.schoolId);
+                    return classSchoolId === escolaIdNum;
+                });
+            }
+            
+            console.log(`Encontradas ${filteredClasses.length} turmas com o termo "${searchTerm}"`);
+            
+            // Se não encontrou nada, tente uma busca mais flexível com comparação parcial
+            if (filteredClasses.length === 0) {
+                console.log("Tentando busca mais flexível...");
+                
+                // Dividir o termo de busca em palavras para buscar por partes
+                const searchWords = searchTerm.split(/\s+/);
+                
+                filteredClasses = allClasses.filter(cls => {
+                    if (!cls || !cls.name) return false;
+                    
+                    const lowerName = cls.name.toLowerCase();
+                    
+                    // Verificar se qualquer palavra do termo de busca está contida no nome da turma
+                    return searchWords.some(word => {
+                        const matches = lowerName.includes(word);
+                        if (matches) {
+                            console.log(`Correspondência parcial: "${cls.name}" contém "${word}"`);
+                        }
+                        return matches;
+                    });
+                });
+                
+                // Se também temos um filtro de escola, aplicá-lo novamente
+                if (escolaId) {
+                    const escolaIdNum = ensureNumber(escolaId);
+                    filteredClasses = filteredClasses.filter(cls => 
+                        ensureNumber(cls.schoolId) === escolaIdNum
+                    );
+                }
+                
+                console.log(`Busca flexível encontrou ${filteredClasses.length} turmas`);
+            }
+            
+            // Renderizar as turmas filtradas
+            renderFilteredClasses(filteredClasses, searchTerm, escolaId);
+        }
+
+        // Função para renderizar turmas filtradas pela busca
+        function renderFilteredClasses(classes, searchTerm, escolaId) {
+            const classesList = document.getElementById('classesList');
+            
+            // Debug: para garantir que temos classes
+            console.log(`Renderizando ${classes.length} turmas filtradas`);
+            
+            // Criar banner informativo
+            const filterBanner = document.getElementById('filterBanner') || document.createElement('div');
+            filterBanner.id = 'filterBanner';
+            filterBanner.className = 'bg-blue-50 border-l-4 border-blue-500 p-4 mb-4';
+            
+            let filterMessage = "";
+            
+            // Construir mensagem com os filtros aplicados
+            if (searchTerm && escolaId) {
+                const escola = getSchools().find(s => s.id === ensureNumber(escolaId));
+                filterMessage = `<strong>Filtros aplicados:</strong> Busca por "${searchTerm}" e Escola "${escola?.name || 'Desconhecida'}" - <strong>${classes.length}</strong> turmas encontradas`;
+            } else if (searchTerm) {
+                filterMessage = `<strong>Filtro aplicado:</strong> Busca por "${searchTerm}" - <strong>${classes.length}</strong> turmas encontradas`;
+            } else if (escolaId) {
+                const escola = getSchools().find(s => s.id === ensureNumber(escolaId));
+                filterMessage = `<strong>Filtro aplicado:</strong> Escola "${escola?.name || 'Desconhecida'}" - <strong>${classes.length}</strong> turmas encontradas`;
+            }
+            
+            // Atualizar o banner informativo
+            filterBanner.innerHTML = filterMessage;
+            
+            // Adicionar o banner antes da lista de turmas se ainda não existir
+            const classesListContainer = classesList.parentElement;
+            if (!document.getElementById('filterBanner')) {
+                classesListContainer.insertBefore(filterBanner, classesList);
+            }
+            
+            // Se não houver turmas, mostrar mensagem e esconder paginação
+            if (classes.length === 0) {
+                classesList.innerHTML = `
+                    <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                        <i class="fas fa-search text-xl mb-2"></i><br>
+                        Nenhuma turma encontrada para "<strong>${searchTerm}</strong>"<br>
+                        <small class="block mt-2">Verifique se digitou o nome corretamente ou tente termos mais gerais</small>
+                        <button id="reloadClassesBtn" class="mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            <i class="fas fa-sync-alt mr-1"></i> Recarregar turmas
+                        </button>
+                    </li>`;
+                
+                // Adicionar evento ao botão de recarregar
+                setTimeout(() => {
+                    const reloadBtn = document.getElementById('reloadClassesBtn');
+                    if (reloadBtn) {
+                        reloadBtn.addEventListener('click', function() {
+                            document.getElementById('searchClass').value = '';
+                            loadClassesFromAPI(1, 10);
+                        });
+                    }
+                }, 100);
+                
+                document.getElementById('classesPaginationControls').classList.add('hidden');
+                return;
+            }
+            
+            // Mostrar os controles de paginação
+            document.getElementById('classesPaginationControls').classList.remove('hidden');
+            
+            // Limpar a lista atual e a paginação
+            classesList.innerHTML = '';
+            document.getElementById('classesPaginationContainer').innerHTML = '';
+            
+            // Inicializar a paginação com as turmas filtradas
+            classesPagination = null;
+            initClassesPagination(classes);
+        }
+    </script>
+    
+    <script>
+        // Helper function to ensure all IDs are treated as numbers
+        function ensureNumber(value) {
+            if (value === null || value === undefined) return null;
+            return Number(value);
+        }
+    </script>
+</body>
+</html> 

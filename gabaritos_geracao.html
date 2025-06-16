@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geração de Gabaritos - SAG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Bibliotecas JS essenciais -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/app.js"></script>
+    <!-- Funções de dados: getExams, getSchools, etc. -->
+
+    <style>
+      /* Estilos para visualização prévia do PDF */
+      .pdf-preview {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="min-h-screen flex flex-col">
+      <!-- Navbar -->
+      <nav class="bg-blue-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between h-16">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 flex items-center">
+                <span class="text-xl font-bold">SAG</span>
+              </div>
+              <div class="hidden md:ml-6 md:flex md:items-center md:space-x-4">
+                <a
+                  href="dashboard.html"
+                  class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                  >Dashboard</a
+                >
+                <a
+                  href="escolas.html"
+                  class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                  >Escolas</a
+                >
+                <a
+                  href="turmas.html"
+                  class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                  >Turmas</a
+                >
+                <a
+                  href="alunos.html"
+                  class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                  >Alunos</a
+                >
+                <a
+                  href="provas.html"
+                  class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                  >Provas</a
+                >
+                <a
+                  href="usuarios.html"
+                  class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                  >Usuários</a
+                >
+                <a
+                  href="gabaritos_geracao.html"
+                  class="px-3 py-2 rounded-md text-sm font-medium bg-blue-700"
+                  >Gabaritos</a
+                >
+                <!-- Active -->
+              </div>
+            </div>
+            <div class="flex items-center">
+              <span id="userName" class="mr-4"></span>
+              <button
+                id="logoutBtn"
+                class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+              >
+                <i class="fas fa-sign-out-alt mr-1"></i> Sair
+              </button>
+            </div>
+            <!-- Mobile menu button -->
+            <div class="-mr-2 flex md:hidden">
+              <button
+                type="button"
+                id="mobileMenuBtn"
+                class="bg-blue-600 inline-flex items-center justify-center p-2 rounded-md text-blue-200 hover:text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                aria-controls="mobile-menu"
+                aria-expanded="false"
+              >
+                <span class="sr-only">Abrir menu principal</span>
+                <i class="fas fa-bars"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Mobile menu -->
+        <div class="md:hidden hidden" id="mobileMenu">
+          <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a
+              href="dashboard.html"
+              class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+              >Dashboard</a
+            >
+            <a
+              href="escolas.html"
+              class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+              >Escolas</a
+            >
+            <a
+              href="turmas.html"
+              class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+              >Turmas</a
+            >
+            <a
+              href="alunos.html"
+              class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+              >Alunos</a
+            >
+            <a
+              href="provas.html"
+              class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+              >Provas</a
+            >
+            <a
+              href="usuarios.html"
+              class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+              >Usuários</a
+            >
+            <a
+              href="gabaritos_geracao.html"
+              class="block px-3 py-2 rounded-md text-base font-medium bg-blue-700"
+              >Gabaritos</a
+            >
+            <!-- Active -->
+            <a
+              href="gabaritos_correcao.html"
+              class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+              >Correção</a
+            >
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main content -->
+      <main class="flex-grow">
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <!-- Page header -->
+          <div class="px-4 py-5 sm:px-6 bg-white shadow rounded-lg mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">
+              Geração de Gabaritos
+            </h1>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+              Selecione a escola, série e prova para gerar os gabaritos em PDF.
+            </p>
+          </div>
+
+          <!-- Selection Section -->
+          <div class="mb-6 p-4 bg-white shadow rounded-lg">
+            <h4 class="font-medium text-gray-700 mb-3">
+              1. Selecione a Escola, Série e Prova
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <!-- Escola -->
+                <label
+                  for="schoolSelect"
+                  class="block text-sm font-medium text-gray-700"
+                  >Escola</label
+                >
+                <select
+                  id="schoolSelect"
+                  class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                >
+                  <option value="">Selecione uma escola</option>
+                </select>
+              </div>
+              <div>
+                <!-- Série -->
+                <label
+                  for="classSelect"
+                  class="block text-sm font-medium text-gray-700"
+                  >Série</label
+                >
+                <select
+                  id="classSelect"
+                  class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                  disabled
+                >
+                  <option value="">Selecione uma escola primeiro</option>
+                </select>
+              </div>
+              <div>
+                <!-- Prova -->
+                <label
+                  for="examSelect"
+                  class="block text-sm font-medium text-gray-700"
+                  >Prova</label
+                >
+                <select
+                  id="examSelect"
+                  class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                  disabled
+                >
+                  <option value="">Selecione uma turma primeiro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Section -->
+          <div
+            id="actionSection"
+            class="mb-6 p-4 bg-white shadow rounded-lg hidden"
+          >
+            <h4 class="font-medium text-gray-700 mb-3">2. Ações Disponíveis</h4>
+            <div class="flex flex-wrap gap-3">
+              <button
+                id="generatePdfBtn"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                disabled
+              >
+                <i class="fas fa-file-pdf mr-2"></i> Gerar Gabaritos (PDF)
+              </button>
+            </div>
+            <div id="loadingMessage" class="mt-4 text-blue-600 hidden">
+              <i class="fas fa-spinner fa-spin mr-2"></i>Gerando PDF, por favor
+              aguarde...
+            </div>
+            <div
+              id="studentCountMessage"
+              class="mt-3 text-sm text-gray-600"
+            ></div>
+            <div id="examInfoMessage" class="mt-3 text-sm text-gray-600"></div>
+
+            <!-- Opções avançadas (colapsável) -->
+            <div class="mt-4">
+              <button
+                id="advancedOptionsToggle"
+                class="text-blue-600 text-sm hover:text-blue-800 focus:outline-none"
+              >
+                <i class="fas fa-cog mr-1"></i> Opções avançadas
+                <i
+                  id="advancedOptionsIcon"
+                  class="fas fa-chevron-down text-xs"
+                ></i>
+              </button>
+              <div
+                id="advancedOptionsPanel"
+                class="hidden mt-2 p-3 bg-gray-50 rounded border border-gray-200"
+              >
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="flex items-center text-sm">
+                      <input
+                        type="checkbox"
+                        id="optionHighQrCode"
+                        class="mr-2"
+                        checked
+                      />
+                      QR Code de alta qualidade (melhor para escaneamento)
+                    </label>
+                  </div>
+                  <div>
+                    <label class="flex items-center text-sm">
+                      <input
+                        type="checkbox"
+                        id="optionIncludeMarkers"
+                        class="mr-2"
+                        checked
+                      />
+                      Incluir marcadores de alinhamento
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mensagem de status/log -->
+            <div
+              id="statusLog"
+              class="mt-4 text-sm text-gray-600 hidden overflow-auto max-h-32 p-2 bg-gray-50 rounded"
+            ></div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Template de Gabarito (Escondido) -->
+      <div id="answerSheetTemplate" class="hidden">
+        <div class="sheet">
+          <div class="fiducial top-left"></div>
+          <div class="fiducial top-right"></div>
+          <div class="fiducial bottom-left"></div>
+          <div class="fiducial bottom-right"></div>
+          <div class="header">
+            <div class="header-left">
+              <div class="school-name">Escola: [NOME DA ESCOLA]</div>
+              <div class="student-name-header">[NOME DO ALUNO]</div>
+              <div class="label">Nome do(a) estudante:</div>
+              <div class="name-input"></div>
+              <div class="label">Data de nascimento (dd/mm/aaaa):</div>
+              <div class="dob-container">
+                <div class="dob-box"></div>
+                <div class="dob-box"></div>
+                <div class="dob-box separator"></div>
+                <div class="dob-box"></div>
+                <div class="dob-box"></div>
+                <div class="dob-box separator"></div>
+                <div class="dob-box"></div>
+                <div class="dob-box"></div>
+                <div class="dob-box"></div>
+                <div class="dob-box"></div>
+              </div>
+            </div>
+            <div class="header-right">
+              <div class="qr-code-container" data-student-id="[STUDENT_ID]">
+                <!-- QR Code Gerado Aqui -->
+              </div>
+              <div class="absent-container">
+                <span class="absent-checkbox"></span> Ausente
+                <span class="absent-radio"></span>
+              </div>
+            </div>
+          </div>
+          <div class="answers-section">
+            <div class="answers-columns">
+              <!-- Colunas de respostas serão geradas aqui -->
+            </div>
+          </div>
+          <!-- <div class="footer">Prova: [NOME_PROVA] | Turma: [NOME_TURMA]</div> -->
+        </div>
+      </div>
+      <!-- Container Temporário para Geração (Visível mas fora da tela) -->
+      <div
+        id="generationContainer"
+        style="position: absolute; left: -9999px; top: 0"
+      ></div>
+
+      <!-- Footer -->
+      <footer class="bg-white mt-auto">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <p class="text-center text-sm text-gray-500">
+            SAG - Sistema de Avaliação e Gerenciamento © 2023
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // Variáveis globais
+      let currentSchoolId = null;
+      let currentClassId = null; // Agora representa a série selecionada
+      let currentExamId = null;
+      let currentExam = null; // Para guardar detalhes da prova selecionada
+      let currentClassStudents = []; // Para guardar alunos da série selecionada
+
+      // --- Funções Utilitárias ---
+      // (Assume que getSchools, getClasses, getExams, getStudents vêm de app.js)
+
+      function populateSelect(
+        selectorId,
+        data,
+        valueField,
+        textField,
+        placeholder,
+        filterFn = null,
+        disabled = true
+      ) {
+        const selector = document.getElementById(selectorId);
+        if (!selector) {
+          console.error(`Seletor ${selectorId} não encontrado.`);
+          return;
+        }
+        selector.innerHTML = `<option value="">${placeholder}</option>`;
+        let filteredData = filterFn ? data.filter(filterFn) : data;
+
+        // Ordenar alfabeticamente
+        filteredData.sort((a, b) => {
+          const textA =
+            typeof textField === "function" ? textField(a) : a[textField];
+          const textB =
+            typeof textField === "function" ? textField(b) : b[textField];
+          return String(textA).localeCompare(String(textB));
+        });
+
+        filteredData.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item[valueField];
+          option.textContent =
+            typeof textField === "function" ? textField(item) : item[textField];
+          selector.appendChild(option);
+        });
+
+        selector.disabled = disabled || filteredData.length === 0;
+        if (filteredData.length === 0 && !disabled) {
+          selector.innerHTML = `<option value="">Nenhuma opção</option>`;
+        }
+      }
+
+      function formatClassName(cls) {
+        return `${cls.name} (${cls.series}° ano - ${cls.shift})`;
+      }
+
+      // --- Manipuladores de Eventos ---
+      async function handleSchoolSelection() {
+        currentSchoolId =
+          parseInt(document.getElementById("schoolSelect").value) || null;
+        resetSelection(false, true, true); // Reseta série e prova
+
+        const classSelect = document.getElementById("classSelect");
+
+        if (!currentSchoolId) {
+          classSelect.innerHTML =
+            '<option value="">Selecione uma escola primeiro</option>';
+          classSelect.disabled = true;
+          return;
+        }
+
+        try {
+          classSelect.innerHTML =
+            '<option value="">Carregando séries...</option>';
+          classSelect.disabled = true;
+
+          // Buscar séries da escola selecionada
+          const response = await fetch(
+            `https://sag-sag.rak8a3.easypanel.host/api/obter-series-escola?escola_id=${currentSchoolId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`Erro ao carregar séries: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("API séries response:", data); // Log para depuração
+
+          // A API retorna um array de strings com as séries
+          let series = [];
+
+          if (Array.isArray(data)) {
+            series = data;
+          } else {
+            console.warn("Resposta da API não é um array:", data);
+            series = [];
+          }
+
+          // Log para depuração
+          console.log("Séries encontradas:", series);
+          console.log("É array?", Array.isArray(series));
+
+          // Resetar o select
+          classSelect.innerHTML =
+            '<option value="">Selecione uma série</option>';
+
+          // Se temos séries, adicionar ao select
+          if (Array.isArray(series) && series.length > 0) {
+            // Mapeamento para nomes mais amigáveis
+            const serieNames = {
+              PRIMEIRO_ANO: "1º Ano",
+              SEGUNDO_ANO: "2º Ano",
+              TERCEIRO_ANO: "3º Ano",
+              QUARTO_ANO: "4º Ano",
+              QUINTO_ANO: "5º Ano",
+              SEXTO_ANO: "6º Ano",
+              SETIMO_ANO: "7º Ano",
+              OITAVO_ANO: "8º Ano",
+              NONO_ANO: "9º Ano",
+              PRIMEIRA_SERIE: "1ª Série",
+              SEGUNDA_SERIE: "2ª Série",
+              TERCEIRA_SERIE: "3ª Série",
+            };
+
+            // Adicionar as séries ao select
+            series.forEach((serie) => {
+              if (serie && typeof serie === "string") {
+                const option = document.createElement("option");
+                option.value = serie;
+                option.textContent = serieNames[serie] || serie;
+                classSelect.appendChild(option);
+              }
+            });
+
+            classSelect.disabled = false;
+          } else {
+            classSelect.innerHTML =
+              '<option value="">Nenhuma série encontrada</option>';
+            classSelect.disabled = true;
+          }
+        } catch (error) {
+          console.error("Erro ao carregar séries:", error);
+          classSelect.innerHTML =
+            '<option value="">Erro ao carregar séries: ' +
+            error.message +
+            "</option>";
+          classSelect.disabled = true;
+        }
+      }
+
+      async function handleClassSelection() {
+        currentClassId = document.getElementById("classSelect").value || null; // Agora é a série selecionada
+        resetSelection(false, false, true); // Reseta apenas a prova
+
+        const examSelect = document.getElementById("examSelect");
+
+        if (!currentClassId) {
+          examSelect.innerHTML =
+            '<option value="">Selecione uma série primeiro</option>';
+          examSelect.disabled = true;
+          return;
+        }
+
+        try {
+          examSelect.innerHTML =
+            '<option value="">Carregando provas...</option>';
+          examSelect.disabled = true;
+
+          // Buscar provas da série selecionada
+          const response = await fetch(
+            `https://sag-sag.rak8a3.easypanel.host/api/provas?serie=${currentClassId}&escola_id=${currentSchoolId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`Erro ao carregar provas: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("API provas response:", data); // Log para depuração
+
+          // Garantir que exams seja um array
+          let exams = [];
+
+          if (Array.isArray(data)) {
+            exams = data;
+          } else if (data && typeof data === "object") {
+            // Tentar diferentes propriedades possíveis que possam conter o array de provas
+            if (Array.isArray(data.provas)) exams = data.provas;
+            else if (Array.isArray(data.items)) exams = data.items;
+            else if (Array.isArray(data.data)) exams = data.data;
+            else if (Array.isArray(data.results)) exams = data.results;
+            else if (Array.isArray(data.content)) exams = data.content;
+            // Última tentativa: extrair todas as chaves que contenham objetos com propriedades necessárias
+            else {
+              exams = Object.values(data).filter(
+                (item) =>
+                  item &&
+                  typeof item === "object" &&
+                  (item.nome || item.name) &&
+                  item.id
+              );
+            }
+          }
+
+          // Log para depuração
+          console.log("Provas encontradas:", exams);
+          console.log("É array?", Array.isArray(exams));
+
+          // Resetar o select
+          examSelect.innerHTML =
+            '<option value="">Selecione uma prova</option>';
+
+          // Se temos provas, ordenar e adicionar ao select
+          if (Array.isArray(exams) && exams.length > 0) {
+            // Usar slice para criar uma cópia do array antes de ordenar
+            const examsToSort = exams.slice();
+
+            try {
+              // Ordenar provas por nome com tratamento de erro
+              examsToSort.sort((a, b) => {
+                const nameA =
+                  a && (a.nome || a.name) ? String(a.nome || a.name) : "";
+                const nameB =
+                  b && (b.nome || b.name) ? String(b.nome || b.name) : "";
+                return nameA.localeCompare(nameB);
+              });
+
+              // Adicionar as provas ordenadas
+              examsToSort.forEach((exam) => {
+                if (exam && exam.id && (exam.nome || exam.name)) {
+                  const option = document.createElement("option");
+                  option.value = exam.id;
+                  option.textContent = exam.nome || exam.name;
+                  examSelect.appendChild(option);
+                }
+              });
+            } catch (sortError) {
+              console.error("Erro ao ordenar provas:", sortError);
+
+              // Se falhar ao ordenar, adicionar sem ordenação
+              exams.forEach((exam) => {
+                if (exam && exam.id && (exam.nome || exam.name)) {
+                  const option = document.createElement("option");
+                  option.value = exam.id;
+                  option.textContent = exam.nome || exam.name;
+                  examSelect.appendChild(option);
+                }
+              });
+            }
+
+            examSelect.disabled = false;
+          } else {
+            examSelect.innerHTML =
+              '<option value="">Nenhuma prova encontrada</option>';
+            examSelect.disabled = true;
+          }
+        } catch (error) {
+          console.error("Erro ao carregar provas:", error);
+          examSelect.innerHTML =
+            '<option value="">Erro ao carregar provas: ' +
+            error.message +
+            "</option>";
+          examSelect.disabled = true;
+        }
+      }
+
+      async function handleExamSelection() {
+        currentExamId =
+          parseInt(document.getElementById("examSelect").value) || null;
+        resetSelection(false, false, false); // Não reseta seletores, só a seção de ação
+        const actionSection = document.getElementById("actionSection");
+        const generatePdfBtn = document.getElementById("generatePdfBtn");
+        const examInfoMsg = document.getElementById("examInfoMessage");
+
+        if (!currentClassId || !currentExamId) {
+          actionSection.classList.add("hidden");
+          generatePdfBtn.disabled = true;
+          return;
+        }
+
+        try {
+          // Buscar detalhes da prova
+          const examResponse = await fetch(
+            `https://sag-sag.rak8a3.easypanel.host/api/provas/${currentExamId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!examResponse.ok) {
+            throw new Error(
+              `Erro ao carregar detalhes da prova: ${examResponse.status}`
+            );
+          }
+
+          const examData = await examResponse.json();
+          console.log("API prova response:", examData);
+
+          // Garantir que temos uma estrutura válida para a prova
+          currentExam = examData;
+
+          // Buscar alunos da série
+          const studentsResponse = await fetch(
+            `https://sag-sag.rak8a3.easypanel.host/api/alunos?serie=${currentClassId}&escola_id=${currentSchoolId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!studentsResponse.ok) {
+            throw new Error(
+              `Erro ao carregar alunos: ${studentsResponse.status}`
+            );
+          }
+
+          const studentsData = await studentsResponse.json();
+          console.log("API alunos response:", studentsData);
+
+          // Garantir que students é um array
+          let students = [];
+
+          if (Array.isArray(studentsData)) {
+            students = studentsData;
+          } else if (studentsData && typeof studentsData === "object") {
+            // Tentar diferentes propriedades possíveis
+            if (Array.isArray(studentsData.alunos))
+              students = studentsData.alunos;
+            else if (Array.isArray(studentsData.items))
+              students = studentsData.items;
+            else if (Array.isArray(studentsData.data))
+              students = studentsData.data;
+            else if (Array.isArray(studentsData.results))
+              students = studentsData.results;
+            else if (Array.isArray(studentsData.content))
+              students = studentsData.content;
+            // Última tentativa: extrair todas as chaves que contenham objetos com propriedade 'name' ou 'nome'
+            else {
+              students = Object.values(studentsData).filter(
+                (item) =>
+                  item &&
+                  typeof item === "object" &&
+                  (item.name || item.nome) &&
+                  item.id
+              );
+            }
+          }
+
+          currentClassStudents = students;
+
+          if (currentExam && currentClassStudents.length > 0) {
+            actionSection.classList.remove("hidden");
+            generatePdfBtn.disabled = false;
+
+            // Verificar se questoes existe e é um array, caso contrário tratar como array vazio
+            const questionCount = Array.isArray(currentExam.questoes)
+              ? currentExam.questoes.length
+              : currentExam.questions && Array.isArray(currentExam.questions)
+              ? currentExam.questions.length
+              : 0;
+
+            examInfoMsg.textContent = `Prova selecionada: ${
+              currentExam.nome || currentExam.name
+            } - ${questionCount} questões`;
+          } else {
+            actionSection.classList.add("hidden");
+            generatePdfBtn.disabled = true;
+
+            if (!currentExam) {
+              console.warn("Prova não encontrada");
+            }
+            if (currentClassStudents.length === 0) {
+              console.warn("Nenhum aluno encontrado na série");
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao carregar dados:", error);
+          actionSection.classList.add("hidden");
+          generatePdfBtn.disabled = true;
+        }
+      }
+
+      function resetSelection(
+        resetClass = true,
+        resetExam = true,
+        resetAction = true
+      ) {
+        if (resetClass) {
+          const classSelect = document.getElementById("classSelect");
+          classSelect.innerHTML = `<option value="">${
+            currentSchoolId
+              ? "Selecione uma série"
+              : "Selecione uma escola primeiro"
+          }</option>`;
+          classSelect.disabled = true;
+          currentClassId = null;
+          currentClass = null;
+          currentClassStudents = [];
+        }
+        if (resetExam) {
+          const examSelect = document.getElementById("examSelect");
+          examSelect.innerHTML = `<option value="">${
+            currentClassId
+              ? "Selecione uma prova"
+              : "Selecione uma série primeiro"
+          }</option>`;
+          examSelect.disabled = true;
+          currentExamId = null;
+          currentExam = null;
+        }
+        if (resetAction) {
+          document.getElementById("actionSection").classList.add("hidden");
+          document.getElementById("generatePdfBtn").disabled = true;
+          document.getElementById("loadingMessage").classList.add("hidden");
+          document.getElementById("studentCountMessage").textContent = "";
+          document
+            .getElementById("studentCountMessage")
+            .classList.remove("text-red-600");
+          document.getElementById("examInfoMessage").textContent = "";
+        }
+      }
+
+      // --- Inicialização Geral ---
+      document.addEventListener("DOMContentLoaded", () => {
+        // Autenticação, Menu Mobile, etc.
+        const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+        if (!currentUser) {
+          alert("Usuário não autenticado. Redirecionando para login.");
+          window.location.href = "index.html";
+          return;
+        }
+        document.getElementById("userName").textContent = currentUser.name;
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          sessionStorage.removeItem("currentUser");
+          window.location.href = "index.html";
+        });
+
+        const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+        const mobileMenu = document.getElementById("mobileMenu");
+        mobileMenuBtn?.addEventListener("click", () =>
+          mobileMenu?.classList.toggle("hidden")
+        );
+
+        // Carregar escolas da API
+        async function loadSchools() {
+          const schoolSelect = document.getElementById("schoolSelect");
+          try {
+            schoolSelect.innerHTML =
+              '<option value="">Carregando escolas...</option>';
+            schoolSelect.disabled = true;
+
+            const response = await fetch(
+              "https://sag-sag.rak8a3.easypanel.host/api/escolas?limit=1000",
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(`Erro ao carregar escolas: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("API response:", data); // Log para depuração
+
+            // Garantir que schools seja um array
+            let schools = [];
+
+            if (Array.isArray(data)) {
+              schools = data;
+            } else if (data && typeof data === "object") {
+              // Tentar diferentes propriedades possíveis que possam conter o array de escolas
+              if (Array.isArray(data.escolas)) schools = data.escolas;
+              else if (Array.isArray(data.items)) schools = data.items;
+              else if (Array.isArray(data.data)) schools = data.data;
+              else if (Array.isArray(data.results)) schools = data.results;
+              else if (Array.isArray(data.content)) schools = data.content;
+              // Última tentativa: extrair todas as chaves que contenham objetos com propriedade 'nome'
+              else {
+                schools = Object.values(data).filter(
+                  (item) =>
+                    item && typeof item === "object" && item.nome && item.id
+                );
+              }
+            }
+
+            // Log para depuração
+            console.log("Escolas encontradas:", schools);
+            console.log("É array?", Array.isArray(schools));
+
+            // Resetar o select
+            schoolSelect.innerHTML =
+              '<option value="">Selecione uma escola</option>';
+
+            // Se temos escolas, ordenar e adicionar ao select
+            if (Array.isArray(schools) && schools.length > 0) {
+              // Usar slice para criar uma cópia do array antes de ordenar
+              const schoolsToSort = schools.slice();
+
+              try {
+                // Ordenar escolas por nome com tratamento de erro
+                schoolsToSort.sort((a, b) => {
+                  const nameA = a && a.nome ? String(a.nome) : "";
+                  const nameB = b && b.nome ? String(b.nome) : "";
+                  return nameA.localeCompare(nameB);
+                });
+
+                // Adicionar as escolas ordenadas
+                schoolsToSort.forEach((school) => {
+                  if (school && school.id && school.nome) {
+                    const option = document.createElement("option");
+                    option.value = school.id;
+                    option.textContent = school.nome;
+                    schoolSelect.appendChild(option);
+                  }
+                });
+              } catch (sortError) {
+                console.error("Erro ao ordenar escolas:", sortError);
+
+                // Se falhar ao ordenar, adicionar sem ordenação
+                schools.forEach((school) => {
+                  if (school && school.id && school.nome) {
+                    const option = document.createElement("option");
+                    option.value = school.id;
+                    option.textContent = school.nome;
+                    schoolSelect.appendChild(option);
+                  }
+                });
+              }
+
+              schoolSelect.disabled = false;
+            } else {
+              schoolSelect.innerHTML =
+                '<option value="">Nenhuma escola encontrada</option>';
+              schoolSelect.disabled = true;
+            }
+          } catch (error) {
+            console.error("Erro ao carregar escolas:", error);
+            schoolSelect.innerHTML =
+              '<option value="">Erro ao carregar escolas: ' +
+              error.message +
+              "</option>";
+            schoolSelect.disabled = true;
+          }
+        }
+
+        // Carregar escolas ao inicializar
+        loadSchools();
+
+        document
+          .getElementById("schoolSelect")
+          .addEventListener("change", handleSchoolSelection);
+        document
+          .getElementById("classSelect")
+          .addEventListener("change", handleClassSelection);
+        document
+          .getElementById("examSelect")
+          .addEventListener("change", handleExamSelection);
+
+        // Configurar opções avançadas
+        const advancedOptionsToggle = document.getElementById(
+          "advancedOptionsToggle"
+        );
+        const advancedOptionsPanel = document.getElementById(
+          "advancedOptionsPanel"
+        );
+        const advancedOptionsIcon = document.getElementById(
+          "advancedOptionsIcon"
+        );
+
+        advancedOptionsToggle.addEventListener("click", () => {
+          advancedOptionsPanel.classList.toggle("hidden");
+          advancedOptionsIcon.classList.toggle("fa-chevron-down");
+          advancedOptionsIcon.classList.toggle("fa-chevron-up");
+        });
+
+        // Botão para geração de PDF
+        document
+          .getElementById("generatePdfBtn")
+          .addEventListener("click", generateFormattedExamPDF);
+
+        resetSelection(true, true, true);
+      });
+
+      // --- Funções Auxiliares Adicionais ---
+      function addStatusMessage(message, type = "info") {
+        const statusLog = document.getElementById("statusLog");
+        const icon =
+          type === "error"
+            ? "fa-exclamation-circle text-red-500"
+            : type === "success"
+            ? "fa-check-circle text-green-500"
+            : "fa-info-circle text-blue-500";
+
+        const messageEl = document.createElement("p");
+        messageEl.innerHTML = `<i class="fas ${icon} mr-1"></i> ${message}`;
+
+        if (type === "error") {
+          messageEl.classList.add("text-red-600");
+        } else if (type === "success") {
+          messageEl.classList.add("text-green-600");
+        }
+
+        statusLog.appendChild(messageEl);
+        statusLog.scrollTop = statusLog.scrollHeight; // Auto-scroll para a mensagem mais recente
+      }
+
+      // --- Correção via câmera ---
+      function openCameraForScanning() {
+        // Verificar se a API de câmera está disponível
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert(
+            "Seu navegador não suporta acesso à câmera. Use um navegador mais recente como Chrome ou Firefox."
+          );
+          return;
+        }
+
+        // Criar o modal de escaneamento
+        const modalHTML = `
+                <div id="cameraScanModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex items-center justify-center">
+                    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-screen overflow-auto">
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-gray-900">Correção de Gabarito via Câmera</h3>
+                            <button id="closeScanModal" class="text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="p-6 flex flex-col">
+                            <div class="flex flex-col md:flex-row">
+                                <div class="w-full md:w-1/2 mb-4 md:mb-0 md:pr-2">
+                                    <h4 class="font-semibold mb-2">1. Configurar Câmera</h4>
+                                    <div id="cameraContainer" class="bg-black rounded relative overflow-hidden" style="height: 360px;">
+                                        <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+                                        <div id="cameraScanOverlay" class="absolute inset-0 border-2 border-dashed border-yellow-400 opacity-70 pointer-events-none"></div>
+                                        <div id="cameraStatus" class="absolute bottom-0 left-0 right-0 bg-gray-900 bg-opacity-70 text-white p-2 text-sm text-center">Aguardando acesso à câmera...</div>
+                                    </div>
+                                    <div class="mt-2 flex space-x-2">
+                                        <button id="captureBtn" class="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400" disabled>
+                                            <i class="fas fa-camera mr-2"></i>Capturar
+                                        </button>
+                                        <button id="switchCameraBtn" class="px-3 py-2 bg-gray-200 text-gray-800 rounded">
+                                            <i class="fas fa-sync mr-1"></i>Trocar Câmera
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="w-full md:w-1/2 md:pl-2">
+                                    <h4 class="font-semibold mb-2">2. Visualizar e Corrigir</h4>
+                                    <div id="previewContainer" class="bg-gray-100 rounded flex items-center justify-center" style="height: 360px;">
+                                        <div id="previewPlaceholder" class="text-center p-4 text-gray-500">
+                                            <i class="fas fa-image text-5xl mb-2"></i>
+                                            <p>A imagem capturada aparecerá aqui</p>
+                                        </div>
+                                        <canvas id="previewCanvas" class="hidden max-w-full max-h-full"></canvas>
+                                    </div>
+                                    <div class="mt-2 flex space-x-2">
+                                        <button id="processBtn" class="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-400 w-full" disabled>
+                                            <i class="fas fa-check-circle mr-2"></i>Processar Gabarito e Identificar Aluno
+                                        </button>
+                                    </div>
+                                    <div id="studentInfo" class="mt-2 p-3 bg-gray-50 rounded border border-gray-200 hidden">
+                                        <h5 class="font-medium text-gray-700">Aluno Identificado:</h5>
+                                        <div id="studentInfoContent" class="mt-1"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h4 class="font-semibold mb-2">Resultado da Correção</h4>
+                                <div id="resultContainer" class="border rounded p-4 bg-gray-50 min-h-[120px]">
+                                    <p class="text-gray-500 text-center">Os resultados da correção aparecerão aqui</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 rounded-b-lg">
+                            <button id="cancelScanBtn" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 mr-2">
+                                Cancelar
+                            </button>
+                            <button id="saveScanResultBtn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400" disabled>
+                                Salvar Resultados
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        // Adicionar o modal ao corpo do documento
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+        // Variáveis para manter o estado
+        let currentStream = null;
+        let availableCameras = [];
+        let currentCameraIndex = 0;
+        let capturedImage = null;
+        let processingResults = null;
+        let detectedStudentId = null;
+
+        // Elementos do DOM
+        const modal = document.getElementById("cameraScanModal");
+        const video = document.getElementById("cameraVideo");
+        const cameraStatus = document.getElementById("cameraStatus");
+        const captureBtn = document.getElementById("captureBtn");
+        const switchCameraBtn = document.getElementById("switchCameraBtn");
+        const previewCanvas = document.getElementById("previewCanvas");
+        const previewPlaceholder =
+          document.getElementById("previewPlaceholder");
+        const processBtn = document.getElementById("processBtn");
+        const resultContainer = document.getElementById("resultContainer");
+        const saveScanResultBtn = document.getElementById("saveScanResultBtn");
+        const studentInfo = document.getElementById("studentInfo");
+        const studentInfoContent =
+          document.getElementById("studentInfoContent");
+
+        // Iniciar a câmera
+        startCamera();
+
+        // Funções do scanner
+        function startCamera() {
+          // Primeiro, listar todas as câmeras disponíveis
+          if (navigator.mediaDevices.enumerateDevices) {
+            navigator.mediaDevices
+              .enumerateDevices()
+              .then((devices) => {
+                availableCameras = devices.filter(
+                  (device) => device.kind === "videoinput"
+                );
+
+                if (availableCameras.length === 0) {
+                  cameraStatus.textContent = "Nenhuma câmera detectada";
+                  return;
+                }
+
+                // Desabilitar botão de troca se só houver uma câmera
+                switchCameraBtn.disabled = availableCameras.length <= 1;
+
+                // Iniciar a câmera selecionada
+                initializeCamera();
+              })
+              .catch((error) => {
+                console.error("Erro ao enumerar dispositivos:", error);
+                cameraStatus.textContent =
+                  "Erro ao listar câmeras. Tente permitir o acesso à câmera.";
+              });
+          } else {
+            // Se não puder enumerar, tentar usar a câmera padrão
+            initializeCamera();
+          }
+        }
+
+        function initializeCamera() {
+          // Interromper qualquer stream anterior
+          if (currentStream) {
+            currentStream.getTracks().forEach((track) => track.stop());
+          }
+
+          const constraints = {
+            video: {
+              facingMode: "environment", // Usar câmera traseira por padrão em dispositivos móveis
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+          };
+
+          // Se temos câmeras específicas e uma selecionada
+          if (
+            availableCameras.length > 0 &&
+            availableCameras[currentCameraIndex].deviceId
+          ) {
+            constraints.video = {
+              deviceId: {
+                exact: availableCameras[currentCameraIndex].deviceId,
+              },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            };
+          }
+
+          cameraStatus.textContent = "Acessando câmera...";
+
+          navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then((stream) => {
+              video.srcObject = currentStream = stream;
+              cameraStatus.textContent =
+                "Aponte a câmera para o gabarito preenchido";
+              captureBtn.disabled = false;
+            })
+            .catch((error) => {
+              console.error("Erro ao acessar câmera:", error);
+              cameraStatus.textContent =
+                "Falha ao acessar a câmera. Verifique as permissões.";
+            });
+        }
+
+        function captureImage() {
+          if (!video.srcObject) return;
+
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // Exibir a imagem capturada
+          previewCanvas.width = canvas.width;
+          previewCanvas.height = canvas.height;
+          previewCanvas.getContext("2d").drawImage(canvas, 0, 0);
+
+          previewPlaceholder.classList.add("hidden");
+          previewCanvas.classList.remove("hidden");
+
+          // Habilitar botão de processamento
+          processBtn.disabled = false;
+
+          // Armazenar a imagem capturada
+          capturedImage = canvas;
+
+          // Resetar dados do estudante
+          detectedStudentId = null;
+          studentInfo.classList.add("hidden");
+          studentInfoContent.innerHTML = "";
+        }
+
+        // Função para tentar detectar o QR code na imagem
+        async function detectQRCode(canvas) {
+          // Nota: Esta é uma implementação simulada para fins de demonstração
+          // Em um ambiente de produção real, você usaria uma biblioteca como:
+          // - jsQR (https://github.com/cozmo/jsQR) para processamento no lado do cliente
+          // - node-qr-scanner ou zbar para processamento no servidor
+          // - ou uma API como Google Vision API para detecção de QR codes em imagens
+
+          // Passos para implementação real:
+          // 1. Obter os dados da imagem do canvas: const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+          // 2. Usar a biblioteca jsQR: const code = jsQR(imageData.data, imageData.width, imageData.height);
+          // 3. Verificar se um código foi detectado: if (code) { ... }
+          // 4. Extrair os dados: const qrData = JSON.parse(code.data);
+
+          return new Promise((resolve, reject) => {
+            // Simular um tempo de processamento
+            setTimeout(() => {
+              try {
+                // 80% de chance de sucesso para simular uma leitura bem-sucedida
+                if (Math.random() < 0.8) {
+                  // Escolher um aluno aleatório da turma para simular a detecção
+                  if (currentClassStudents.length > 0) {
+                    const randomIndex = Math.floor(
+                      Math.random() * currentClassStudents.length
+                    );
+                    const student = currentClassStudents[randomIndex];
+
+                    // Simular os dados que estariam no QR code
+                    const qrData = {
+                      e: currentExamId, // ID da prova
+                      c: currentClassId, // ID da turma
+                      s: student.id, // ID do aluno
+                      n: student.name, // Nome do aluno
+                      r: student.registration || "", // Matrícula do aluno
+                    };
+
+                    resolve(qrData);
+                  } else {
+                    reject(new Error("Nenhum aluno encontrado na turma."));
+                  }
+                } else {
+                  reject(
+                    new Error(
+                      "Não foi possível detectar o QR code na imagem. Tente novamente com uma imagem mais clara."
+                    )
+                  );
+                }
+              } catch (error) {
+                reject(
+                  new Error("Erro ao processar QR code: " + error.message)
+                );
+              }
+            }, 1500);
+          });
+        }
+
+        function processImage() {
+          if (!capturedImage) {
+            alert("Por favor, capture uma imagem do gabarito.");
+            return;
+          }
+
+          // Mostrar indicador de processamento
+          resultContainer.innerHTML =
+            '<div class="text-center"><i class="fas fa-spinner fa-spin text-blue-600 text-3xl mb-2"></i><p>Processando imagem e identificando aluno...</p></div>';
+          studentInfo.classList.add("hidden");
+          saveScanResultBtn.disabled = true;
+
+          // Primeiro tentar detectar o QR code para identificar o aluno
+          detectQRCode(capturedImage)
+            .then((qrData) => {
+              // QR code detectado com sucesso
+              console.log("QR Code detectado:", qrData);
+
+              // Armazenar o ID do aluno detectado
+              detectedStudentId = qrData.s;
+
+              // Mostrar informações do aluno
+              const student = currentClassStudents.find(
+                (s) => s.id === detectedStudentId
+              );
+              if (student) {
+                studentInfoContent.innerHTML = `
+                                <div class="flex flex-col">
+                                    <span class="text-lg font-semibold">${
+                                      student.name
+                                    }</span>
+                                    <span class="text-sm text-gray-600">ID: ${
+                                      student.id
+                                    }</span>
+                                    ${
+                                      student.registration
+                                        ? `<span class="text-sm text-gray-600">Matrícula: ${student.registration}</span>`
+                                        : ""
+                                    }
+                                </div>
+                            `;
+                studentInfo.classList.remove("hidden");
+
+                // Prosseguir com o processamento do gabarito
+                processAnswerSheet(student);
+              } else {
+                resultContainer.innerHTML = `
+                                <div class="p-3 bg-yellow-100 text-yellow-800 rounded">
+                                    <p><i class="fas fa-exclamation-triangle mr-2"></i> Aluno identificado (ID: ${detectedStudentId}), mas não encontrado na turma atual.</p>
+                                    <p class="mt-2">Verifique se o gabarito pertence a um aluno de outra turma.</p>
+                                </div>
+                            `;
+              }
+            })
+            .catch((error) => {
+              // Falha na detecção do QR code
+              console.error("Erro na detecção do QR code:", error);
+              resultContainer.innerHTML = `
+                            <div class="p-3 bg-red-100 text-red-800 rounded">
+                                <p><i class="fas fa-exclamation-circle mr-2"></i> ${error.message}</p>
+                                <p class="mt-2">Tente capturar a imagem novamente, certificando-se que o QR code está visível e bem iluminado.</p>
+                            </div>
+                        `;
+            });
+        }
+
+        function processAnswerSheet(student) {
+          // Simulação do processamento de respostas no gabarito
+          setTimeout(() => {
+            // Gerar respostas simuladas (em uma implementação real, isso viria da análise da imagem)
+            const answers = {};
+            const correct = {};
+            let correctCount = 0;
+
+            currentExam.questions.forEach((question, index) => {
+              // Simular detecção aleatória (50% de acerto)
+              const detected = ["A", "B", "C", "D"][
+                Math.floor(Math.random() * 4)
+              ];
+              const expectedAnswer = ["A", "B", "C", "D"][index % 4]; // Alternando entre as opções
+
+              answers[index + 1] = detected;
+              correct[index + 1] = detected === expectedAnswer;
+
+              if (detected === expectedAnswer) correctCount++;
+            });
+
+            const score = (correctCount / currentExam.questions.length) * 100;
+
+            // Salvar resultados
+            processingResults = {
+              studentId: student.id,
+              examId: currentExamId,
+              answers,
+              correct,
+              score,
+              timestamp: new Date().toISOString(),
+            };
+
+            // Exibir resultados
+            displayResults(
+              student,
+              correctCount,
+              currentExam.questions.length,
+              score,
+              answers,
+              correct
+            );
+
+            // Habilitar botão de salvar
+            saveScanResultBtn.disabled = false;
+          }, 1500);
+        }
+
+        function displayResults(
+          student,
+          correctCount,
+          totalQuestions,
+          score,
+          answers,
+          correct
+        ) {
+          const resultHTML = `
+                    <div class="mb-3">
+                        <h5 class="text-lg font-semibold">${student.name}</h5>
+                        <div class="flex items-center mt-1">
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div class="h-4 rounded-full ${
+                                  score >= 70
+                                    ? "bg-green-600"
+                                    : score >= 40
+                                    ? "bg-yellow-500"
+                                    : "bg-red-600"
+                                }" 
+                                     style="width: ${score}%"></div>
+                            </div>
+                            <span class="ml-3 font-semibold">${score.toFixed(
+                              1
+                            )}%</span>
+                        </div>
+                        <p class="mt-1">Acertos: ${correctCount} de ${totalQuestions} questões</p>
+                    </div>
+                    <div class="mt-3">
+                        <h6 class="font-semibold mb-2">Respostas detectadas:</h6>
+                        <div class="grid grid-cols-5 gap-1 text-sm">
+                            ${Object.keys(answers)
+                              .map(
+                                (q) => `
+                                <div class="bg-${
+                                  correct[q] ? "green" : "red"
+                                }-100 border ${
+                                  correct[q]
+                                    ? "border-green-400"
+                                    : "border-red-400"
+                                } rounded p-1 text-center">
+                                    Q${q}: ${answers[q]}
+                                </div>
+                            `
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+                `;
+
+          resultContainer.innerHTML = resultHTML;
+        }
+
+        function saveResults() {
+          if (!processingResults) {
+            alert("Nenhum resultado para salvar.");
+            return;
+          }
+
+          // Aqui você implementaria a lógica para salvar os resultados no seu sistema.
+          // Por exemplo, enviar para um servidor via API, ou salvar localmente.
+
+          // Simulação de salvamento
+          console.log("Salvando resultados:", processingResults);
+
+          // Mostrar confirmação
+          const student = currentClassStudents.find(
+            (s) => s.id === processingResults.studentId
+          );
+          const studentName = student
+            ? student.name
+            : `ID ${processingResults.studentId}`;
+
+          alert(
+            `Resultados salvos com sucesso!\nAluno: ${studentName}\nPontuação: ${processingResults.score.toFixed(
+              1
+            )}%`
+          );
+
+          // Fechar modal
+          closeModal();
+        }
+
+        function closeModal() {
+          // Interromper o stream da câmera
+          if (currentStream) {
+            currentStream.getTracks().forEach((track) => track.stop());
+          }
+
+          // Remover o modal
+          if (modal) {
+            document.body.removeChild(modal);
+          }
+        }
+
+        // Event Listeners
+        document
+          .getElementById("closeScanModal")
+          .addEventListener("click", closeModal);
+        document
+          .getElementById("cancelScanBtn")
+          .addEventListener("click", closeModal);
+
+        captureBtn.addEventListener("click", captureImage);
+
+        switchCameraBtn.addEventListener("click", () => {
+          currentCameraIndex =
+            (currentCameraIndex + 1) % availableCameras.length;
+          initializeCamera();
+        });
+
+        processBtn.addEventListener("click", processImage);
+        saveScanResultBtn.addEventListener("click", saveResults);
+      }
+
+      // Função para gerar PDF formatado da prova
+      async function generateFormattedExamPDF() {
+        try {
+          if (!currentExamId) {
+            throw new Error("Nenhuma prova selecionada");
+          }
+          if (!currentClassId) {
+            throw new Error("Nenhuma série selecionada");
+          }
+
+          // Mostrar loading
+          const loadingMsg = document.getElementById("loadingMessage");
+          const statusLog = document.getElementById("statusLog");
+          statusLog.innerHTML = ""; // Limpar logs anteriores
+          statusLog.classList.remove("hidden");
+
+          loadingMsg.textContent = "Gerando gabaritos...";
+          loadingMsg.classList.remove("hidden");
+
+          addStatusMessage("Iniciando geração de gabaritos...", "info");
+
+          // Obter contagem de questões da prova atual
+          addStatusMessage("Obtendo informações da prova...", "info");
+          const examResponse = await fetch(
+            `https://sag-sag.rak8a3.easypanel.host/api/provas/${currentExamId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!examResponse.ok) {
+            throw new Error(
+              `Erro ao carregar detalhes da prova: ${examResponse.status}`
+            );
+          }
+
+          const examData = await examResponse.json();
+          const questionCount = examData.questoes?.length || 0;
+
+          if (questionCount === 0) {
+            throw new Error("A prova selecionada não possui questões.");
+          }
+
+          addStatusMessage(
+            `Prova: ${examData.nome}, total de ${questionCount} questões.`,
+            "info"
+          );
+          addStatusMessage(
+            "Preparando requisição para API de gabaritos...",
+            "info"
+          );
+
+          // Fazer a requisição para a API de gabaritos
+          addStatusMessage(
+            "Enviando dados para API de geração de gabaritos...",
+            "info"
+          );
+          const apiUrl =
+            "https://gerador-gabarito-gerador-gabarito.lh6c5d.easypanel.host/api/gerar-gabarito/";
+
+          // Criar o payload no formato correto que a API espera
+          const jsonPayload = {
+            school_id: parseInt(currentSchoolId),
+            exam_id: parseInt(currentExamId),
+            classroom_name: currentClassId, // A série selecionada (ex: "QUARTO_ANO")
+            question: questionCount,
+          };
+
+          addStatusMessage(
+            `Enviando payload: ${JSON.stringify(jsonPayload)}`,
+            "info"
+          );
+
+          try {
+            const gabaritosResponse = await fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json, application/pdf",
+              },
+              body: JSON.stringify(jsonPayload),
+            });
+
+            if (!gabaritosResponse.ok) {
+              const errorText = await gabaritosResponse
+                .text()
+                .catch(() => "Erro desconhecido");
+              addStatusMessage(
+                `Erro ao gerar gabaritos: ${gabaritosResponse.status} - ${errorText}`,
+                "error"
+              );
+              throw new Error(
+                `Erro ao gerar gabaritos: ${gabaritosResponse.status}`
+              );
+            }
+
+            // Processar a resposta
+            return processApiResponse(gabaritosResponse, examData);
+          } catch (error) {
+            addStatusMessage(`Erro na requisição: ${error.message}`, "error");
+            throw error;
+          }
+        } catch (error) {
+          console.error("Erro ao gerar gabaritos:", error);
+          addStatusMessage(`Erro: ${error.message}`, "error");
+          alert("Erro ao gerar gabaritos: " + error.message);
+          document.getElementById("loadingMessage").classList.add("hidden");
+        }
+      }
+
+      // Função para processar a resposta da API
+      async function processApiResponse(response, examData) {
+        // Verificar o tipo de retorno da API
+        const contentType = response.headers.get("content-type");
+        addStatusMessage(`Tipo de conteúdo recebido: ${contentType}`, "info");
+
+        // Detectar arquivos binários (PDF ou ZIP)
+        if (
+          contentType &&
+          (contentType.includes("application/pdf") ||
+            contentType.includes("application/zip") ||
+            contentType.includes("application/octet-stream") ||
+            contentType.includes("application/x-zip"))
+        ) {
+          // Retornou arquivo binário diretamente (PDF ou ZIP)
+          addStatusMessage(
+            "Arquivo recebido com sucesso, iniciando download...",
+            "success"
+          );
+
+          // Baixar o arquivo
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+
+          // Determinar extensão baseada no content-type
+          let fileExtension = "pdf";
+          if (
+            contentType.includes("zip") ||
+            contentType.includes("octet-stream")
+          ) {
+            fileExtension = "zip";
+          }
+
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `Gabaritos_${examData.nome.replace(
+            /[^a-zA-Z0-9]/g,
+            "_"
+          )}_Serie_${currentClassId}.${fileExtension}`;
+          document.body.appendChild(a);
+          a.click();
+
+          // Limpar
+          setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          }, 100);
+
+          // Atualizar UI
+          loadingMsg.textContent = "Gabaritos gerados com sucesso!";
+          addStatusMessage(
+            "Download dos gabaritos iniciado com sucesso!",
+            "success"
+          );
+
+          setTimeout(() => {
+            loadingMsg.classList.add("hidden");
+          }, 2000);
+        } else if (contentType && contentType.includes("application/json")) {
+          // Retornou JSON com URL do arquivo ou outra informação
+          try {
+            const responseData = await response.json();
+            addStatusMessage(
+              `Resposta da API recebida: ${JSON.stringify(responseData)}`,
+              "info"
+            );
+
+            if (responseData.success && responseData.file_url) {
+              // Baixar o arquivo a partir da URL fornecida
+              addStatusMessage(
+                `Gabaritos gerados com sucesso, baixando de ${responseData.file_url}...`,
+                "success"
+              );
+
+              // Iniciar download automaticamente
+              const a = document.createElement("a");
+              a.href = responseData.file_url;
+              a.download = `Gabaritos_${examData.nome.replace(
+                /[^a-zA-Z0-9]/g,
+                "_"
+              )}_Serie_${currentClassId}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+
+              // Limpar
+              setTimeout(() => {
+                document.body.removeChild(a);
+              }, 100);
+
+              // Atualizar UI
+              loadingMsg.textContent = "Gabaritos gerados com sucesso!";
+              addStatusMessage(
+                "Download dos gabaritos iniciado com sucesso!",
+                "success"
+              );
+
+              setTimeout(() => {
+                loadingMsg.classList.add("hidden");
+              }, 2000);
+            } else if (responseData.error) {
+              addStatusMessage(
+                `Erro retornado pela API: ${responseData.error}`,
+                "error"
+              );
+              throw new Error(`Erro retornado pela API: ${responseData.error}`);
+            } else {
+              addStatusMessage(
+                "Formato de resposta da API desconhecido.",
+                "error"
+              );
+              throw new Error("Formato de resposta da API desconhecido.");
+            }
+          } catch (jsonError) {
+            addStatusMessage(
+              `Erro ao processar resposta JSON: ${jsonError.message}`,
+              "error"
+            );
+            throw new Error(`Erro ao processar resposta: ${jsonError.message}`);
+          }
+        } else {
+          // Se não conseguimos identificar o tipo de conteúdo, tentar baixar como arquivo binário
+          try {
+            addStatusMessage(
+              "Tipo de conteúdo não identificado. Tentando baixar como arquivo binário...",
+              "info"
+            );
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Gabaritos_${examData.nome.replace(
+              /[^a-zA-Z0-9]/g,
+              "_"
+            )}_Serie_${currentClassId}.zip`;
+            document.body.appendChild(a);
+            a.click();
+
+            // Limpar
+            setTimeout(() => {
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+            }, 100);
+
+            // Atualizar UI
+            loadingMsg.textContent = "Gabaritos gerados com sucesso!";
+            addStatusMessage("Download dos gabaritos iniciado!", "success");
+
+            setTimeout(() => {
+              loadingMsg.classList.add("hidden");
+            }, 2000);
+          } catch (blobError) {
+            addStatusMessage(
+              `Erro ao processar resposta como arquivo binário: ${blobError.message}`,
+              "error"
+            );
+            throw new Error(
+              `Não foi possível processar a resposta da API: ${blobError.message}`
+            );
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

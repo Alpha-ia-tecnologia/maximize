@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolas - SAG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="min-h-screen flex flex-col">
+        <!-- Navbar -->
+        <nav class="bg-blue-600 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <span class="text-xl font-bold">SAG</span>
+                        </div>
+                        <div class="hidden md:ml-6 md:flex md:items-center md:space-x-4">
+                            <a href="dashboard.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Dashboard</a>
+                            <a href="escolas.html" class="px-3 py-2 rounded-md text-sm font-medium bg-blue-700">Escolas</a>
+                            <a href="turmas.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Turmas</a>
+                            <a href="alunos.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Alunos</a>
+                            <a href="provas.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Provas</a>
+                            <a href="usuarios.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Usuários</a>
+                            <a href="gabaritos_geracao.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Gabaritos</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="userName" class="mr-4"></span>
+                        <button id="logoutBtn" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div class="md:hidden hidden" id="mobileMenu">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="dashboard.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Dashboard</a>
+                    <a href="escolas.html" class="block px-3 py-2 rounded-md text-base font-medium bg-blue-700">Escolas</a>
+                    <a href="turmas.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Turmas</a>
+                    <a href="alunos.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Alunos</a>
+                    <a href="provas.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Provas</a>
+                    <a href="usuarios.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Usuários</a>
+                    <a href="gabaritos_geracao.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Gabaritos</a>
+                    <a href="gabaritos_correcao.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Correção</a>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main content -->
+        <main class="flex-grow">
+            <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <!-- Page header -->
+                <div class="px-4 py-5 sm:px-6 bg-white shadow rounded-lg mb-6 flex justify-between items-center border-b-2 border-blue-100">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+                            <span class="bg-blue-100 text-blue-600 p-2 rounded-full mr-3">
+                                <i class="fas fa-school"></i>
+                            </span>
+                            Escolas
+                        </h1>
+                        <p class="mt-1 max-w-2xl text-sm text-gray-500 ml-12">Gerenciamento de escolas</p>
+                    </div>
+                    <div>
+                    <button id="addSchoolBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150 transform hover:-translate-y-0.5">
+                        <i class="fas fa-plus mr-2"></i> Nova Escola
+                    </button>
+                    </div>
+                </div>
+                
+                <!-- Search section -->
+                <div class="px-4 py-4 sm:px-6 bg-white shadow rounded-lg mb-6">
+                    <div class="mb-2">
+                        <label for="schoolSearch" class="block text-sm font-medium text-gray-700">Buscar Escolas</label>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0">
+                        <div class="flex-1">
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" id="schoolSearch" class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Digite o nome da escola...">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center" id="searchClearBtn" style="display: none; cursor: pointer;">
+                                    <i class="fas fa-times-circle text-gray-400 hover:text-gray-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+                            <div class="w-full md:w-48">
+                                <select id="regionFilter" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Todas as regiões</option>
+                                </select>
+                            </div>
+                            <div class="w-full md:w-48">
+                                <select id="groupFilter" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Todos os grupos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Schools List -->
+                <div class="bg-white shadow-md overflow-hidden sm:rounded-lg border border-gray-200">
+                    <!-- Filter Banner -->
+                    <div id="filterBanner" class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4"><strong>Mostrando página 1 de 33</strong> - Total: 329 escolas</div>
+                    
+                    <ul id="schoolsList" class="divide-y divide-gray-200">
+                        <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                            Nenhuma escola cadastrada
+                        </li>
+                    </ul>
+                    <!-- Pagination Controls -->
+                    <div id="paginationControls" class="px-4 py-3 border-t border-gray-200 sm:px-6 hidden">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                <button id="prevPageBtnMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Anterior
+                                </button>
+                                <span class="text-sm text-gray-700">
+                                    Página <span id="currentPageMobile">1</span>
+                                </span>
+                                <button id="nextPageBtnMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Próxima
+                                </button>
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Mostrando <span id="startItem">1</span> a <span id="endItem">10</span> de <span id="totalItems">0</span> escolas
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <button id="prevPageBtn" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Anterior</span>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <span id="pageNumbers" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                            <!-- Page numbers will be inserted here -->
+                                        </span>
+                                        <button id="nextPageBtn" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Próxima</span>
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-white">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-sm text-gray-500">SAG - Sistema de Avaliação e Gerenciamento © 2023</p>
+            </div>
+        </footer>
+        
+        <!-- Add School Modal -->
+        <div id="addSchoolModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full border-l-4 border-blue-500 shadow-xl transform transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <span class="bg-blue-100 text-blue-600 p-2 rounded-full mr-2">
+                            <i class="fas fa-plus-circle"></i>
+                        </span>
+                        Adicionar Nova Escola
+                    </h3>
+                    <button id="closeSchoolModal" class="text-gray-400 hover:text-gray-500 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="addSchoolForm" class="space-y-4">
+                    <div>
+                        <label for="schoolName" class="block text-sm font-medium text-gray-700">Nome da Escola</label>
+                        <input type="text" id="schoolName" name="schoolName" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="schoolRegion" class="block text-sm font-medium text-gray-700">Região</label>
+                        <select id="schoolRegion" name="schoolRegion" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">Carregando regiões...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="schoolGroup" class="block text-sm font-medium text-gray-700">Grupo</label>
+                        <select id="schoolGroup" name="schoolGroup" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">Carregando grupos...</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="cancelSchoolBtn" class="mr-3 bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-150">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150">
+                            <i class="fas fa-save mr-2"></i> Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit School Modal -->
+        <div id="editSchoolModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full border-l-4 border-indigo-500 shadow-xl transform transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <span class="bg-indigo-100 text-indigo-600 p-2 rounded-full mr-2">
+                            <i class="fas fa-edit"></i>
+                        </span>
+                        Editar Escola
+                    </h3>
+                    <button id="closeEditSchoolModal" class="text-gray-400 hover:text-gray-500 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="editSchoolForm" class="space-y-4">
+                    <input type="hidden" id="editSchoolId">
+                    <input type="hidden" id="editSchoolApiId">
+                    <div>
+                        <label for="editSchoolName" class="block text-sm font-medium text-gray-700">Nome da Escola</label>
+                        <input type="text" id="editSchoolName" name="editSchoolName" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="editSchoolRegion" class="block text-sm font-medium text-gray-700">Região</label>
+                        <select id="editSchoolRegion" name="editSchoolRegion" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                            <option value="">Carregando regiões...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="editSchoolGroup" class="block text-sm font-medium text-gray-700">Grupo</label>
+                        <select id="editSchoolGroup" name="editSchoolGroup" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                            <option value="">Carregando grupos...</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="cancelEditSchoolBtn" class="mr-3 bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-150">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">
+                            <i class="fas fa-check mr-2"></i> Atualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteConfirmModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full border-l-4 border-red-500 shadow-xl transform transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <span class="bg-red-100 text-red-600 p-2 rounded-full mr-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </span>
+                        Confirmar Exclusão
+                    </h3>
+                    <button id="closeDeleteModal" class="text-gray-400 hover:text-gray-500 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <p class="text-gray-600">Tem certeza que deseja excluir a escola <span id="deleteSchoolName" class="font-semibold"></span>?</p>
+                    <p class="text-gray-500 text-sm mt-2">Esta ação não poderá ser desfeita.</p>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="cancelDeleteBtn" class="mr-3 bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-150">
+                        Cancelar
+                    </button>
+                    <button type="button" id="confirmDeleteBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150">
+                        <i class="fas fa-trash-alt mr-2"></i> Excluir
+                    </button>
+                </div>
+                <input type="hidden" id="deleteSchoolId">
+                <input type="hidden" id="deleteSchoolApiId">
+            </div>
+        </div>
+
+        <!-- Toast Notifications Container -->
+        <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 items-end"></div>
+    </div>
+    
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Atualizar nome do usuário
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+            }
+            
+            // Inicializar lista de escolas se não existir
+            if (!localStorage.getItem('schools')) {
+                localStorage.setItem('schools', JSON.stringify([]));
+            }
+            
+            // Carregar escolas da API
+            loadSchoolsFromAPI();
+            
+            // Renderizar lista de escolas
+            renderSchoolsList();
+            
+            // Eventos dos modais
+            const addSchoolBtn = document.getElementById('addSchoolBtn');
+            const addSchoolModal = document.getElementById('addSchoolModal');
+            const closeSchoolModal = document.getElementById('closeSchoolModal');
+            const cancelSchoolBtn = document.getElementById('cancelSchoolBtn');
+            const addSchoolForm = document.getElementById('addSchoolForm');
+            
+            addSchoolBtn.addEventListener('click', function() {
+                addSchoolModal.classList.remove('hidden');
+                loadRegioes(); // Carregar regiões
+                loadGrupos();  // Carregar grupos
+            });
+            
+            // Adicionar evento para filtrar grupos quando a região mudar
+            document.getElementById('schoolRegion').addEventListener('change', function() {
+                const regionId = this.value;
+                loadGruposByRegion(regionId);
+            });
+            
+            // Adicionar o mesmo evento para o formulário de edição
+            document.getElementById('editSchoolRegion').addEventListener('change', function() {
+                const regionId = this.value;
+                loadGruposByRegion(regionId, 'editSchoolGroup');
+            });
+            
+            closeSchoolModal.addEventListener('click', function() {
+                addSchoolModal.classList.add('hidden');
+            });
+            
+            cancelSchoolBtn.addEventListener('click', function() {
+                addSchoolModal.classList.add('hidden');
+            });
+            
+            addSchoolForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const schoolName = document.getElementById('schoolName').value;
+                const schoolRegion = document.getElementById('schoolRegion').value;
+                const schoolGroup = document.getElementById('schoolGroup').value;
+                
+                if (schoolName.trim() !== '') {
+                    // Chamar função para salvar na API
+                    createSchoolAPI(schoolName, schoolRegion, schoolGroup);
+                }
+            });
+
+            // Eventos do modal de edição
+            const editSchoolModal = document.getElementById('editSchoolModal');
+            const closeEditSchoolModal = document.getElementById('closeEditSchoolModal');
+            const cancelEditSchoolBtn = document.getElementById('cancelEditSchoolBtn');
+            const editSchoolForm = document.getElementById('editSchoolForm');
+            
+            closeEditSchoolModal.addEventListener('click', function() {
+                editSchoolModal.classList.add('hidden');
+            });
+            
+            cancelEditSchoolBtn.addEventListener('click', function() {
+                editSchoolModal.classList.add('hidden');
+            });
+            
+            editSchoolForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const schoolId = document.getElementById('editSchoolApiId').value;
+                const schoolName = document.getElementById('editSchoolName').value;
+                const schoolRegion = document.getElementById('editSchoolRegion').value;
+                const schoolGroup = document.getElementById('editSchoolGroup').value;
+                
+                if (schoolName.trim() !== '' && schoolId) {
+                    // Chamar função para atualizar na API
+                    updateSchoolAPI(schoolId, schoolName, schoolRegion, schoolGroup);
+                } else {
+                    showToast('Dados incompletos ou ID da API não encontrado.', 'warning');
+                }
+            });
+
+            // Eventos do modal de confirmação de exclusão
+            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+            const closeDeleteModal = document.getElementById('closeDeleteModal');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            
+            closeDeleteModal.addEventListener('click', function() {
+                deleteConfirmModal.classList.add('hidden');
+            });
+            
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteConfirmModal.classList.add('hidden');
+            });
+            
+            confirmDeleteBtn.addEventListener('click', function() {
+                const schoolId = parseInt(document.getElementById('deleteSchoolId').value);
+                const apiId = document.getElementById('deleteSchoolApiId').value;
+                
+                // Se a escola tiver um ID da API, tentar excluir na API primeiro
+                if (apiId) {
+                    deleteSchoolAPI(apiId, schoolId);
+                } else {
+                    // Não tem ID da API, então apenas exclui localmente
+                    removeSchoolLocally(schoolId);
+                }
+                
+                // Fechar o modal
+                deleteConfirmModal.classList.add('hidden');
+            });
+        });
+        
+        // Função para mostrar notificações toast em vez de alerts
+        function showToast(message, type = 'info', duration = 5000) {
+            const toastContainer = document.getElementById('toastContainer');
+            
+            // Configurações baseadas no tipo
+            let bgColor, borderColor, textColor, icon;
+            
+            switch (type) {
+                case 'success':
+                    bgColor = 'bg-green-50';
+                    borderColor = 'border-green-500';
+                    textColor = 'text-green-800';
+                    icon = '<i class="fas fa-check-circle text-green-500 mr-2"></i>';
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-50';
+                    borderColor = 'border-red-500';
+                    textColor = 'text-red-800';
+                    icon = '<i class="fas fa-exclamation-circle text-red-500 mr-2"></i>';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-50';
+                    borderColor = 'border-yellow-500';
+                    textColor = 'text-yellow-800';
+                    icon = '<i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>';
+                    break;
+                case 'info':
+                default:
+                    bgColor = 'bg-blue-50';
+                    borderColor = 'border-blue-500';
+                    textColor = 'text-blue-800';
+                    icon = '<i class="fas fa-info-circle text-blue-500 mr-2"></i>';
+                    break;
+            }
+            
+            // Criar o elemento toast
+            const toast = document.createElement('div');
+            toast.className = `max-w-md w-full ${bgColor} border-l-4 ${borderColor} p-4 shadow-md rounded pointer-events-auto flex items-start justify-between transform transition-all duration-300 ease-in-out opacity-0 translate-x-2`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    ${icon}
+                    <div class="${textColor} text-sm font-medium">${message}</div>
+                </div>
+                <button class="ml-4 text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // Adicionar ao container
+            toastContainer.appendChild(toast);
+            
+            // Animar entrada
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-x-2');
+            }, 10);
+            
+            // Configurar botão de fechar
+            const closeBtn = toast.querySelector('button');
+            closeBtn.addEventListener('click', () => {
+                closeToast(toast);
+            });
+            
+            // Auto-fechar após a duração
+            setTimeout(() => {
+                closeToast(toast);
+            }, duration);
+            
+            function closeToast(toastElement) {
+                // Animar saída
+                toastElement.classList.add('opacity-0', 'translate-x-2');
+                
+                // Remover após animação
+                setTimeout(() => {
+                    toastElement.remove();
+                }, 300);
+            }
+            
+            return toast;
+        }
+        
+        // Variáveis de paginação
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let totalPages = 1;
+        
+        // Variáveis para armazenar todas as escolas e escolas filtradas
+        let allSchools = [];
+        let filteredResults = null; // Adicionar variável para manter escolas filtradas
+
+        // Função para obter escolas do localStorage
+        function getSchools() {
+            return JSON.parse(localStorage.getItem('schools')) || [];
+        }
+
+        // Função para renderizar a lista de escolas com filtro opcional
+        function renderSchoolsList(filteredSchools = null) {
+            const schoolsList = document.getElementById('schoolsList');
+            const schools = filteredSchools || getSchools();
+            allSchools = getSchools(); // Manter cópia de todas as escolas
+            
+            // Atualizar a variável global de resultados filtrados
+            filteredResults = filteredSchools;
+            
+            const paginationControls = document.getElementById('paginationControls');
+            
+            if (schools.length === 0) {
+                schoolsList.innerHTML = `
+                    <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                        ${filteredSchools ? 'Nenhuma escola encontrada com esse nome' : 'Nenhuma escola cadastrada'}
+                    </li>`;
+                paginationControls.classList.add('hidden');
+                
+                // Atualizar o banner de filtro mesmo quando vazio
+                if (document.getElementById('filterBanner')) {
+                    document.getElementById('filterBanner').innerHTML = '<strong>Nenhuma escola encontrada</strong>';
+                }
+                return;
+            }
+            
+            // Calcular paginação
+            totalPages = Math.ceil(schools.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, schools.length);
+            const paginatedSchools = schools.slice(startIndex, endIndex);
+            
+            // Atualizar informações de paginação
+            document.getElementById('startItem').textContent = startIndex + 1;
+            document.getElementById('endItem').textContent = endIndex;
+            document.getElementById('totalItems').textContent = schools.length;
+            document.getElementById('currentPageMobile').textContent = currentPage;
+            
+            // Atualizar o banner de filtro com dados reais
+            if (document.getElementById('filterBanner')) {
+                document.getElementById('filterBanner').innerHTML = `<strong>Mostrando página ${currentPage} de ${totalPages}</strong> - Total: ${schools.length} escolas`;
+            }
+            
+            // Renderizar números das páginas
+            renderPageNumbers();
+            
+            // Mostrar controles de paginação
+            paginationControls.classList.remove('hidden');
+            
+            // Atualizar estado dos botões de navegação
+            document.getElementById('prevPageBtn').disabled = currentPage === 1;
+            document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
+            document.getElementById('prevPageBtnMobile').disabled = currentPage === 1;
+            document.getElementById('nextPageBtnMobile').disabled = currentPage === totalPages;
+            
+            // Aplicar estilo para botões desabilitados
+            ['prevPageBtn', 'nextPageBtn', 'prevPageBtnMobile', 'nextPageBtnMobile'].forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn.disabled) {
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            });
+            
+            schoolsList.innerHTML = '';
+            
+            paginatedSchools.forEach(school => {
+                const li = document.createElement('li');
+                li.className = 'block hover:bg-blue-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0';
+                li.innerHTML = `
+                    <div class="flex items-center px-4 py-4 sm:px-6 group">
+                        <div class="min-w-0 flex-1 flex items-center">
+                            <div class="flex-shrink-0">
+                                <span class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-150">
+                                    <i class="fas fa-school text-blue-600 text-lg group-hover:text-blue-700"></i>
+                                </span>
+                            </div>
+                            <div class="min-w-0 flex-1 px-4">
+                                <div>
+                                    <p class="text-sm font-medium text-blue-600 truncate group-hover:text-blue-700">${school.name}</p>
+                                    <p class="mt-1 text-sm text-gray-500 group-hover:text-gray-600">
+                                        ID: ${school.id}
+                                        ${school.region_id ? ` | Região ID: ${school.region_id}` : ''}
+                                        ${school.group_id ? ` | Grupo ID: ${school.group_id}` : ''}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-100 transition-colors duration-150 editSchool" data-id="${school.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="ml-2 text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-100 transition-colors duration-150 deleteSchool" data-id="${school.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                schoolsList.appendChild(li);
+            });
+            
+            // Adicionar eventos para os botões de edição e exclusão
+            document.querySelectorAll('.editSchool').forEach(button => {
+                button.addEventListener('click', function() {
+                    const schoolId = parseInt(this.getAttribute('data-id'));
+                    // Abrir modal de edição e preencher com dados da escola
+                    openEditModal(schoolId);
+                });
+            });
+            
+            document.querySelectorAll('.deleteSchool').forEach(button => {
+                button.addEventListener('click', function() {
+                    const schoolId = parseInt(this.getAttribute('data-id'));
+                    
+                    // Chamar função para mostrar modal de confirmação
+                    deleteSchool(schoolId);
+                });
+            });
+        }
+        
+        // Função para filtrar escolas conforme digitação e filtros selecionados
+        function filterSchools(searchTerm, regionId, groupId) {
+            let filteredSchools = allSchools;
+            
+            // Aplicar filtro de texto
+            if (searchTerm && searchTerm.trim() !== '') {
+                // Converter para minúsculo para comparação case-insensitive
+                const searchTermLower = searchTerm.toLowerCase();
+                
+                // Filtrar escolas que contêm o termo de busca no nome
+                filteredSchools = filteredSchools.filter(school => 
+                    school.name && school.name.toLowerCase().includes(searchTermLower)
+                );
+            }
+            
+            // Aplicar filtro de região
+            if (regionId && regionId !== '') {
+                filteredSchools = filteredSchools.filter(school => 
+                    school.region_id && school.region_id.toString() === regionId.toString()
+                );
+            }
+            
+            // Aplicar filtro de grupo
+            if (groupId && groupId !== '') {
+                filteredSchools = filteredSchools.filter(school => 
+                    school.group_id && school.group_id.toString() === groupId.toString()
+                );
+            }
+            
+            // Resetar para primeira página quando filtrar
+            currentPage = 1;
+            
+            // Renderizar apenas as escolas filtradas
+            renderSchoolsList(filteredSchools);
+        }
+
+        // Função para renderizar números das páginas
+        function renderPageNumbers() {
+            const pageNumbersContainer = document.getElementById('pageNumbers');
+            pageNumbersContainer.innerHTML = '';
+            
+            // Determinar quais números de página mostrar
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            
+            // Ajustar startPage se necessário
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+            
+            // Adicionar primeira página se necessário
+            if (startPage > 1) {
+                addPageNumber(1);
+                if (startPage > 2) {
+                    pageNumbersContainer.appendChild(createEllipsis());
+                }
+            }
+            
+            // Adicionar páginas do meio
+            for (let i = startPage; i <= endPage; i++) {
+                addPageNumber(i);
+            }
+            
+            // Adicionar última página se necessário
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    pageNumbersContainer.appendChild(createEllipsis());
+                }
+                addPageNumber(totalPages);
+            }
+            
+            function addPageNumber(pageNum) {
+                const pageButton = document.createElement('button');
+                pageButton.className = `relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                    pageNum === currentPage
+                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`;
+                pageButton.textContent = pageNum;
+                pageButton.addEventListener('click', () => {
+                    currentPage = pageNum;
+                    
+                    // Usar os resultados filtrados se existirem
+                    renderSchoolsList(filteredResults);
+                });
+                pageNumbersContainer.appendChild(pageButton);
+            }
+            
+            function createEllipsis() {
+                const span = document.createElement('span');
+                span.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+                span.textContent = '...';
+                return span;
+            }
+        }
+
+        // Adicionar event listeners para os botões de navegação
+        document.addEventListener('DOMContentLoaded', function() {
+            // Código existente...
+            
+            // Carregar escolas da API
+            loadSchoolsFromAPI();
+            
+            // Carregar regiões e grupos para os filtros
+            loadRegioesForFilter();
+            loadGruposForFilter();
+
+            // Event listeners para navegação de páginas
+            document.getElementById('prevPageBtn').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    // Usar os resultados filtrados se existirem
+                    renderSchoolsList(filteredResults);
+                }
+            });
+
+            document.getElementById('nextPageBtn').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    // Usar os resultados filtrados se existirem
+                    renderSchoolsList(filteredResults);
+                }
+            });
+
+            document.getElementById('prevPageBtnMobile').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    // Usar os resultados filtrados se existirem
+                    renderSchoolsList(filteredResults);
+                }
+            });
+
+            document.getElementById('nextPageBtnMobile').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    // Usar os resultados filtrados se existirem
+                    renderSchoolsList(filteredResults);
+                }
+            });
+            
+            // Configurar barra de pesquisa
+            const searchInput = document.getElementById('schoolSearch');
+            const clearSearchBtn = document.getElementById('searchClearBtn');
+            const regionFilter = document.getElementById('regionFilter');
+            const groupFilter = document.getElementById('groupFilter');
+            
+            // Filtrar em tempo real conforme digitação
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.trim();
+                
+                // Mostrar/ocultar botão de limpar
+                clearSearchBtn.style.display = searchTerm ? 'flex' : 'none';
+                
+                // Obter valores dos filtros
+                const regionId = regionFilter.value;
+                const groupId = groupFilter.value;
+                
+                // Filtrar escolas em tempo real
+                filterSchools(searchTerm, regionId, groupId);
+            });
+            
+            // Filtrar quando a região mudar
+            regionFilter.addEventListener('change', function() {
+                const regionId = this.value;
+                const searchTerm = searchInput.value.trim();
+                const groupId = groupFilter.value;
+                
+                // Atualizar grupos baseado na região selecionada
+                if (regionId) {
+                    loadGruposForFilterByRegion(regionId);
+                } else {
+                    // Se não tiver região selecionada, carregar todos os grupos
+                    loadGruposForFilter();
+                }
+                
+                // Filtrar escolas
+                filterSchools(searchTerm, regionId, groupId);
+            });
+            
+            // Filtrar quando o grupo mudar
+            groupFilter.addEventListener('change', function() {
+                const groupId = this.value;
+                const searchTerm = searchInput.value.trim();
+                const regionId = regionFilter.value;
+                
+                // Filtrar escolas
+                filterSchools(searchTerm, regionId, groupId);
+            });
+            
+            // Limpar busca ao clicar no X
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                clearSearchBtn.style.display = 'none';
+                
+                // Obter valores dos filtros
+                const regionId = regionFilter.value;
+                const groupId = groupFilter.value;
+                
+                // Aplicar filtros existentes sem o texto de busca
+                filterSchools('', regionId, groupId);
+            });
+            
+            // Evitar refresh da página ao pressionar Enter
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    
+                    // Obter valores dos filtros
+                    const regionId = regionFilter.value;
+                    const groupId = groupFilter.value;
+                    
+                    filterSchools(this.value.trim(), regionId, groupId);
+                }
+            });
+        });
+        
+        // Função para excluir uma escola
+        function deleteSchool(id) {
+            // Procurar escola no armazenamento local
+            let schools = JSON.parse(localStorage.getItem('schools'));
+            const schoolToDelete = schools.find(school => school.id === id);
+            
+            if (!schoolToDelete) {
+                showToast('Escola não encontrada.', 'error');
+                return;
+            }
+            
+            // Mostrar modal de confirmação de exclusão
+            document.getElementById('deleteSchoolName').textContent = schoolToDelete.name;
+            document.getElementById('deleteSchoolId').value = id;
+            document.getElementById('deleteSchoolApiId').value = schoolToDelete.apiId || '';
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+        
+        // Função para remover escola localmente
+        function removeSchoolLocally(id) {
+            let schools = JSON.parse(localStorage.getItem('schools'));
+            
+            // Verificar dependências antes de excluir (exemplo: verificar se há turmas)
+            const result = checkDependencies(id);
+            
+            if (result && !result.success) {
+                showToast(result.reason, 'warning');
+                return;
+            }
+            
+            schools = schools.filter(school => school.id !== id);
+            localStorage.setItem('schools', JSON.stringify(schools));
+            renderSchoolsList();
+            showToast('Escola excluída com sucesso!', 'success');
+        }
+        
+        // Função para verificar dependências
+        function checkDependencies(schoolId) {
+            // Verificar se existem turmas associadas a esta escola
+            try {
+                const classes = JSON.parse(localStorage.getItem('classes')) || [];
+                const hasClasses = classes.some(c => c.schoolId === schoolId);
+                
+                if (hasClasses) {
+                    return { success: false, reason: 'Esta escola possui turmas associadas e não pode ser excluída.' };
+                }
+                
+                return { success: true };
+            } catch (error) {
+                console.error('Erro ao verificar dependências:', error);
+                return { success: true }; // Em caso de erro, permitir exclusão
+            }
+        }
+        
+        // Função para excluir escola na API
+        async function deleteSchoolAPI(apiId, localId) {
+            try {
+                console.log(`Tentando excluir escola com API ID: ${apiId}, Local ID: ${localId}`);
+                
+                const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/escolas/${apiId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('Status da resposta de exclusão:', response.status);
+                
+                // Log da resposta completa para debug
+                const responseText = await response.text();
+                console.log('Resposta da API (exclusão):', responseText);
+                
+                // Tentar converter para JSON se possível
+                let data;
+                try {
+                    if (responseText) {
+                        data = JSON.parse(responseText);
+                    }
+                } catch (e) {
+                    console.log('Resposta não é um JSON válido');
+                }
+                
+                if (response.ok) {
+                    // Verificar dependências antes de excluir localmente
+                    const result = checkDependencies(localId);
+                    
+                    if (result && !result.success) {
+                        showToast(result.reason, 'error');
+                        return;
+                    }
+                    
+                    // Excluir localmente após sucesso na API
+                    removeSchoolLocally(localId);
+                    showToast('Escola excluída com sucesso!', 'success');
+                } else {
+                    const errorMessage = data ? data.message || 'Erro ao excluir escola.' : 'Erro ao excluir escola.';
+                    showToast(errorMessage, 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao excluir escola:', error);
+                showToast('Ocorreu um erro ao tentar excluir a escola: ' + error.message, 'error');
+            }
+        }
+        
+        // Função para adicionar escola com região e grupo
+        function addSchool(name, region, group, apiId = null) {
+            let schools = JSON.parse(localStorage.getItem('schools')) || [];
+            
+            // Verificar se a escola já existe pelo ID da API
+            if (apiId) {
+                const existingIndex = schools.findIndex(s => s.apiId === apiId);
+                if (existingIndex !== -1) {
+                    // Atualizar a escola existente em vez de adicionar uma nova
+                    schools[existingIndex].name = name;
+                    schools[existingIndex].region_id = region || '';
+                    schools[existingIndex].group_id = group || '';
+                    localStorage.setItem('schools', JSON.stringify(schools));
+                    return schools[existingIndex];
+                }
+            }
+            
+            const newId = apiId || (schools.length > 0 ? Math.max(...schools.map(s => s.id)) + 1 : 1);
+            
+            const newSchool = {
+                id: newId,
+                name: name,
+                region_id: region || '',
+                group_id: group || '',
+                apiId: apiId // Armazenar o ID da API se fornecido
+            };
+            
+            schools.push(newSchool);
+            localStorage.setItem('schools', JSON.stringify(schools));
+            return newSchool;
+        }
+        
+        // Função para criar escola via API
+        async function createSchoolAPI(nome, regiao, grupo) {
+            try {
+                // Exibir indicador de carregamento
+                const submitBtn = document.querySelector('#addSchoolForm button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                submitBtn.disabled = true;
+                
+                // Pegar os IDs selecionados
+                const regiaoId = document.getElementById('schoolRegion').value;
+                const grupoId = document.getElementById('schoolGroup').value;
+                
+                if (!regiaoId) {
+                    throw new Error('Por favor, selecione uma região');
+                }
+                
+                if (!grupoId) {
+                    throw new Error('Por favor, selecione um grupo');
+                }
+                
+                // Preparar payload no formato correto que a API espera
+                const payload = {
+                    nome: nome,
+                    regiao_id: parseInt(regiaoId),
+                    grupo_id: parseInt(grupoId)
+                };
+                
+                console.log('Enviando dados para API:', payload);
+                
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/escolas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Restaurar botão
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao criar escola: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Resposta da API:', data);
+                
+                if (data) {
+                    console.log('Escola registrada com sucesso:', data);
+                    
+                    // Adicionar a escola recebida da API à lista local
+                    addSchool(
+                        data.nome,
+                        data.regiao_id,
+                        data.grupo_id,
+                        data.id
+                    );
+                    
+                    // Atualizar a lista de escolas
+                    renderSchoolsList();
+                    
+                    // Fechar o modal e resetar o formulário
+                    document.getElementById('addSchoolModal').classList.add('hidden');
+                    document.getElementById('addSchoolForm').reset();
+                    
+                    showToast('Escola cadastrada com sucesso!', 'success');
+                } else {
+                    throw new Error('Resposta da API não contém os dados esperados');
+                }
+            } catch (error) {
+                console.error('Erro ao registrar escola:', error);
+                showToast('Ocorreu um erro ao tentar registrar a escola: ' + error.message, 'error');
+                
+                // Restaurar botão em caso de erro
+                const submitBtn = document.querySelector('#addSchoolForm button[type="submit"]');
+                submitBtn.innerHTML = 'Salvar';
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // Função para carregar escolas da API
+        async function loadSchoolsFromAPI() {
+            try {
+                console.log('Carregando escolas da API...');
+                
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/escolas', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar escolas: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('Escolas carregadas da API:', result);
+                
+                // MUDANÇA: Limpar completamente as escolas existentes antes de adicionar novas escolas da API
+                localStorage.setItem('schools', JSON.stringify([]));
+                
+                // Verificar se temos o novo formato de resposta com paginação
+                if (result && result.data && Array.isArray(result.data)) {
+                    // Formato paginado: { data: [...], page: 1, limit: 20, total: 106, totalPages: 6 }
+                    console.log(`Carregadas ${result.data.length} escolas (total de ${result.total} em ${result.totalPages} páginas)`);
+                    
+                    // Adicionar escolas da resposta atual
+                    result.data.forEach(escola => {
+                        addSchool(
+                            escola.nome || '',
+                            escola.regiao_id || '',
+                            escola.grupo_id || '',
+                            escola.id || null
+                        );
+                    });
+                    
+                    // Se temos mais de uma página, buscar as demais
+                    if (result.totalPages > 1) {
+                        // Mostrar feedback para o usuário
+                        showToast(`Carregando todas as ${result.total} escolas...`, 'info');
+                        
+                        // Buscar as demais páginas
+                        const otherPages = [];
+                        for (let page = 2; page <= result.totalPages; page++) {
+                            otherPages.push(
+                                fetch(`https://sag-sag.rak8a3.easypanel.host/api/escolas?page=${page}&limit=${result.limit}`)
+                                    .then(response => response.json())
+                                    .then(pageData => {
+                                        if (pageData && pageData.data && Array.isArray(pageData.data)) {
+                                            // Adicionar escolas desta página
+                                            pageData.data.forEach(escola => {
+                                                addSchool(
+                                                    escola.nome || '',
+                                                    escola.regiao_id || '',
+                                                    escola.grupo_id || '',
+                                                    escola.id || null
+                                                );
+                                            });
+                                            return pageData.data;
+                                        }
+                                        return [];
+                                    })
+                                    .catch(error => {
+                                        console.error(`Erro ao carregar página ${page}:`, error);
+                                        return [];
+                                    })
+                            );
+                        }
+                        
+                        // Aguardar todas as páginas adicionais
+                        Promise.all(otherPages)
+                            .then(results => {
+                                const totalLoaded = result.data.length + results.flat().length;
+                                console.log(`Carregamento concluído. Total de escolas: ${totalLoaded}`);
+                                showToast(`Carregadas ${totalLoaded} escolas com sucesso.`, 'success');
+                                
+                                // Atualizar a interface após carregar todas as páginas
+                                renderSchoolsList();
+                            });
+                    } else {
+                        // Se temos apenas uma página, atualizar interface diretamente
+                        renderSchoolsList();
+                    }
+                } else if (Array.isArray(result)) {
+                    // Formato antigo: array simples
+                    console.log(`Carregadas ${result.length} escolas`);
+                    
+                    // Adicionar escolas da resposta
+                    result.forEach(escola => {
+                        addSchool(
+                            escola.nome || '',
+                            escola.regiao_id || '',
+                            escola.grupo_id || '',
+                            escola.id || null
+                        );
+                    });
+                    
+                    // Atualizar a interface
+                    renderSchoolsList();
+                } else {
+                    console.error('Formato de resposta da API não reconhecido:', result);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar escolas da API:', error);
+            }
+        }
+        
+        // Função para carregar grupos da API
+        async function loadGrupos() {
+            try {
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/grupos', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar grupos: ${response.status}`);
+                }
+
+                const grupos = await response.json();
+                console.log('Grupos carregados:', grupos);
+
+                // Preencher o select de grupos
+                const grupoSelect = document.getElementById('schoolGroup');
+                grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+
+                if (Array.isArray(grupos)) {
+                    grupos.forEach(grupo => {
+                        grupoSelect.innerHTML += `<option value="${grupo.id}">${grupo.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar grupos:', error);
+                showToast('Erro ao carregar lista de grupos. Por favor, tente novamente.', 'error');
+            }
+        }
+        
+        // Função para carregar regiões da API
+        async function loadRegioes() {
+            try {
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/regioes', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar regiões: ${response.status}`);
+                }
+
+                const regioes = await response.json();
+                console.log('Regiões carregadas:', regioes);
+
+                // Preencher o select de regiões
+                const regiaoSelect = document.getElementById('schoolRegion');
+                regiaoSelect.innerHTML = '<option value="">Selecione uma região</option>';
+
+                if (Array.isArray(regioes)) {
+                    regioes.forEach(regiao => {
+                        regiaoSelect.innerHTML += `<option value="${regiao.id}">${regiao.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar regiões:', error);
+                showToast('Erro ao carregar lista de regiões. Por favor, tente novamente.', 'error');
+            }
+        }
+
+        // Função para abrir modal de edição e preencher com dados da escola
+        function openEditModal(schoolId) {
+            // Procurar escola pelo ID
+            const schools = JSON.parse(localStorage.getItem('schools')) || [];
+            const school = schools.find(s => s.id === schoolId);
+            
+            if (!school) {
+                showToast('Escola não encontrada.', 'error');
+                return;
+            }
+            
+            console.log('Dados da escola para edição:', school);
+            
+            // Preencher campos do formulário com dados da escola
+            document.getElementById('editSchoolId').value = school.id;
+            document.getElementById('editSchoolApiId').value = school.apiId || '';
+            document.getElementById('editSchoolName').value = school.name || '';
+            
+            // Carregar regiões e grupos, depois selecionar os valores corretos
+            loadRegioesForEdit().then(() => {
+                if (school.region_id) {
+                    document.getElementById('editSchoolRegion').value = school.region_id;
+                }
+            });
+            
+            loadGruposForEdit().then(() => {
+                if (school.group_id) {
+                    document.getElementById('editSchoolGroup').value = school.group_id;
+                }
+            });
+            
+            // Mostrar modal
+            document.getElementById('editSchoolModal').classList.remove('hidden');
+        }
+        
+        // Função para carregar regiões no formulário de edição
+        async function loadRegioesForEdit() {
+            try {
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/regioes', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar regiões: ${response.status}`);
+                }
+
+                const regioes = await response.json();
+                console.log('Regiões carregadas para edição:', regioes);
+
+                // Preencher o select de regiões
+                const regiaoSelect = document.getElementById('editSchoolRegion');
+                regiaoSelect.innerHTML = '<option value="">Selecione uma região</option>';
+
+                if (Array.isArray(regioes)) {
+                    regioes.forEach(regiao => {
+                        regiaoSelect.innerHTML += `<option value="${regiao.id}">${regiao.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar regiões:', error);
+                showToast('Erro ao carregar lista de regiões. Por favor, tente novamente.', 'error');
+            }
+        }
+        
+        // Função para carregar grupos no formulário de edição
+        async function loadGruposForEdit() {
+            try {
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/grupos', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar grupos: ${response.status}`);
+                }
+
+                const grupos = await response.json();
+                console.log('Grupos carregados para edição:', grupos);
+
+                // Preencher o select de grupos
+                const grupoSelect = document.getElementById('editSchoolGroup');
+                grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+
+                if (Array.isArray(grupos)) {
+                    grupos.forEach(grupo => {
+                        grupoSelect.innerHTML += `<option value="${grupo.id}">${grupo.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar grupos:', error);
+                showToast('Erro ao carregar lista de grupos. Por favor, tente novamente.', 'error');
+            }
+        }
+        
+        // Função para atualizar escola via API
+        async function updateSchoolAPI(id, nome, regiaoId, grupoId) {
+            try {
+                // Exibir indicador de carregamento
+                const submitBtn = document.querySelector('#editSchoolForm button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                submitBtn.disabled = true;
+                
+                if (!regiaoId) {
+                    throw new Error('Por favor, selecione uma região');
+                }
+                
+                if (!grupoId) {
+                    throw new Error('Por favor, selecione um grupo');
+                }
+                
+                // Preparar payload no formato correto que a API espera
+                const payload = {
+                    nome: nome,
+                    regiao_id: parseInt(regiaoId),
+                    grupo_id: parseInt(grupoId)
+                };
+                
+                console.log(`Atualizando escola com ID ${id}:`, payload);
+                
+                const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/escolas/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Restaurar botão
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao atualizar escola: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Resposta da API (atualização):', data);
+                
+                if (data) {
+                    console.log('Escola atualizada com sucesso:', data);
+                    
+                    // Atualizar a escola na lista local
+                    updateSchoolLocally(data);
+                    
+                    // Atualizar a lista de escolas
+                    renderSchoolsList();
+                    
+                    // Fechar o modal e resetar o formulário
+                    document.getElementById('editSchoolModal').classList.add('hidden');
+                    document.getElementById('editSchoolForm').reset();
+                    
+                    showToast('Escola atualizada com sucesso!', 'success');
+                } else {
+                    throw new Error('Resposta da API não contém os dados esperados');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar escola:', error);
+                showToast('Ocorreu um erro ao tentar atualizar a escola: ' + error.message, 'error');
+                
+                // Restaurar botão em caso de erro
+                const submitBtn = document.querySelector('#editSchoolForm button[type="submit"]');
+                submitBtn.innerHTML = 'Atualizar';
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // Função para atualizar escola localmente
+        function updateSchoolLocally(updatedSchool) {
+            let schools = JSON.parse(localStorage.getItem('schools')) || [];
+            const localId = parseInt(document.getElementById('editSchoolId').value);
+            
+            console.log('Atualizando escola localmente:', updatedSchool);
+            console.log('ID local da escola:', localId);
+            
+            // Encontrar o índice da escola a ser atualizada
+            const index = schools.findIndex(s => s.id === localId);
+            
+            if (index !== -1) {
+                // Atualizar os dados da escola
+                schools[index].name = updatedSchool.nome || schools[index].name;
+                schools[index].region_id = updatedSchool.regiao_id || schools[index].region_id;
+                schools[index].group_id = updatedSchool.grupo_id || schools[index].group_id;
+                schools[index].apiId = updatedSchool.id || schools[index].apiId;
+                
+                localStorage.setItem('schools', JSON.stringify(schools));
+                console.log('Escola atualizada localmente:', schools[index]);
+            }
+        }
+
+        // Função para carregar grupos filtrados por região
+        async function loadGruposByRegion(regionId, grupoSelectId = 'schoolGroup') {
+            try {
+                const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/grupos?regiao_id=${regionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar grupos: ${response.status}`);
+                }
+
+                const grupos = await response.json();
+                console.log('Grupos carregados:', grupos);
+
+                // Preencher o select de grupos
+                const grupoSelect = document.getElementById(grupoSelectId);
+                grupoSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+
+                if (Array.isArray(grupos)) {
+                    grupos.forEach(grupo => {
+                        grupoSelect.innerHTML += `<option value="${grupo.id}">${grupo.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar grupos:', error);
+                showToast('Erro ao carregar lista de grupos. Por favor, tente novamente.', 'error');
+            }
+        }
+
+        // Função para carregar regiões para o filtro
+        async function loadRegioesForFilter() {
+            try {
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/regioes', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar regiões: ${response.status}`);
+                }
+
+                const regioes = await response.json();
+                console.log('Regiões carregadas para filtro:', regioes);
+
+                // Preencher o select de regiões
+                const regiaoSelect = document.getElementById('regionFilter');
+                regiaoSelect.innerHTML = '<option value="">Todas as regiões</option>';
+
+                if (Array.isArray(regioes)) {
+                    regioes.forEach(regiao => {
+                        regiaoSelect.innerHTML += `<option value="${regiao.id}">${regiao.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar regiões para filtro:', error);
+                showToast('Erro ao carregar lista de regiões para filtro. Por favor, tente novamente.', 'error');
+            }
+        }
+        
+        // Função para carregar grupos para o filtro
+        async function loadGruposForFilter() {
+            try {
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/grupos', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar grupos: ${response.status}`);
+                }
+
+                const grupos = await response.json();
+                console.log('Grupos carregados para filtro:', grupos);
+
+                // Preencher o select de grupos
+                const grupoSelect = document.getElementById('groupFilter');
+                grupoSelect.innerHTML = '<option value="">Todos os grupos</option>';
+
+                if (Array.isArray(grupos)) {
+                    grupos.forEach(grupo => {
+                        grupoSelect.innerHTML += `<option value="${grupo.id}">${grupo.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar grupos para filtro:', error);
+                showToast('Erro ao carregar lista de grupos para filtro. Por favor, tente novamente.', 'error');
+            }
+        }
+        
+        // Função para carregar grupos filtrados por região para o filtro
+        async function loadGruposForFilterByRegion(regionId) {
+            try {
+                const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/grupos?regiao_id=${regionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar grupos: ${response.status}`);
+                }
+
+                const grupos = await response.json();
+                console.log('Grupos filtrados por região carregados:', grupos);
+
+                // Preencher o select de grupos
+                const grupoSelect = document.getElementById('groupFilter');
+                grupoSelect.innerHTML = '<option value="">Todos os grupos</option>';
+
+                if (Array.isArray(grupos)) {
+                    grupos.forEach(grupo => {
+                        grupoSelect.innerHTML += `<option value="${grupo.id}">${grupo.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar grupos filtrados por região:', error);
+                showToast('Erro ao carregar lista de grupos filtrados. Por favor, tente novamente.', 'error');
+            }
+        }
+    </script>
+</body>
+</html> 

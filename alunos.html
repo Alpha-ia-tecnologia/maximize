@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alunos - SAG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/pagination.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="min-h-screen flex flex-col">
+        <!-- Navbar -->
+        <nav class="bg-blue-600 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <span class="text-xl font-bold">SAG</span>
+                        </div>
+                        <div class="hidden md:ml-6 md:flex md:items-center md:space-x-4">
+                            <a href="dashboard.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Dashboard</a>
+                            <a href="escolas.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Escolas</a>
+                            <a href="turmas.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Turmas</a>
+                            <a href="alunos.html" class="px-3 py-2 rounded-md text-sm font-medium bg-blue-700">Alunos</a>
+                            <a href="provas.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Provas</a>
+                            <a href="usuarios.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Usuários</a>
+                            <a href="gabaritos_geracao.html" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Gabaritos</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="userName" class="mr-4"></span>
+                        <button id="logoutBtn" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div class="md:hidden hidden" id="mobileMenu">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="dashboard.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Dashboard</a>
+                    <a href="escolas.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Escolas</a>
+                    <a href="turmas.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Turmas</a>
+                    <a href="alunos.html" class="block px-3 py-2 rounded-md text-base font-medium bg-blue-700">Alunos</a>
+                    <a href="provas.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Provas</a>
+                    <a href="usuarios.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Usuários</a>
+                    <a href="gabaritos_geracao.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Gabaritos</a>
+                    <a href="gabaritos_correcao.html" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Correção</a>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main content -->
+        <main class="flex-grow">
+            <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <!-- Page header -->
+                <div class="px-4 py-5 sm:px-6 bg-white shadow rounded-lg mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Alunos</h1>
+                        <p class="mt-1 max-w-2xl text-sm text-gray-500">Gerenciamento de alunos</p>
+                    </div>
+                    <button id="addStudentBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-plus mr-2"></i> Adicionar Aluno
+                    </button>
+                </div>
+                
+                <!-- Filter section -->
+                <div class="bg-white shadow px-4 py-5 sm:px-6 rounded-lg mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="filterSchool" class="block text-sm font-medium text-gray-700">Filtrar por Escola</label>
+                            <select id="filterSchool" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="">Todas as escolas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filterClass" class="block text-sm font-medium text-gray-700">Filtrar por Turma</label>
+                            <select id="filterClass" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="">Todas as turmas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Students List -->
+                <div class="bg-white shadow overflow-hidden sm:rounded-md">
+                    <!-- Filter Banner -->
+                    <div id="filterBanner" class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4"><strong>Mostrando página 1 de 1</strong> - Total: 0 alunos</div>
+                    
+                    <ul id="studentsList" class="divide-y divide-gray-200 overflow-hidden">
+                        <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Carregando alunos...
+                        </li>
+                    </ul>
+                    
+                    <!-- Pagination Controls -->
+                    <div id="studentsPaginationControls" class="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 hidden">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            <button id="studentsPrevPageMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Anterior
+                            </button>
+                            <div class="text-sm text-gray-700 py-2">
+                                <span id="studentsCurrentPageMobile">1</span>
+                            </div>
+                            <button id="studentsNextPageMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Próxima
+                            </button>
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Mostrando <span id="studentsStartItem" class="font-medium">1</span> a <span id="studentsEndItem" class="font-medium">10</span> de <span id="studentsTotalItems" class="font-medium">0</span> alunos
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                    <button id="studentsPrevPage" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Anterior</span>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div id="studentsPaginationContainer" class="flex">
+                                        <!-- Page buttons will be inserted here -->
+                                    </div>
+                                    <button id="studentsNextPage" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Próxima</span>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-white">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-sm text-gray-500">SAG - Sistema de Avaliação e Gerenciamento © 2023</p>
+            </div>
+        </footer>
+        
+        <!-- Add Student Modal -->
+        <div id="addStudentModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Adicionar Novo Aluno</h3>
+                    <button id="closeStudentModal" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                                <form id="addStudentForm" class="space-y-4">                    <div>                        <label for="studentName" class="block text-sm font-medium text-gray-700">Nome do Aluno</label>                        <input type="text" id="studentName" name="studentName" required                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">                    </div>                    <div>                        <label for="studentSchool" class="block text-sm font-medium text-gray-700">Escola</label>                        <select id="studentSchool" name="studentSchool" required                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">                            <option value="">Selecione uma escola</option>                        </select>                    </div>                    <div>                        <label for="studentClass" class="block text-sm font-medium text-gray-700">Turma</label>                        <select id="studentClass" name="studentClass" required                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">                            <option value="">Selecione uma turma</option>                        </select>                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="cancelStudentBtn" class="mr-3 bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/app.js"></script>
+    <script>
+        // Helper function to ensure all IDs are treated as numbers
+        function ensureNumber(value) {
+            if (value === null || value === undefined || value === '') return null;
+            const num = Number(value);
+            return isNaN(num) ? null : num;
+        }
+        
+        // Improved function for filtering students
+        function getStudents(schoolId = null, classId = null) {
+            // Converter IDs para números para garantir consistência
+            schoolId = ensureNumber(schoolId);
+            classId = ensureNumber(classId);
+            
+            const students = JSON.parse(localStorage.getItem('students')) || [];
+            console.log(`Função getStudents chamada com: schoolId=${schoolId}, classId=${classId}`);
+            console.log(`Total de alunos no sistema: ${students.length}`);
+            
+            // Deep copy para debug
+            students.forEach((student, index) => {
+                console.log(`Aluno ${index+1}: ID=${student.id}, Nome=${student.name}, Escola ID=${student.schoolId}, Turma ID=${student.classId}`);
+            });
+            
+            let filteredStudents = [...students]; // Criar uma cópia para trabalhar
+            
+            // If no filters are applied, return all students
+            if (!schoolId && !classId) {
+                console.log('Nenhum filtro aplicado, retornando todos os alunos');
+                return filteredStudents;
+            }
+            
+            // Aplicar o filtro por escola se especificado
+            if (schoolId) {
+                console.log(`Aplicando filtro por escola ID=${schoolId}`);
+                filteredStudents = filteredStudents.filter(student => {
+                    const studentSchoolId = ensureNumber(student.schoolId);
+                    console.log(`Comparando escola do aluno ${student.name}: ${studentSchoolId} === ${schoolId} ? ${studentSchoolId === schoolId}`);
+                    return studentSchoolId === schoolId;
+                });
+                console.log(`Restaram ${filteredStudents.length} alunos após filtro de escola`);
+            }
+            
+            // Aplicar o filtro por turma se especificado
+            if (classId) {
+                console.log(`Aplicando filtro por turma ID=${classId}`);
+                filteredStudents = filteredStudents.filter(student => {
+                    const studentClassId = ensureNumber(student.classId);
+                    console.log(`Comparando turma do aluno ${student.name}: ${studentClassId} === ${classId} ? ${studentClassId === classId}`);
+                    return studentClassId === classId;
+                });
+                console.log(`Restaram ${filteredStudents.length} alunos após filtro de turma`);
+            }
+            
+            console.log(`Filtro final retornou ${filteredStudents.length} alunos`);
+            if (filteredStudents.length > 0) {
+                console.log('Exemplo do primeiro aluno filtrado:', filteredStudents[0]);
+            }
+            
+            return filteredStudents;
+        }
+        
+        // Updated function to get classes for a specific school
+        function getClasses(schoolId = null) {
+            // Garantir que o ID da escola seja um número
+            schoolId = ensureNumber(schoolId);
+            
+            const allClasses = JSON.parse(localStorage.getItem('classes')) || [];
+            console.log(`getClasses chamado com schoolId=${schoolId || 'nenhuma'}, total de turmas: ${allClasses.length}`);
+            
+            if (!schoolId) {
+                console.log('Retornando todas as turmas');
+                return allClasses;
+            }
+            
+            // Filtrar turmas pela escola, garantindo consistência nos tipos de dados
+            const filteredClasses = allClasses.filter(cls => {
+                const classSchoolId = ensureNumber(cls.schoolId);
+                return classSchoolId === schoolId;
+            });
+            
+            console.log(`Encontradas ${filteredClasses.length} turmas para a escola ID=${schoolId}`);
+            
+            return filteredClasses;
+        }
+        
+                // Função para criar um aluno via API        async function createStudentAPI(nome, matricula, data_nascimento, escola_id, turma_id) {            try {                // Mostrar indicador de carregamento ou desabilitar o botão                const saveBtn = document.querySelector('#addStudentForm button[type="submit"]');                const originalBtnText = saveBtn.innerHTML;                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';                saveBtn.disabled = true;                                // Gerar um número aleatório para matrícula se for obrigatório na API                const randomMatricula = Math.floor(100000 + Math.random() * 900000);                                // Preparar dados para envio                const studentData = {                    nome: nome,                    matricula: randomMatricula, // Usando valor aleatório já que matricula não será mostrada                    data_nascimento: data_nascimento || null,                    escola_id: escola_id,                    turma_id: turma_id                };                                console.log('Enviando dados de aluno para API:', studentData);                                // Enviar para a API                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/alunos?limit=1000', {                    method: 'POST',                    headers: {                        'Content-Type': 'application/json'                    },                    body: JSON.stringify(studentData)                });                                // Restaurar o botão                saveBtn.innerHTML = originalBtnText;                saveBtn.disabled = false;                                if (!response.ok) {                    const errorText = await response.text();                    throw new Error(`Erro ao criar aluno. Status: ${response.status}. Detalhes: ${errorText}`);                }                                // Processar a resposta                const data = await response.json();                console.log('Aluno criado com sucesso na API:', data);                                // Adicionar ao armazenamento local                const newStudent = addStudent(                    nome,                    null, // sem matrícula                    data_nascimento,                    escola_id,                    turma_id,                    data.id // ID retornado pela API                );                                // Fechar o modal                document.getElementById('addStudentModal').classList.add('hidden');                                // Limpar o formulário                document.getElementById('addStudentForm').reset();                                // Atualizar a lista de alunos                renderStudentsList();                                // Mostrar mensagem de sucesso                alert('Aluno cadastrado com sucesso!');                                return data;            } catch (error) {                console.error('Erro ao criar aluno:', error);                alert(`Erro ao criar aluno: ${error.message}`);                return null;            }        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Atualizar nome do usuário
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+            }
+            
+            // Configurar handlers de filtro e formulário
+            setupEventHandlers();
+            
+            // Carregar escolas e turmas primeiro - importante para evitar problemas de exibição
+            Promise.all([
+                loadClassesFromAPI(),
+                // Carregar escolas se necessário
+            ]).then(() => {
+                // Validar e corrigir dados de alunos antes de inicializar
+                validateAndFixStudentData();
+            
+            // Inicializar a lista de alunos no localStorage se não existir
+            if (!localStorage.getItem('students')) {
+                localStorage.setItem('students', JSON.stringify([]));
+            }
+                    
+                // Preencher seletores de escolas e turmas
+                populateFilters();
+            
+            // Carregar alunos da API
+            loadStudentsFromAPI();
+            }).catch(error => {
+                console.error("Erro ao carregar turmas e escolas:", error);
+                // Mesmo com erro, tente prosseguir
+                validateAndFixStudentData();
+                
+                // Inicializar a lista de alunos no localStorage se não existir
+                if (!localStorage.getItem('students')) {
+                    localStorage.setItem('students', JSON.stringify([]));
+                }
+            
+            // Preencher seletores de escolas e turmas
+            populateFilters();
+            
+                // Carregar alunos da API
+                loadStudentsFromAPI();
+            });
+            
+            // Add event listener for pagination rendered event
+            document.addEventListener('paginationRendered', function(e) {
+                if (e.detail.selector === '#studentsList') {
+                    console.log('Paginação de alunos renderizada, reattaching event handlers');
+                    
+                    // Reattach event handlers to edit and delete buttons
+                    setTimeout(() => {
+                        document.querySelectorAll('.editStudent').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const studentId = parseInt(this.getAttribute('data-id'));
+                                openEditStudentModal(studentId);
+                            });
+                        });
+                        
+                        document.querySelectorAll('.deleteStudent').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const studentId = parseInt(this.getAttribute('data-id'));
+                                deleteStudent(studentId);
+                            });
+                        });
+                    }, 50);
+                }
+            });
+        });
+        
+        // Configurar todos os event handlers
+        function setupEventHandlers() {
+            // Eventos dos modais
+            const addStudentBtn = document.getElementById('addStudentBtn');
+            const addStudentModal = document.getElementById('addStudentModal');
+            const closeStudentModal = document.getElementById('closeStudentModal');
+            const cancelStudentBtn = document.getElementById('cancelStudentBtn');
+            const addStudentForm = document.getElementById('addStudentForm');
+            
+            addStudentBtn.addEventListener('click', function() {
+                populateSchoolSelector();
+                addStudentModal.classList.remove('hidden');
+            });
+            
+            closeStudentModal.addEventListener('click', function() {
+                addStudentModal.classList.add('hidden');
+            });
+            
+            cancelStudentBtn.addEventListener('click', function() {
+                addStudentModal.classList.add('hidden');
+            });
+            
+            // Filtro por escola e turma
+            document.getElementById('filterSchool').addEventListener('change', function() {
+                console.log("Filtro de escola alterado");
+                const schoolId = this.value;
+                console.log(`Escola selecionada: ID=${schoolId || 'nenhuma'}, Valor=${this.value}`);
+                
+                // Atualizar o filtro de turmas com base na escola selecionada
+                updateClassesFilter(schoolId);
+                
+                // Carregar alunos da API com o novo filtro de escola
+                loadStudentsFromAPI(1, apiPageLimit);
+            });
+            
+            // Função para carregar turmas filtradas por escola
+            async function loadClassesBySchool(schoolId) {
+                try {
+                    const classSelector = document.getElementById('filterClass');
+                    
+                    // Mostrar indicador de carregamento
+                    classSelector.innerHTML = '<option value="">Carregando turmas...</option>';
+                    classSelector.disabled = true;
+                    
+                    // Construir URL da API com filtro se tiver escola selecionada
+                    let apiUrl = 'https://sag-sag.rak8a3.easypanel.host/api/turmas?limit=100';
+                    if (schoolId && schoolId !== '') {
+                        apiUrl += `&escola_id=${schoolId}`;
+                        console.log(`Carregando turmas filtradas por escola_id=${schoolId}`);
+                    } else {
+                        console.log('Carregando todas as turmas');
+                    }
+                    
+                    // Fazer requisição à API
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erro ao carregar turmas: ${response.status}`);
+                    }
+                    
+                    // Processar resposta
+                    const result = await response.json();
+                    console.log('Resposta da API de turmas:', result);
+                    
+                    // Extrair turmas do formato da resposta
+                    let classes = [];
+                    if (result && result.data && Array.isArray(result.data)) {
+                        classes = result.data;
+                    } else if (Array.isArray(result)) {
+                        classes = result;
+                    }
+                    
+                    // Resetar o seletor
+                    classSelector.innerHTML = '<option value="">Todas as turmas</option>';
+                    
+                    // Se não houver turmas
+                    if (classes.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = "";
+                        option.textContent = schoolId ? `Sem turmas para esta escola` : `Nenhuma turma disponível`;
+                        option.disabled = true;
+                        classSelector.appendChild(option);
+                    } else {
+                        // Ordenar turmas por nome
+                        classes.sort((a, b) => {
+                            const nameA = a.nome || a.name || '';
+                            const nameB = b.nome || b.name || '';
+                            return nameA.localeCompare(nameB);
+                        });
+                        
+                        // Adicionar turmas ao seletor
+                        classes.forEach(cls => {
+                            const option = document.createElement('option');
+                            option.value = cls.id;
+                            option.textContent = cls.nome || cls.name || `Turma ${cls.id}`;
+                            classSelector.appendChild(option);
+                        });
+                        
+                        console.log(`Adicionadas ${classes.length} turmas ao seletor`);
+                    }
+                    
+                    // Habilitar o seletor
+                    classSelector.disabled = false;
+                } catch (error) {
+                    console.error('Erro ao carregar turmas:', error);
+                    const classSelector = document.getElementById('filterClass');
+                    classSelector.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+                    classSelector.disabled = false;
+                }
+            }
+
+            document.getElementById('filterClass').addEventListener('change', function() {
+                console.log("Filtro de turma alterado");
+                const classId = this.value;
+                console.log(`Turma selecionada: ID=${classId || 'nenhuma'}, Valor=${this.value}`);
+                
+                // Carregar alunos da API com os novos filtros
+                loadStudentsFromAPI(1, apiPageLimit);
+            });
+            
+            // Atualizar seletor de turmas quando escola for selecionada no formulário
+            document.getElementById('studentSchool').addEventListener('change', function() {
+                const schoolId = this.value ? parseInt(this.value) : null;
+                populateClassSelector(document.getElementById('studentClass'), schoolId);
+            });
+            
+                        // Submissão do formulário de adição de aluno            addStudentForm.addEventListener('submit', function(e) {                e.preventDefault();                                const nome = document.getElementById('studentName').value;                const escola_id = parseInt(document.getElementById('studentSchool').value);                const turma_id = parseInt(document.getElementById('studentClass').value);                                if (nome.trim() !== '' && escola_id && turma_id) {                    // Chamar a API para criar o aluno                    createStudentAPI(nome, null, null, escola_id, turma_id);                } else {                    alert('Por favor, preencha todos os campos obrigatórios.');                }            });
+        }
+        
+        // Função para preencher os seletores de filtros
+        function populateFilters() {
+            // Preencher o seletor de escolas a partir da API
+            loadSchoolsToFilter();
+        }
+
+        // Função para carregar escolas da API e popular o filtro
+        async function loadSchoolsToFilter() {
+            try {
+                const schoolSelector = document.getElementById('filterSchool');
+                
+                // Mostrar indicador de carregamento
+                schoolSelector.innerHTML = '<option value="">Carregando escolas...</option>';
+                schoolSelector.disabled = true;
+                
+                // Carregar escolas da API
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/escolas?limit=100', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar escolas: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Resposta da API de escolas:', result);
+                
+                // Extrair escolas do formato da resposta
+                let schools = [];
+                if (result && result.data && Array.isArray(result.data)) {
+                    schools = result.data;
+                } else if (Array.isArray(result)) {
+                    schools = result;
+                }
+                
+                // Resetar o seletor
+                schoolSelector.innerHTML = '<option value="">Todas as escolas</option>';
+                
+                // Se não houver escolas
+                if (schools.length === 0) {
+                    console.log('Nenhuma escola encontrada na API');
+                    schoolSelector.disabled = false;
+                    return;
+                }
+                
+                // Ordenar escolas por nome
+                schools.sort((a, b) => {
+                    const nameA = a.nome || a.name || '';
+                    const nameB = b.nome || b.name || '';
+                    return nameA.localeCompare(nameB);
+                });
+                
+                // Adicionar escolas ao seletor
+                schools.forEach(school => {
+                    const option = document.createElement('option');
+                    option.value = school.id;
+                    option.textContent = school.nome || school.name || `Escola ${school.id}`;
+                    schoolSelector.appendChild(option);
+                });
+                
+                schoolSelector.disabled = false;
+                console.log(`Carregadas ${schools.length} escolas para o filtro`);
+                
+                // Após carregar as escolas, carregar todas as turmas
+                await updateClassesFilter("");
+                
+            } catch (error) {
+                console.error('Erro ao carregar escolas para o filtro:', error);
+                const schoolSelector = document.getElementById('filterSchool');
+                schoolSelector.innerHTML = '<option value="">Erro ao carregar escolas</option>';
+                schoolSelector.disabled = false;
+            }
+        }
+        
+        // Função para renderizar a lista de alunos usando a paginação do backend
+        function renderStudentsListWithBackendPagination(alunosData, paginationData) {
+            const studentsList = document.getElementById('studentsList');
+            const filterSchoolId = document.getElementById('filterSchool').value;
+            const filterClassId = document.getElementById('filterClass').value;
+            
+            console.log("Renderizando alunos com paginação do backend");
+            
+            // Debug: verificar um aluno exemplo
+            if (alunosData.length > 0) {
+                console.log("Exemplo de aluno da API:", alunosData[0]);
+            }
+            
+            // Aplicar filtros (eles já vêm aplicados da API)
+            let filteredStudents = alunosData;
+            let filterMessage = "";
+            
+            // Adicionar um banner informativo sobre os filtros aplicados
+            const filterBanner = document.getElementById('filterBanner') || document.createElement('div');
+            filterBanner.id = 'filterBanner';
+            filterBanner.className = 'bg-blue-50 border-l-4 border-blue-500 p-4 mb-4';
+            
+            // Se temos filtros, deveríamos fazer uma nova chamada à API com esses filtros
+            if (filterSchoolId && filterSchoolId !== '' && filterClassId && filterClassId !== '') {
+                // Obter detalhes da escola e turma para mostrar na mensagem
+                const schoolSelect = document.getElementById('filterSchool');
+                const classSelect = document.getElementById('filterClass');
+                const selectedSchool = schoolSelect.options[schoolSelect.selectedIndex];
+                const selectedClass = classSelect.options[classSelect.selectedIndex];
+                
+                const schoolName = selectedSchool ? selectedSchool.textContent : 'Desconhecida';
+                const className = selectedClass ? selectedClass.textContent : 'Desconhecida';
+                
+                filterMessage = `<strong>Filtros aplicados:</strong> Escola "${schoolName}" e Turma "${className}"<br>` +
+                                `<strong>${filteredStudents.length}</strong> alunos encontrados`;
+            } else if (filterSchoolId && filterSchoolId !== '') {
+                // Obter detalhes da escola para mostrar na mensagem
+                const schoolSelect = document.getElementById('filterSchool');
+                const selectedSchool = schoolSelect.options[schoolSelect.selectedIndex];
+                const schoolName = selectedSchool ? selectedSchool.textContent : 'Desconhecida';
+                
+                filterMessage = `<strong>Filtro aplicado:</strong> Escola "${schoolName}"<br>` +
+                                `<strong>${filteredStudents.length}</strong> alunos encontrados`;
+            } else if (filterClassId && filterClassId !== '') {
+                // Obter detalhes da turma para mostrar na mensagem
+                const classSelect = document.getElementById('filterClass');
+                const selectedClass = classSelect.options[classSelect.selectedIndex];
+                const className = selectedClass ? selectedClass.textContent : 'Desconhecida';
+                
+                filterMessage = `<strong>Filtro aplicado:</strong> Turma "${className}"<br>` +
+                                `<strong>${filteredStudents.length}</strong> alunos encontrados`;
+            } else {
+                // Sem filtros aplicados
+                filterMessage = `<strong>Mostrando página ${paginationData.page} de ${paginationData.totalPages}</strong> - ` +
+                                `Total: ${paginationData.total} alunos`;
+            }
+            
+            // Atualizar o banner informativo
+            filterBanner.innerHTML = filterMessage;
+            
+            // Adicionar o banner antes da lista de alunos se ainda não existir
+            const studentsListContainer = studentsList.parentElement;
+            if (!document.getElementById('filterBanner')) {
+                studentsListContainer.insertBefore(filterBanner, studentsList);
+            }
+            
+            // Se não houver alunos, mostrar mensagem e esconder paginação
+            if (filteredStudents.length === 0) {
+                studentsList.innerHTML = '<li class="px-4 py-4 sm:px-6 text-center text-gray-500">' +
+                    '<i class="fas fa-search text-xl mb-2"></i><br>' +
+                    'Nenhum aluno encontrado para os filtros selecionados</li>';
+                document.getElementById('studentsPaginationControls').classList.add('hidden');
+                return;
+            }
+            
+            // Mostrar os controles de paginação
+            const paginationControls = document.getElementById('studentsPaginationControls');
+            paginationControls.classList.remove('hidden');
+            
+            // Limpar a lista atual
+            studentsList.innerHTML = '';
+            
+            // Renderizar os alunos na página atual
+            filteredStudents.forEach(student => {
+                // Acessar diretamente as propriedades da API, com fallback para propriedades antigas
+                const escola_id = student.escola_id || student.schoolId;
+                const turma_id = student.turma_id || student.classId;
+                const nome = student.nome || student.name;
+                const matricula = student.matricula || student.registration;
+                
+                // Log para debug
+                console.log(`Renderizando aluno: ${nome}, Escola ID=${escola_id}, Turma ID=${turma_id}`);
+                
+                // Obter nome da escola
+                let schoolName = 'Escola não encontrada';
+                // Tentar obter da relação aninhada na API
+                if (student.escola && student.escola.nome) {
+                    schoolName = student.escola.nome;
+                }
+                // Caso contrário, buscar no seletor de escolas
+                else {
+                    const schoolSelect = document.getElementById('filterSchool');
+                    for (let i = 0; i < schoolSelect.options.length; i++) {
+                        if (schoolSelect.options[i].value == escola_id) {
+                            schoolName = schoolSelect.options[i].textContent;
+                            break;
+                        }
+                    }
+                }
+                
+                // Obter nome da turma
+                let className = `Turma ID: ${turma_id}`;
+                // Tentar obter da relação aninhada na API
+                if (student.turma && student.turma.nome) {
+                    className = student.turma.nome;
+                }
+                // Caso contrário, buscar no seletor de turmas
+                else {
+                    const classSelect = document.getElementById('filterClass');
+                    for (let i = 0; i < classSelect.options.length; i++) {
+                        if (classSelect.options[i].value == turma_id) {
+                            className = classSelect.options[i].textContent;
+                            break;
+                        }
+                    }
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'block hover:bg-gray-50';
+                li.innerHTML = `
+                    <div class="flex items-center px-4 py-4 sm:px-6">
+                        <div class="min-w-0 flex-1 flex items-center">
+                            <div class="flex-shrink-0">
+                                <span class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                    <i class="fas fa-user-graduate text-purple-600 text-lg"></i>
+                                </span>
+                            </div>
+                            <div class="min-w-0 flex-1 px-4">
+                                                    <div>                            <p class="text-sm font-medium text-blue-600 truncate">${nome}</p>                                        <p class="mt-1 flex flex-wrap gap-2">                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">                                                <i class="fas fa-school mr-1"></i> ${schoolName}                                            </span>                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">                                                <i class="fas fa-users mr-1"></i> ${className}                                            </span>                                        </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="text-indigo-600 hover:text-indigo-900 editStudent" data-id="${student.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="ml-4 text-red-600 hover:text-red-900 deleteStudent" data-id="${student.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+            studentsList.appendChild(li);
+        });
+            
+            // Atualizar os contadores de paginação
+            document.getElementById('studentsStartItem').textContent = ((paginationData.page - 1) * paginationData.limit) + 1;
+            document.getElementById('studentsEndItem').textContent = Math.min(
+                (paginationData.page * paginationData.limit), 
+                paginationData.total
+            );
+            document.getElementById('studentsTotalItems').textContent = paginationData.total;
+            
+            // Atualizar os botões de paginação
+            updateBackendPaginationControls(paginationData);
+            
+            // Adicionar event listeners para os botões de editar e excluir
+            document.querySelectorAll('.editStudent').forEach(button => {
+                button.addEventListener('click', function() {
+                    const studentId = parseInt(this.getAttribute('data-id'));
+                    openEditStudentModal(studentId);
+                });
+            });
+            
+            document.querySelectorAll('.deleteStudent').forEach(button => {
+                button.addEventListener('click', function() {
+                    const studentId = parseInt(this.getAttribute('data-id'));
+                    deleteStudent(studentId);
+                });
+            });
+        }
+
+        // Função para atualizar os controles de paginação do backend
+        function updateBackendPaginationControls(paginationData) {
+            const paginationContainer = document.getElementById('studentsPaginationContainer');
+            paginationContainer.innerHTML = '';
+            
+            // Configurar botões de página anterior/próxima
+            const prevPageBtn = document.getElementById('studentsPrevPage');
+            const nextPageBtn = document.getElementById('studentsNextPage');
+            const prevPageMobileBtn = document.getElementById('studentsPrevPageMobile');
+            const nextPageMobileBtn = document.getElementById('studentsNextPageMobile');
+            const currentPageMobile = document.getElementById('studentsCurrentPageMobile');
+            
+            // Atualizar paginação móvel
+            if (currentPageMobile) {
+                currentPageMobile.textContent = paginationData.page;
+            }
+            
+            // Desabilitar botão anterior se estiver na primeira página
+            if (paginationData.page <= 1) {
+                prevPageBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                prevPageMobileBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                prevPageBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                prevPageMobileBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Desabilitar botão próximo se estiver na última página
+            if (paginationData.page >= paginationData.totalPages) {
+                nextPageBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                nextPageMobileBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                nextPageBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextPageMobileBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Adicionar event listeners para os botões de paginação
+            prevPageBtn.onclick = function() {
+                if (paginationData.page > 1) {
+                    loadStudentsFromAPI(paginationData.page - 1, paginationData.limit);
+                }
+            };
+            
+            nextPageBtn.onclick = function() {
+                if (paginationData.page < paginationData.totalPages) {
+                    loadStudentsFromAPI(paginationData.page + 1, paginationData.limit);
+                }
+            };
+            
+            prevPageMobileBtn.onclick = function() {
+                if (paginationData.page > 1) {
+                    loadStudentsFromAPI(paginationData.page - 1, paginationData.limit);
+                }
+            };
+            
+            nextPageMobileBtn.onclick = function() {
+                if (paginationData.page < paginationData.totalPages) {
+                    loadStudentsFromAPI(paginationData.page + 1, paginationData.limit);
+                }
+            };
+            
+            // Criar a paginação numérica (limitar para não ficar muito grande)
+            let startPage = Math.max(1, paginationData.page - 2);
+            let endPage = Math.min(paginationData.totalPages, paginationData.page + 2);
+            
+            // Ajustar para sempre mostrar 5 páginas (se possível)
+            if (endPage - startPage < 4 && paginationData.totalPages >= 5) {
+                if (startPage === 1) {
+                    endPage = Math.min(5, paginationData.totalPages);
+                } else if (endPage === paginationData.totalPages) {
+                    startPage = Math.max(1, paginationData.totalPages - 4);
+                }
+            }
+            
+            // Botão para a primeira página (se não estiver próximo)
+            if (startPage > 1) {
+                const firstPageBtn = document.createElement('button');
+                firstPageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+                firstPageBtn.textContent = '1';
+                firstPageBtn.onclick = function() {
+                    loadStudentsFromAPI(1, paginationData.limit);
+                };
+                paginationContainer.appendChild(firstPageBtn);
+                
+                // Adicionar reticências se não estiver na página 2
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+                    ellipsis.textContent = '...';
+                    paginationContainer.appendChild(ellipsis);
+                }
+            }
+            
+            // Criar botões para cada página no intervalo
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                
+                if (i === paginationData.page) {
+                    pageBtn.className = 'z-10 relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600';
+                } else {
+                    pageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+                }
+                
+                pageBtn.textContent = i.toString();
+                pageBtn.onclick = function() {
+                    loadStudentsFromAPI(i, paginationData.limit);
+                };
+                
+                paginationContainer.appendChild(pageBtn);
+            }
+            
+            // Botão para a última página (se não estiver próximo)
+            if (endPage < paginationData.totalPages) {
+                // Adicionar reticências se não estiver na penúltima página
+                if (endPage < paginationData.totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+                    ellipsis.textContent = '...';
+                    paginationContainer.appendChild(ellipsis);
+                }
+                
+                const lastPageBtn = document.createElement('button');
+                lastPageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+                lastPageBtn.textContent = paginationData.totalPages.toString();
+                lastPageBtn.onclick = function() {
+                    loadStudentsFromAPI(paginationData.totalPages, paginationData.limit);
+                };
+                paginationContainer.appendChild(lastPageBtn);
+            }
+        }
+        
+        // Função para criar alunos de exemplo quando a API falha
+        function createSampleStudents() {
+            // Primeiro vamos verificar se já temos escolas e turmas
+            let schools = getSchools();
+            let classes = getClasses();
+            
+            // Se não houver escolas, criar algumas
+            if (schools.length === 0) {
+                console.log('Criando escolas de exemplo...');
+                
+                // Criar escola exemplo
+                const escola1 = { id: 1, name: 'Escola Municipal João Silva', region: 'Leste', group: 'Municipal' };
+                const escola2 = { id: 2, name: 'Escola Estadual Maria Souza', region: 'Centro', group: 'Estadual' };
+                
+                schools = [escola1, escola2];
+                localStorage.setItem('schools', JSON.stringify(schools));
+            }
+            
+            // Se não houver turmas, criar algumas
+            if (classes.length === 0) {
+                console.log('Criando turmas de exemplo...');
+                
+                // Criar turmas exemplo
+                const turma1 = { id: 1, name: '1º Ano - Manhã', series: '1', schoolId: 1, shift: 'Manhã' };
+                const turma2 = { id: 2, name: '2º Ano - Tarde', series: '2', schoolId: 1, shift: 'Tarde' };
+                const turma3 = { id: 3, name: '3º Ano - Manhã', series: '3', schoolId: 2, shift: 'Manhã' };
+                
+                classes = [turma1, turma2, turma3];
+                localStorage.setItem('classes', JSON.stringify(classes));
+            }
+            
+            // Verificar se já existem alunos
+            const existingStudents = JSON.parse(localStorage.getItem('students')) || [];
+            
+            if (existingStudents.length === 0) {
+                console.log('Criando alunos de exemplo...');
+                
+                // Lista de nomes para criar alunos aleatórios
+                const nomes = ['Ana Silva', 'João Oliveira', 'Maria Santos', 'Pedro Costa', 'Carla Pereira', 
+                              'Lucas Ferreira', 'Juliana Rodrigues', 'Mateus Almeida', 'Beatriz Lima', 'Gabriel Souza'];
+                
+                // Criar 10 alunos de exemplo
+                nomes.forEach((nome, index) => {
+                    // Distribuir os alunos entre as escolas e turmas disponíveis
+                    const schoolId = schools[index % schools.length].id;
+                    
+                    // Obter turmas da escola atual
+                    const schoolClasses = classes.filter(cls => cls.schoolId === schoolId);
+                    const classId = schoolClasses[index % schoolClasses.length].id;
+                    
+                    // Criar matrícula como número aleatório 6 dígitos
+                    const matricula = Math.floor(100000 + Math.random() * 900000).toString();
+                    
+                    // Adicionar aluno
+                    addStudent(
+                        nome,
+                        matricula,
+                        null, // data de nascimento
+                        schoolId,
+                        classId,
+                        index + 1 // ID fictício da API
+                    );
+                });
+                
+                console.log('Criados 10 alunos de exemplo');
+            }
+        }
+
+                // Função para adicionar um aluno        function addStudent(name, registration, birthdate, schoolId, classId, apiId = null) {            let students = JSON.parse(localStorage.getItem('students')) || [];            const newId = students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1;                        // Conversão explícita dos IDs para números para garantir consistência            schoolId = ensureNumber(schoolId);            classId = ensureNumber(classId);                        // Log para debug            console.log(`Adicionando aluno: nome=${name}, escola_id=${schoolId}, turma_id=${classId}`);                        const newStudent = {                id: newId,                name: name,                schoolId: schoolId,                classId: classId,                apiId: apiId // Armazenar o ID da API se fornecido            };                        students.push(newStudent);            localStorage.setItem('students', JSON.stringify(students));            return newStudent;        }
+
+        // Função para obter as escolas do localStorage
+        function getSchools() {
+            return JSON.parse(localStorage.getItem('schools')) || [];
+        }
+
+        // Função para excluir um aluno
+        async function deleteStudent(studentId) {
+            if (!confirm('Tem certeza que deseja excluir este aluno?')) {
+                return;
+            }
+            
+            try {
+                // Obter informações do aluno
+                const students = JSON.parse(localStorage.getItem('students')) || [];
+                const studentIndex = students.findIndex(s => s.id === studentId);
+                
+                if (studentIndex === -1) {
+                    alert('Aluno não encontrado. A lista será atualizada.');
+                    renderStudentsList();
+                    return;
+                }
+                
+                const student = students[studentIndex];
+                
+                // Se temos um ID da API, excluir via API
+                if (student.apiId) {
+                    console.log(`Tentando excluir aluno com ID da API: ${student.apiId}`);
+                    
+                    try {
+                        const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/alunos/${student.apiId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (!response.ok) {
+                            const errorData = await response.text();
+                            console.error(`Erro ao excluir aluno da API: ${errorData}`);
+                            alert(`Erro ao excluir aluno da API. O aluno será removido apenas localmente.`);
+                        } else {
+                            console.log('Aluno excluído com sucesso da API');
+                        }
+                    } catch (apiError) {
+                        console.error('Erro ao acessar API para exclusão:', apiError);
+                        alert(`Erro ao acessar API: ${apiError.message}. O aluno será removido apenas localmente.`);
+                    }
+                }
+                
+                // Remover o aluno do localStorage de qualquer forma
+                students.splice(studentIndex, 1);
+                localStorage.setItem('students', JSON.stringify(students));
+                
+                // Atualizar a lista de alunos
+                alert('Aluno excluído com sucesso!');
+                renderStudentsList();
+                
+            } catch (error) {
+                console.error('Erro ao excluir aluno:', error);
+                alert('Ocorreu um erro ao excluir o aluno. Por favor, tente novamente.');
+            }
+        }
+        
+        // Função para abrir o modal de edição de aluno
+        function openEditStudentModal(studentId) {
+  // Criar elementos do modal
+  const modalOverlay = document.createElement('div');
+  modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+  
+  const modalContent = document.createElement('div');
+  modalContent.className = 'bg-white rounded-lg p-6 w-full max-w-md';
+  
+  const modalHeader = document.createElement('div');
+  modalHeader.className = 'flex justify-between items-center mb-4';
+  
+  const modalTitle = document.createElement('h3');
+  modalTitle.className = 'text-lg font-bold';
+  modalTitle.textContent = 'Editar Aluno';
+  
+  const closeButton = document.createElement('button');
+  closeButton.innerHTML = '✕';
+  closeButton.className = 'text-gray-500 hover:text-gray-700';
+  
+  const form = document.createElement('form');
+  form.className = 'space-y-4';
+  
+  // Campos do formulário - removido data de nascimento e matricula
+  const fields = [
+    { id: 'editNome', label: 'Nome', type: 'text' },
+    { id: 'editEscolaId', label: 'Escola', type: 'select' },
+    { id: 'editTurmaId', label: 'Turma', type: 'select' }
+  ];
+
+  // Criar os campos do formulário
+  fields.forEach(field => {
+    const wrapper = document.createElement('div');
+    const label = document.createElement('label');
+    label.className = 'block text-sm font-medium text-gray-700';
+    label.textContent = field.label;
+    
+    if (field.type === 'select') {
+      const select = document.createElement('select');
+      select.id = field.id;
+      select.required = true;
+      select.className = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500';
+      
+      // Opção placeholder
+      const placeholderOption = document.createElement('option');
+      placeholderOption.value = '';
+      placeholderOption.textContent = `Selecione ${field.label.toLowerCase()}`;
+      select.appendChild(placeholderOption);
+      
+      wrapper.appendChild(label);
+      wrapper.appendChild(select);
+    } else {
+      const input = document.createElement('input');
+      input.type = field.type;
+      input.id = field.id;
+      input.required = true;
+      input.className = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500';
+      
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+    }
+    
+    form.appendChild(wrapper);
+  });
+
+  // Botões de ação
+  const buttonWrapper = document.createElement('div');
+  buttonWrapper.className = 'flex justify-end space-x-3 mt-6';
+  
+  const cancelButton = document.createElement('button');
+  cancelButton.type = 'button';
+  cancelButton.textContent = 'Cancelar';
+  cancelButton.className = 'px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200';
+  
+  const submitButton = document.createElement('button');
+  submitButton.type = 'submit';
+  submitButton.textContent = 'Salvar Alterações';
+  submitButton.className = 'px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700';
+
+  // Montar estrutura
+  buttonWrapper.appendChild(cancelButton);
+  buttonWrapper.appendChild(submitButton);
+  form.appendChild(buttonWrapper);
+  
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(closeButton);
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(form);
+  modalOverlay.appendChild(modalContent);
+  
+  // Adicionar ao body
+  document.body.appendChild(modalOverlay);
+
+  // Função para fechar modal
+  const closeModal = () => document.body.removeChild(modalOverlay);
+  
+  // Event listeners
+  closeButton.addEventListener('click', closeModal);
+  cancelButton.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
+
+  // Funções auxiliares para preencher os seletores
+  const populateSchoolsInEditForm = async () => {
+    const schoolSelect = document.getElementById('editEscolaId');
+    
+    try {
+      // Limpando options existentes
+      while (schoolSelect.options.length > 1) {
+        schoolSelect.remove(1);
+      }
+      
+      // Carregar as escolas da API
+      const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/escolas?limit=100');
+      if (!response.ok) throw new Error(`Erro ao carregar escolas: ${response.status}`);
+      
+      const data = await response.json();
+      const schools = Array.isArray(data) ? data : (data.data || []);
+      
+      // Adicionar as escolas ao seletor
+      schools.forEach(school => {
+        const option = document.createElement('option');
+        option.value = school.id;
+        option.textContent = school.nome || school.name || `Escola ${school.id}`;
+        schoolSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Erro ao carregar escolas:', error);
+    }
+  };
+  
+  const populateClassesInEditForm = async (schoolId) => {
+    const classSelect = document.getElementById('editTurmaId');
+    
+    try {
+      // Limpando options existentes
+      while (classSelect.options.length > 1) {
+        classSelect.remove(1);
+      }
+      
+      if (!schoolId) return;
+      
+      // Carregar turmas filtradas por escola
+      const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/turmas?escola_id=${schoolId}&limit=100`);
+      if (!response.ok) throw new Error(`Erro ao carregar turmas: ${response.status}`);
+      
+      const data = await response.json();
+      const classes = Array.isArray(data) ? data : (data.data || []);
+      
+      // Adicionar as turmas ao seletor
+      classes.forEach(cls => {
+        const option = document.createElement('option');
+        option.value = cls.id;
+        option.textContent = cls.nome || cls.name || `Turma ${cls.id}`;
+        classSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Erro ao carregar turmas:', error);
+    }
+  };
+  
+  // Event listener para atualizar as turmas quando mudar a escola
+  document.getElementById('editEscolaId').addEventListener('change', function() {
+    populateClassesInEditForm(this.value);
+  });
+  
+  // Carregar as escolas
+  populateSchoolsInEditForm();
+  
+  // Buscar dados do aluno com debug para entender o problema
+  console.log(`Buscando aluno com ID: ${studentId}, tipo: ${typeof studentId}`);
+  const students = JSON.parse(localStorage.getItem('students')) || [];
+  console.log(`Total de alunos no localStorage: ${students.length}`);
+  
+  // Imprimir os primeiros alunos para debug
+  if (students.length > 0) {
+    console.log('Exemplos de alunos no localStorage:');
+    students.slice(0, 3).forEach((s, i) => console.log(`Aluno ${i+1}: ID=${s.id} (${typeof s.id}), Nome=${s.name}`));
+  }
+  
+  // Tentar encontrar tanto por número quanto por string
+  let student = students.find(s => s.id === studentId);
+  if (!student) {
+    student = students.find(s => s.id === Number(studentId));
+  }
+  if (!student) {
+    student = students.find(s => Number(s.id) === studentId);
+  }
+  
+  if (student) {
+    console.log('Aluno encontrado no localStorage:', student);
+    
+    // Se encontrou no localStorage, preencher o formulário com os dados locais
+    document.getElementById('editNome').value = student.name || '';
+    
+    // Preencher os selects após carregar as opções
+    setTimeout(() => {
+      const schoolSelect = document.getElementById('editEscolaId');
+      for (let i = 0; i < schoolSelect.options.length; i++) {
+        if (schoolSelect.options[i].value == student.schoolId) {
+          schoolSelect.selectedIndex = i;
+          break;
+        }
+      }
+      
+      // Carregar turmas da escola e então selecionar a correta
+      populateClassesInEditForm(student.schoolId).then(() => {
+        setTimeout(() => {
+          const classSelect = document.getElementById('editTurmaId');
+          for (let i = 0; i < classSelect.options.length; i++) {
+            if (classSelect.options[i].value == student.classId) {
+              classSelect.selectedIndex = i;
+              break;
+            }
+          }
+        }, 300);
+      });
+    }, 300);
+  } else {
+    console.log('Aluno não encontrado no localStorage, tentando API...');
+    
+    // Se não encontrou no localStorage, tentar buscar da API
+    fetch(`https://sag-sag.rak8a3.easypanel.host/api/alunos/${studentId}`)
+      .then(response => {
+        if (!response.ok) throw new Error('Aluno não encontrado');
+        return response.json();
+      })
+      .then(aluno => {
+        console.log('Dados do aluno recebidos da API:', aluno);
+        
+        document.getElementById('editNome').value = aluno.nome || '';
+        
+        // Atualizar os selects
+        setTimeout(() => {
+          const schoolSelect = document.getElementById('editEscolaId');
+          for (let i = 0; i < schoolSelect.options.length; i++) {
+            if (schoolSelect.options[i].value == aluno.escola_id) {
+              schoolSelect.selectedIndex = i;
+              break;
+            }
+          }
+          
+          // Carregar turmas da escola e então selecionar a correta
+          populateClassesInEditForm(aluno.escola_id).then(() => {
+            setTimeout(() => {
+              const classSelect = document.getElementById('editTurmaId');
+              for (let i = 0; i < classSelect.options.length; i++) {
+                if (classSelect.options[i].value == aluno.turma_id) {
+                  classSelect.selectedIndex = i;
+                  break;
+                }
+              }
+            }, 300);
+          });
+        }, 300);
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        alert(error.message);
+        closeModal();
+      });
+  }
+
+  // Handle form submission
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const updatedData = {
+      nome: document.getElementById('editNome').value,
+      turma_id: parseInt(document.getElementById('editTurmaId').value),
+      escola_id: parseInt(document.getElementById('editEscolaId').value)
+    };
+
+    try {
+      // Primeiro atualizar o registro local
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      const studentIndex = students.findIndex(s => s.id === studentId);
+      
+      if (studentIndex !== -1) {
+        // Atualizar dados no armazenamento local
+        students[studentIndex].name = updatedData.nome;
+        students[studentIndex].classId = updatedData.turma_id;
+        students[studentIndex].schoolId = updatedData.escola_id;
+        
+        localStorage.setItem('students', JSON.stringify(students));
+      }
+      
+      // Tentar atualizar na API se tivermos o ID da API
+      if (studentIndex !== -1 && students[studentIndex].apiId) {
+        try {
+          const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/alunos/${students[studentIndex].apiId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+          });
+
+          if (!response.ok) {
+            console.warn(`Alerta: Não foi possível atualizar o aluno na API (status ${response.status}), mas os dados foram atualizados localmente.`);
+          } else {
+            console.log('Aluno atualizado com sucesso na API');
+          }
+        } catch (apiError) {
+          console.warn('Alerta: Erro ao acessar a API, mas os dados foram atualizados localmente:', apiError);
+        }
+      }
+      
+      alert('Aluno atualizado com sucesso!');
+      closeModal();
+      
+      // Atualizar a interface
+      renderStudentsList();
+    } catch (error) {
+      console.error('Erro na atualização:', error);
+      alert(`Erro ao atualizar aluno: ${error.message}`);
+    }
+  });
+}
+        // Função para renderizar a lista de alunos (com filtros aplicados)
+        function renderStudentsList() {
+            try {
+                const filterSchoolId = ensureNumber(document.getElementById('filterSchool').value);
+                const filterClassId = ensureNumber(document.getElementById('filterClass').value);
+                
+                console.log(`-------- INICIANDO RENDERIZAÇÃO DE ALUNOS --------`);
+                console.log(`Filtros selecionados: Escola ID=${filterSchoolId || 'todas'}, Turma ID=${filterClassId || 'todas'}`);
+                
+                // Mostrar detalhes do que foi selecionado
+                if (filterSchoolId) {
+                    const school = getSchools().find(s => s.id === filterSchoolId);
+                    console.log(`Escola selecionada: ${school ? school.name : 'Não encontrada'} (ID=${filterSchoolId})`);
+                }
+                if (filterClassId) {
+                    const cls = getClasses().find(c => c.id === filterClassId);
+                    console.log(`Turma selecionada: ${cls ? cls.name : 'Não encontrada'} (ID=${filterClassId})`);
+                }
+                
+                // Obter alunos filtrados
+                const filteredStudents = getStudents(filterSchoolId, filterClassId);
+                console.log(`Filtro resultou em ${filteredStudents.length} alunos`);
+                
+                // Atualizar o banner informativo com os filtros aplicados
+                const filterBanner = document.getElementById('filterBanner');
+                let filterMessage = "";
+                
+                if (filterSchoolId && filterClassId) {
+                    // Obter nomes para a mensagem
+                    const escola = getSchools().find(s => s.id === filterSchoolId);
+                    const turma = getClasses().find(c => c.id === filterClassId);
+                    filterMessage = `<strong>Filtros aplicados:</strong> Escola "${escola?.name || 'Desconhecida'}" e Turma "${turma?.name || 'Desconhecida'}" - <strong>${filteredStudents.length}</strong> alunos encontrados`;
+                } else if (filterSchoolId) {
+                    // Obter nome da escola para a mensagem
+                    const escola = getSchools().find(s => s.id === filterSchoolId);
+                    filterMessage = `<strong>Filtro aplicado:</strong> Escola "${escola?.name || 'Desconhecida'}" - <strong>${filteredStudents.length}</strong> alunos encontrados`;
+                } else if (filterClassId) {
+                    // Obter nome da turma para a mensagem
+                    const turma = getClasses().find(c => c.id === filterClassId);
+                    const turmaName = turma?.name || 'Desconhecida';
+                    
+                    // Adicionar informação da escola da turma se disponível
+                    let escolaInfo = '';
+                    if (turma && turma.schoolId) {
+                        const escola = getSchools().find(s => s.id === ensureNumber(turma.schoolId));
+                        if (escola) {
+                            escolaInfo = ` da escola "${escola.name}"`;
+                        }
+                    }
+                    
+                    filterMessage = `<strong>Filtro aplicado:</strong> Turma "${turmaName}"${escolaInfo} - <strong>${filteredStudents.length}</strong> alunos encontrados`;
+                } else {
+                    // Sem filtros aplicados
+                    filterMessage = `<strong>Mostrando todos os alunos</strong> - Total: <strong>${filteredStudents.length}</strong> alunos`;
+                    
+                    // Se estamos usando paginação da API, mostrar informações de paginação
+                    if (typeof currentApiPage !== 'undefined' && typeof totalApiPages !== 'undefined') {
+                        filterMessage = `<strong>Mostrando página ${currentApiPage} de ${totalApiPages}</strong> - Total: <strong>${filteredStudents.length}</strong> alunos`;
+                    }
+                }
+                
+                // Atualizar o banner
+                filterBanner.innerHTML = filterMessage;
+                filterBanner.classList.remove('hidden');
+                
+                // Se não houver resultados
+                if (filteredStudents.length === 0) {
+                    document.getElementById('studentsList').innerHTML = `
+                        <li class="px-4 py-4 sm:px-6 text-center text-gray-500">
+                            <i class="fas fa-search text-xl mb-2"></i><br>
+                            Nenhum aluno encontrado para os filtros selecionados
+                        </li>`;
+                    document.getElementById('studentsPaginationControls').classList.add('hidden');
+                    return;
+                }
+                
+                // Inicializar paginação local para os resultados filtrados
+                const itemsPerPage = 10;
+                const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+                const currentPage = 1;
+                
+                // Obter itens da página atual
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, filteredStudents.length);
+                const studentsOnPage = filteredStudents.slice(startIndex, endIndex);
+                
+                // Limpar a lista atual
+                const studentsList = document.getElementById('studentsList');
+                studentsList.innerHTML = '';
+                
+                // Renderizar os alunos na página atual
+                studentsOnPage.forEach((student, index) => {
+                    // Debug de cada aluno renderizado
+                    console.log(`Renderizando aluno ${index+1}: ID=${student.id}, Nome=${student.name}, Escola=${student.schoolId}, Turma=${student.classId}`);
+                    
+                    // Buscar escola e turma
+                    const school = getSchools().find(s => ensureNumber(s.id) === ensureNumber(student.schoolId));
+                    const schoolName = school ? school.name : 'Escola não encontrada';
+                    
+                    const cls = findClassById(ensureNumber(student.classId));
+                    const className = cls ? cls.name : `Turma ID: ${student.classId}`;
+                    
+                    const li = document.createElement('li');
+                    li.className = 'block hover:bg-gray-50';
+                                        li.innerHTML = `                        <div class="flex items-center px-4 py-4 sm:px-6">                            <div class="min-w-0 flex-1 flex items-center">                                <div class="flex-shrink-0">                                    <span class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">                                        <i class="fas fa-user-graduate text-purple-600 text-lg"></i>                                    </span>                                </div>                                <div class="min-w-0 flex-1 px-4">                                    <div>                                    <p class="text-sm font-medium text-blue-600 truncate">${student.name}</p>                                        <p class="mt-1 flex flex-wrap gap-2">                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">                                                <i class="fas fa-school mr-1"></i> ${schoolName}                                            </span>                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">                                                <i class="fas fa-users mr-1"></i> ${className}                                            </span>                                        </p>                                    </div>                                </div>                            </div>
+                            <div>
+                                <button class="text-indigo-600 hover:text-indigo-900 editStudent" data-id="${student.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="ml-4 text-red-600 hover:text-red-900 deleteStudent" data-id="${student.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    studentsList.appendChild(li);
+                });
+                
+                // Atualizar os contadores de paginação
+                document.getElementById('studentsStartItem').textContent = startIndex + 1;
+                document.getElementById('studentsEndItem').textContent = endIndex;
+                document.getElementById('studentsTotalItems').textContent = filteredStudents.length;
+                
+                // Mostrar os controles de paginação
+                document.getElementById('studentsPaginationControls').classList.remove('hidden');
+                
+                // Adicionar event listeners para os botões de editar e excluir
+                document.querySelectorAll('.editStudent').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const studentId = parseInt(this.getAttribute('data-id'));
+                        openEditStudentModal(studentId);
+                    });
+                });
+                
+                document.querySelectorAll('.deleteStudent').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const studentId = parseInt(this.getAttribute('data-id'));
+                        deleteStudent(studentId);
+                    });
+                });
+                
+                console.log(`-------- RENDERIZAÇÃO DE ALUNOS CONCLUÍDA --------`);
+            } catch (error) {
+                console.error('Erro ao renderizar lista de alunos:', error);
+                alert('Ocorreu um erro ao exibir a lista de alunos. Consulte o console para mais detalhes.');
+            }
+        }
+
+        // Função para validar e corrigir problemas de consistência nos dados de alunos
+        function validateAndFixStudentData() {
+            console.log("Validando e corrigindo dados de alunos...");
+            
+            let students = JSON.parse(localStorage.getItem('students')) || [];
+            const schools = JSON.parse(localStorage.getItem('schools')) || [];
+            const classes = JSON.parse(localStorage.getItem('classes')) || [];
+            let hasChanges = false;
+            
+            // Imprimir informações de debug
+            console.log(`Total de escolas: ${schools.length}`);
+            console.log(`Total de turmas: ${classes.length}`);
+            console.log(`Total de alunos: ${students.length}`);
+            
+            // Imprimir detalhes de cada escola
+            schools.forEach((school, index) => {
+                console.log(`Escola ${index+1}: ID=${school.id}, Nome=${school.name}`);
+            });
+            
+            // Imprimir detalhes de cada turma
+            classes.forEach((cls, index) => {
+                console.log(`Turma ${index+1}: ID=${cls.id}, Nome=${cls.name}, Escola ID=${cls.schoolId}`);
+                
+                // Verificar se a escola desta turma existe
+                const school = schools.find(s => ensureNumber(s.id) === ensureNumber(cls.schoolId));
+                if (!school) {
+                    console.warn(`Aviso: Turma "${cls.name}" (ID=${cls.id}) está associada a uma escola inexistente (ID=${cls.schoolId})`);
+                }
+            });
+            
+            // Validar e corrigir cada aluno
+            students.forEach((student, index) => {
+                console.log(`Aluno ${index+1}: ID=${student.id}, Nome=${student.name}, Escola ID=${student.schoolId}, Turma ID=${student.classId}`);
+                
+                // Garantir que todos os IDs sejam números
+                if (typeof student.id !== 'number') {
+                    console.log(`Corrigindo: ID do aluno "${student.name}" não é um número`);
+                    student.id = ensureNumber(student.id);
+                    hasChanges = true;
+                }
+                
+                if (typeof student.schoolId !== 'number' && student.schoolId !== null) {
+                    console.log(`Corrigindo: ID da escola do aluno "${student.name}" não é um número`);
+                    student.schoolId = ensureNumber(student.schoolId);
+                    hasChanges = true;
+                }
+                
+                if (typeof student.classId !== 'number' && student.classId !== null) {
+                    console.log(`Corrigindo: ID da turma do aluno "${student.name}" não é um número`);
+                    student.classId = ensureNumber(student.classId);
+                    hasChanges = true;
+                }
+                
+                // Verificar se a escola do aluno existe
+                if (student.schoolId) {
+                    const school = schools.find(s => ensureNumber(s.id) === ensureNumber(student.schoolId));
+                    if (!school) {
+                        console.warn(`Aviso: Aluno "${student.name}" está associado a uma escola inexistente (ID=${student.schoolId})`);
+                    }
+                }
+                
+                // Verificar se a turma do aluno existe
+                if (student.classId) {
+                    const cls = classes.find(c => ensureNumber(c.id) === ensureNumber(student.classId));
+                    if (!cls) {
+                        console.warn(`Aviso: Aluno "${student.name}" está associado a uma turma inexistente (ID=${student.classId})`);
+                    } else {
+                        // Verificar se a turma do aluno pertence à escola do aluno
+                        if (student.schoolId && ensureNumber(cls.schoolId) !== ensureNumber(student.schoolId)) {
+                            console.warn(`Aviso: Aluno "${student.name}" está em uma turma (ID=${student.classId}) que não pertence à sua escola (ID=${student.schoolId})`);
+                            
+                            // Opcionalmente poderia corrigir este problema atualizando a escola do aluno
+                            // para corresponder à escola da turma
+                            //student.schoolId = cls.schoolId;
+                            //hasChanges = true;
+                        }
+                    }
+                }
+            });
+            
+            // Salvar alterações se houver
+            if (hasChanges) {
+                console.log("Corrigidos problemas nos dados de alunos. Salvando alterações...");
+                localStorage.setItem('students', JSON.stringify(students));
+            } else {
+                console.log("Nenhum problema encontrado nos dados de alunos.");
+            }
+        }
+
+        // Nova função robusta para encontrar uma turma por ID
+        function findClassById(classId) {
+            // Realizar verificações iniciais
+            if (classId === null || classId === undefined) {
+                console.log('findClassById: ID de turma nulo ou indefinido');
+                return null;
+            }
+            
+            console.log(`findClassById: Procurando turma com ID=${classId} (tipo: ${typeof classId})`);
+            
+            // Obter todas as turmas
+            const allClasses = JSON.parse(localStorage.getItem('classes')) || [];
+            console.log(`findClassById: Total de turmas disponíveis: ${allClasses.length}`);
+            
+            if (allClasses.length === 0) {
+                console.warn('findClassById: Nenhuma turma encontrada no localStorage. Criando turmas de exemplo...');
+                createSampleClasses();
+                // Recarregar as turmas após criar exemplos
+                const updatedClasses = JSON.parse(localStorage.getItem('classes')) || [];
+                console.log(`findClassById: Agora temos ${updatedClasses.length} turmas após criar exemplos`);
+                
+                // Se ainda não tivermos turmas, não há o que procurar
+                if (updatedClasses.length === 0) {
+                    return null;
+                }
+                
+                // Continue a busca com as turmas recém-criadas
+                return findClassById(classId);
+            }
+            
+            // Debug - mostrar todas as turmas disponíveis
+            allClasses.forEach((c, i) => {
+                console.log(`Turma ${i+1}: ID=${c.id} (${typeof c.id}), Nome=${c.name}, Escola=${c.schoolId}`);
+            });
+            
+            // Tentar encontrar a turma usando conversão numérica (método preferencial)
+            const numericId = ensureNumber(classId);
+            let cls = allClasses.find(c => ensureNumber(c.id) === numericId);
+            
+            if (cls) {
+                console.log(`findClassById: Turma encontrada pelo ID numérico: ${cls.name} (ID=${cls.id})`);
+                return cls;
+            }
+            
+            // Se não encontrou pelo número, tentar com string
+            if (classId !== null && classId !== undefined) {
+                const stringId = String(classId).trim();
+                cls = allClasses.find(c => String(c.id).trim() === stringId);
+                
+                if (cls) {
+                    console.log(`findClassById: Turma encontrada pela comparação de strings: ${cls.name} (ID=${cls.id})`);
+                    return cls;
+                }
+            }
+            
+            // Tentar uma abordagem menos precisa, ignorando espaços e caracteres especiais
+            if (typeof classId === 'string' || typeof classId === 'number') {
+                const cleanId = String(classId).replace(/\s+/g, '').toLowerCase();
+                cls = allClasses.find(c => 
+                    String(c.id).replace(/\s+/g, '').toLowerCase() === cleanId
+                );
+                
+                if (cls) {
+                    console.log(`findClassById: Turma encontrada após limpeza de caracteres: ${cls.name} (ID=${cls.id})`);
+                    return cls;
+                }
+            }
+            
+            // Fallback: Se a ID for um número pequeno (1-10), pegar a turma com esse índice-1
+            if (typeof numericId === 'number' && numericId > 0 && numericId <= 10 && allClasses.length >= numericId) {
+                // Tenta usar o ID como índice (com ajuste de base-0)
+                const indexCls = allClasses[numericId - 1];
+                console.log(`findClassById: Usando fallback por índice. ID=${numericId}, Turma=${indexCls.name}`);
+                return indexCls;
+            }
+            
+            // Removido o fallback que retornava a primeira turma quando não havia correspondência
+            
+            // Se nenhuma das tentativas anteriores funcionou, retornar null
+            console.error(`findClassById: Nenhuma turma encontrada para ID=${classId}.`);
+            return null;
+        }
+
+        // Função para criar turmas de exemplo quando a API falha
+        function createSampleClasses() {
+            console.log('Criando turmas de exemplo...');
+            
+            // Verificar se já existem turmas
+            const existingClasses = JSON.parse(localStorage.getItem('classes')) || [];
+            
+            if (existingClasses.length > 0) {
+                console.log(`Já existem ${existingClasses.length} turmas no sistema. Não criando turmas de exemplo.`);
+                return;
+            }
+            
+            // Primeiro vamos verificar se temos escolas
+            let schools = JSON.parse(localStorage.getItem('schools')) || [];
+            
+            // Se não houver escolas, criar algumas
+            if (schools.length === 0) {
+                console.log('Criando escolas de exemplo para as turmas...');
+                
+                // Criar escola exemplo
+                const escola1 = { id: 1, name: 'Escola Municipal João Silva', region: 'Leste', group: 'Municipal' };
+                const escola2 = { id: 2, name: 'Escola Estadual Maria Souza', region: 'Centro', group: 'Estadual' };
+                
+                schools = [escola1, escola2];
+                localStorage.setItem('schools', JSON.stringify(schools));
+            }
+            
+            // Criar turmas exemplo para cada escola
+            const turmas = [
+                { id: 1, name: '1º Ano - Manhã', series: '1', schoolId: 1, shift: 'Manhã' },
+                { id: 2, name: '2º Ano - Tarde', series: '2', schoolId: 1, shift: 'Tarde' },
+                { id: 3, name: '3º Ano - Manhã', series: '3', schoolId: 2, shift: 'Manhã' },
+                { id: 4, name: '4º Ano - Tarde', series: '4', schoolId: 2, shift: 'Tarde' },
+                { id: 5, name: '5º Ano - Manhã', series: '5', schoolId: 1, shift: 'Manhã' }
+            ];
+            
+            localStorage.setItem('classes', JSON.stringify(turmas));
+            console.log(`Criadas ${turmas.length} turmas de exemplo`);
+            
+            // Log detalhado para debug
+            turmas.forEach((turma, index) => {
+                console.log(`Turma ${index+1}: ID=${turma.id}, Nome="${turma.name}", Escola ID=${turma.schoolId}`);
+            });
+        }
+
+        // Função auxiliar para carregar as turmas diretamente da API
+        async function loadClassesFromAPI() {
+            try {
+                console.log('Carregando turmas da API...');
+                
+                // URL da API para turmas
+                const apiUrl = 'https://sag-sag.rak8a3.easypanel.host/api/turmas';
+                
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar turmas: ${response.status}`);
+                }
+                
+                const responseData = await response.json();
+                console.log('Turmas carregadas da API:', responseData);
+                
+                // Verificar formato da resposta (com ou sem .data)
+                let turmas = [];
+                
+                if (responseData && responseData.data && Array.isArray(responseData.data)) {
+                    // Formato aninhado com .data
+                    console.log('Resposta da API com formato aninhado (tem .data)');
+                    turmas = responseData.data;
+                } else if (Array.isArray(responseData)) {
+                    // Array direto
+                    console.log('Resposta da API como array direto');
+                    turmas = responseData;
+                } else {
+                    console.error('Formato de resposta da API desconhecido:', responseData);
+                    return createSampleClasses();
+                }
+                
+                if (turmas && turmas.length > 0) {
+                    // Mostrar exemplo da primeira turma
+                    console.log('Exemplo da primeira turma:', turmas[0]);
+                    
+                    // Converter para o formato esperado pelo app
+                    const formatted = turmas.map(turma => ({
+                        id: ensureNumber(turma.id),
+                        name: turma.nome || turma.name,
+                        schoolId: ensureNumber(turma.escola_id || turma.schoolId),
+                        series: turma.serie || turma.series || '',
+                        shift: turma.turno || turma.shift || ''
+                    }));
+                    
+                    // Salvar no localStorage
+                    localStorage.setItem('classes', JSON.stringify(formatted));
+                    console.log(`${formatted.length} turmas salvas no localStorage`);
+                    
+                    // Log detalhado de todas as turmas
+                    formatted.forEach((turma, index) => {
+                        console.log(`Turma ${index+1}: ID=${turma.id}, Nome=${turma.name}, Escola ID=${turma.schoolId}`);
+                    });
+                    
+                    return formatted;
+                } else {
+                    console.warn('Nenhuma turma encontrada na API');
+                    return createSampleClasses();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar turmas da API:', error);
+                return createSampleClasses();
+            }
+        }
+
+        // Função para atualizar o filtro de turmas baseada na escola selecionada
+        async function updateClassesFilter(schoolId) {
+            try {
+                console.log(`updateClassesFilter chamado com escola ID=${schoolId || 'nenhuma'}`);
+                const classSelector = document.getElementById('filterClass');
+                
+                // Mostrar indicador de carregamento
+                classSelector.innerHTML = '<option value="">Carregando turmas...</option>';
+                classSelector.disabled = true;
+                
+                // Construir URL da API com ou sem filtro de escola
+                let apiUrl = 'https://sag-sag.rak8a3.easypanel.host/api/turmas?limit=100';
+                if (schoolId && schoolId !== '') {
+                    apiUrl += `&escola_id=${schoolId}`;
+                    console.log(`Carregando turmas filtradas por escola_id=${schoolId}`);
+                } else {
+                    console.log('Carregando todas as turmas');
+                }
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar turmas: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Resposta da API de turmas:', result);
+                
+                // Extrair turmas do formato da resposta
+                let classes = [];
+                if (result && result.data && Array.isArray(result.data)) {
+                    classes = result.data;
+                } else if (Array.isArray(result)) {
+                    classes = result;
+                }
+                
+                // Resetar o seletor
+                classSelector.innerHTML = '<option value="">Todas as turmas</option>';
+                
+                // Se não houver turmas
+                if (classes.length === 0) {
+                    console.log('Nenhuma turma encontrada para os filtros');
+                    return;
+                }
+                
+                // Ordenar turmas por nome
+                classes.sort((a, b) => {
+                    const nameA = a.nome || a.name || '';
+                    const nameB = b.nome || b.name || '';
+                    return nameA.localeCompare(nameB);
+                });
+                
+                // Adicionar turmas ao seletor
+                classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls.id;
+                    option.textContent = cls.nome || cls.name || `Turma ${cls.id}`;
+                    classSelector.appendChild(option);
+                });
+                
+                classSelector.disabled = false;
+                console.log(`Adicionadas ${classes.length} turmas ao seletor`);
+            } catch (error) {
+                console.error('Erro ao carregar turmas:', error);
+                const classSelector = document.getElementById('filterClass');
+                classSelector.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+                classSelector.disabled = false;
+            }
+        }
+        
+        // Define a variável global para o limite de itens por página da API
+        const apiPageLimit = 20;
+        // Variáveis para controlar a paginação atual
+        let currentApiPage = 1;
+        let totalApiPages = 1;
+        
+        // Função para carregar alunos da API com suporte a paginação e filtros
+        async function loadStudentsFromAPI(page = 1, limit = apiPageLimit) {
+            try {
+                // Atualizar o estado da UI para mostrar carregamento
+                const studentsList = document.getElementById('studentsList');
+                studentsList.innerHTML = '<li class="px-4 py-4 sm:px-6 text-center text-gray-500">' +
+                    '<i class="fas fa-spinner fa-spin mr-2"></i> Carregando alunos...</li>';
+                    
+                // Obter os filtros selecionados
+                const filterSchoolId = document.getElementById('filterSchool').value;
+                const filterClassId = document.getElementById('filterClass').value;
+                
+                console.log(`Carregando alunos da API - Página ${page}, Limite ${limit}`);
+                console.log(`Filtros: Escola ID=${filterSchoolId || 'todas'}, Turma ID=${filterClassId || 'todas'}`);
+                
+                // Construir URL da API com parâmetros de paginação e filtros
+                const params = new URLSearchParams();
+                params.append('page', page);
+                params.append('limit', limit);
+                
+                // Adicionar filtro de escola se selecionado
+                if (filterSchoolId && filterSchoolId !== '') {
+                    params.append('escola_id', filterSchoolId);
+                }
+                
+                // Adicionar filtro de turma se selecionado
+                if (filterClassId && filterClassId !== '') {
+                    params.append('turma_id', filterClassId);
+                }
+                
+                const apiUrl = `https://sag-sag.rak8a3.easypanel.host/api/alunos?${params.toString()}`;
+                console.log(`Requisição à API: ${apiUrl}`);
+                
+                // Fazer a requisição à API
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar alunos: ${response.status}`);
+                }
+                
+                // Processar a resposta
+                const result = await response.json();
+                console.log('Resposta da API de alunos:', result);
+                
+                // Extrair dados dos alunos e informações de paginação
+                let alunosData = [];
+                let paginationData = {
+                    page: page,
+                    limit: limit,
+                    total: 0,
+                    totalPages: 1
+                };
+                
+                // Verificar o formato da resposta (com ou sem estrutura de paginação)
+                if (Array.isArray(result)) {
+                    // Resposta em formato de array simples
+                    alunosData = result;
+                    paginationData.total = result.length;
+                    paginationData.totalPages = Math.ceil(result.length / limit);
+                } else if (result && (result.data || result.items || result.content)) {
+                    // Resposta em formato paginado
+                    alunosData = result.data || result.items || result.content || [];
+                    
+                    // Extrair metadados de paginação
+                    paginationData.total = result.total || result.totalElements || result.count || alunosData.length;
+                    paginationData.totalPages = result.totalPages || result.total_pages || 
+                        Math.ceil(paginationData.total / limit);
+                    paginationData.page = result.page || result.currentPage || result.current_page || page;
+                    paginationData.limit = result.limit || result.size || result.per_page || limit;
+                }
+                
+                // Atualizar variáveis de controle de paginação
+                currentApiPage = paginationData.page;
+                totalApiPages = paginationData.totalPages;
+                
+                console.log(`Alunos carregados: ${alunosData.length}`);
+                console.log(`Informações de paginação: Página ${paginationData.page}/${paginationData.totalPages}, Total: ${paginationData.total} alunos`);
+                
+                if (alunosData.length > 0) {
+                    // Se obtivemos dados com sucesso, renderizar com a paginação do backend
+                    renderStudentsListWithBackendPagination(alunosData, paginationData);
+                } else {
+                    // Se não encontrou alunos com os filtros, exibir mensagem apropriada
+                    studentsList.innerHTML = '<li class="px-4 py-4 sm:px-6 text-center text-gray-500">' +
+                        '<i class="fas fa-search text-xl mb-2"></i><br>' +
+                        'Nenhum aluno encontrado para os filtros selecionados</li>';
+                    
+                    // Esconder controles de paginação
+                    document.getElementById('studentsPaginationControls').classList.add('hidden');
+                    
+                    // Atualizar o banner de filtro com informação adequada
+                    let filterMessage = "Nenhum aluno encontrado";
+                    if (filterSchoolId && filterClassId) {
+                        filterMessage = `<strong>Filtros aplicados:</strong> Nenhum aluno encontrado com os filtros selecionados`;
+                    } else if (filterSchoolId) {
+                        filterMessage = `<strong>Filtro aplicado:</strong> Nenhum aluno encontrado na escola selecionada`;
+                    } else if (filterClassId) {
+                        filterMessage = `<strong>Filtro aplicado:</strong> Nenhum aluno encontrado na turma selecionada`;
+                    }
+                    
+                    document.getElementById('filterBanner').innerHTML = filterMessage;
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar alunos da API:', error);
+                
+                // Em caso de erro, exibir mensagem de falha e tentar renderizar dados locais
+                document.getElementById('studentsList').innerHTML = '<li class="px-4 py-4 sm:px-6 text-center text-gray-500">' +
+                    '<i class="fas fa-exclamation-triangle text-red-500 text-xl mb-2"></i><br>' +
+                    `Erro ao carregar alunos: ${error.message}</li>`;
+                
+                // Esconder controles de paginação
+                document.getElementById('studentsPaginationControls').classList.add('hidden');
+                
+                // Atualizar o banner com informação de erro
+                document.getElementById('filterBanner').innerHTML = `<strong class="text-red-500">Erro:</strong> Falha ao carregar dados da API`;
+                
+                // Tentar carregar exemplos ou renderizar dados locais
+                createSampleStudents();
+                renderStudentsList();
+            }
+        }
+        
+        // Função para popular o seletor de escolas no formulário de cadastro
+        async function populateSchoolSelector() {
+            try {
+                const schoolSelector = document.getElementById('studentSchool');
+                
+                // Limpar opções existentes exceto a primeira
+                while (schoolSelector.options.length > 1) {
+                    schoolSelector.remove(1);
+                }
+                
+                // Tentar usar escolas já carregadas
+                const schools = getSchools();
+                
+                if (schools.length > 0) {
+                    // Ordenar escolas por nome
+                    schools.sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    // Adicionar escolas ao seletor
+                    schools.forEach(school => {
+                        const option = document.createElement('option');
+                        option.value = school.id;
+                        option.textContent = school.name;
+                        schoolSelector.appendChild(option);
+                    });
+                    
+                    console.log(`Seletor de escolas populado com ${schools.length} escolas do localStorage`);
+                    return;
+                }
+                
+                // Se não tem escolas no localStorage, buscar da API
+                const response = await fetch('https://sag-sag.rak8a3.easypanel.host/api/escolas?limit=100');
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar escolas: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                // Extrair escolas do formato da resposta
+                let apiSchools = [];
+                if (Array.isArray(result)) {
+                    apiSchools = result;
+                } else if (result && result.data && Array.isArray(result.data)) {
+                    apiSchools = result.data;
+                }
+                
+                // Se não houver escolas
+                if (apiSchools.length === 0) {
+                    console.log('Nenhuma escola encontrada na API');
+                    return;
+                }
+                
+                // Ordenar escolas por nome
+                apiSchools.sort((a, b) => {
+                    const nameA = a.nome || a.name || '';
+                    const nameB = b.nome || b.name || '';
+                    return nameA.localeCompare(nameB);
+                });
+                
+                // Adicionar escolas ao seletor
+                apiSchools.forEach(school => {
+                    const option = document.createElement('option');
+                    option.value = school.id;
+                    option.textContent = school.nome || school.name || `Escola ${school.id}`;
+                    schoolSelector.appendChild(option);
+                });
+                
+                console.log(`Seletor de escolas populado com ${apiSchools.length} escolas da API`);
+            } catch (error) {
+                console.error('Erro ao popular seletor de escolas:', error);
+            }
+        }
+        
+        // Função para popular o seletor de turmas no formulário 
+        async function populateClassSelector(selector, schoolId) {
+            try {
+                console.log(`Populando seletor de turmas para escola ID=${schoolId || 'nenhuma'}`);
+                
+                // Limpar opções existentes exceto a primeira
+                while (selector.options.length > 1) {
+                    selector.remove(1);
+                }
+                
+                // Se não tiver escola selecionada, parar aqui
+                if (!schoolId) {
+                    console.log('Nenhuma escola selecionada, não carregando turmas');
+                    return;
+                }
+                
+                // Mostrar indicador de carregamento
+                selector.options[0].text = 'Carregando turmas...';
+                
+                // Construir URL da API com filtro
+                let apiUrl = `https://sag-sag.rak8a3.easypanel.host/api/turmas?escola_id=${schoolId}&limit=100`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar turmas: ${response.status}`);
+                }
+                
+                // Resetar o texto da primeira opção
+                selector.options[0].text = 'Selecione uma turma';
+                
+                const result = await response.json();
+                
+                // Extrair turmas do formato da resposta
+                let classes = [];
+                if (result && result.data && Array.isArray(result.data)) {
+                    classes = result.data;
+                } else if (Array.isArray(result)) {
+                    classes = result;
+                }
+                
+                // Se não houver turmas
+                if (classes.length === 0) {
+                    console.log('Nenhuma turma encontrada para a escola');
+                    const option = document.createElement('option');
+                    option.disabled = true;
+                    option.textContent = 'Nenhuma turma disponível';
+                    selector.appendChild(option);
+                    return;
+                }
+                
+                // Ordenar turmas por nome
+                classes.sort((a, b) => {
+                    const nameA = a.nome || a.name || '';
+                    const nameB = b.nome || b.name || '';
+                    return nameA.localeCompare(nameB);
+                });
+                
+                // Adicionar turmas ao seletor
+                classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls.id;
+                    option.textContent = cls.nome || cls.name || `Turma ${cls.id}`;
+                    selector.appendChild(option);
+                });
+                
+                console.log(`Seletor de turmas populado com ${classes.length} turmas`);
+                
+            } catch (error) {
+                console.error('Erro ao popular seletor de turmas:', error);
+                selector.options[0].text = 'Erro ao carregar turmas';
+            }
+        }
+    </script>
+</body>
+</html>
