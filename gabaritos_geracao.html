@@ -795,13 +795,13 @@
         const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
         if (!currentUser) {
           alert("Usuário não autenticado. Redirecionando para login.");
-          window.location.href = "index.html";
+          window.location.href = "login/login.html";
           return;
         }
         document.getElementById("userName").textContent = currentUser.name;
         document.getElementById("logoutBtn").addEventListener("click", () => {
           sessionStorage.removeItem("currentUser");
-          window.location.href = "index.html";
+          window.location.href = "login/login.html";
         });
 
         const mobileMenuBtn = document.getElementById("mobileMenuBtn");

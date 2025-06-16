@@ -45,7 +45,7 @@ function checkAuth() {
 
   if (!currentUser) {
     console.log("Usuário não autenticado. Redirecionando para login...");
-    window.location.href = "index.html";
+    window.location.href = "login/login.html";
     return false;
   }
 
@@ -107,7 +107,7 @@ function login(username, password) {
 function logout() {
   sessionStorage.removeItem("currentUser");
   localStorage.removeItem("userToken");
-  window.location.href = "index.html";
+  window.location.href = "login/login.html";
 }
 
 // Funções para gerenciar escolas
@@ -660,7 +660,7 @@ window.appUtils = {
 // Verificar autenticação ao carregar a página, exceto na página de login
 document.addEventListener("DOMContentLoaded", function () {
   const isLoginPage =
-    window.location.pathname.includes("index.html") ||
+    window.location.pathname.includes("login/login.html") ||
     window.location.pathname === "/" ||
     window.location.pathname === "";
 
@@ -691,55 +691,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// Função para obter escolas
-function getSchools() {
-  try {
-    const schools = JSON.parse(localStorage.getItem("schools")) || [];
-    return schools;
-  } catch (error) {
-    console.error("Erro ao obter escolas:", error);
-    return [];
-  }
-}
-
-// Função para obter turmas, opcionalmente filtradas por escola
-function getClasses(schoolId = null) {
-  try {
-    const classes = JSON.parse(localStorage.getItem("classes")) || [];
-    if (schoolId) {
-      return classes.filter((c) => c.schoolId === schoolId);
-    }
-    return classes;
-  } catch (error) {
-    console.error("Erro ao obter turmas:", error);
-    return [];
-  }
-}
-
-// Função para obter usuários
-function getUsers() {
-  try {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    return users;
-  } catch (error) {
-    console.error("Erro ao obter usuários:", error);
-    return [];
-  }
-}
-
-// Função para obter alunos, opcionalmente filtrados por turma
-function getStudents(classId = null) {
-  try {
-    const students = JSON.parse(localStorage.getItem("students")) || [];
-    if (classId) {
-      return students.filter((s) => s.classId === classId);
-    }
-    return students;
-  } catch (error) {
-    console.error("Erro ao obter alunos:", error);
-    return [];
-  }
-}
 
 // Função para exibir alerta personalizado
 function showAlert(type, title, message, duration = 3000, callback = null) {
