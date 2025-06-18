@@ -5016,6 +5016,23 @@
                         </select>
                     </div>
                     
+                    <div>
+              <label class="block text-sm font-medium text-gray-700">Habilidades BNCC</label>
+              <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                  Habilidades BNCC
+                  <span class="selected-skills-count-exam text-gray-500 text-xs"></span>
+                </label>
+                <div class="border border-gray-300 rounded-md p-2 bg-white relative">
+                  <div class="selected-skills-list-exam space-y-1 mb-2"></div>
+                  <button type="button" id="selectBnccBtnExam" class="w-full py-2 px-3 border border-gray-300 bg-gray-100 rounded-md text-sm text-left text-gray-700 hover:bg-gray-200 focus:outline-none">
+                    <i class="fas fa-plus-circle mr-2"></i> Selecionar habilidades BNCC
+                  </button>
+                  <input type="hidden" id="bnccCodesExam" name="bnccCodesExam" class="bncc-codes-input-exam" />
+                </div>
+              </div>
+            </div>
+                    
                     <div class="flex justify-end">
               <button
                 type="button"
@@ -5340,7 +5357,8 @@
         <!-- Modal para seleção de habilidades BNCC -->
       <div
         id="bnccModal"
-        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4 overflow-auto"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden p-4 overflow-auto"
+        style="z-index: 9999;"
       >
         <div
           class="bg-white rounded-lg w-full max-w-3xl mx-auto my-4 flex flex-col modal-overflow"
@@ -21904,6 +21922,22 @@ async function populateSchoolSelector() {
                     document.getElementById("editCurriculumComponent").value = question.componente_curricular_id;
                 }
                 
+                // Carregar habilidades BNCC existentes
+                const editBnccCodesInput = document.getElementById("editBnccCodes");
+                const editSkillsCountElement = document.querySelector(".selected-skills-count-edit");
+                const editSkillsListElement = document.querySelector(".selected-skills-list-edit");
+                
+                if (editBnccCodesInput) {
+                    if (question.codigos_bncc && Array.isArray(question.codigos_bncc) && question.codigos_bncc.length > 0) {
+                        // Carregar detalhes completos das habilidades BNCC via API
+                        loadBnccSkillsForEdit(question.codigos_bncc, editBnccCodesInput, editSkillsCountElement, editSkillsListElement);
+                    } else {
+                        editBnccCodesInput.value = "";
+                        if (editSkillsCountElement) editSkillsCountElement.textContent = "";
+                        if (editSkillsListElement) editSkillsListElement.innerHTML = "";
+                    }
+                }
+                
                 // Preencher alternativas e marcar a correta
                 let correctAnswer = "";
                 
@@ -21951,6 +21985,117 @@ async function populateSchoolSelector() {
                 console.error(`Erro ao carregar questão #${questionId}:`, error);
                 alert(`Erro ao carregar detalhes da questão: ${error.message}`);
                 document.getElementById("editQuestionModal").classList.add("hidden");
+            }
+        }
+
+        // Função para carregar habilidades BNCC para edição
+        async function loadBnccSkillsForEdit(bnccCodes, inputElement, countElement, listElement) {
+            try {
+                console.log("Carregando habilidades BNCC para edição:", bnccCodes);
+                
+                // Mostrar indicador de carregamento
+                if (listElement) {
+                    listElement.innerHTML = '<div class="text-center text-gray-500 text-xs py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Carregando habilidades...</div>';
+                }
+                
+                // Primeiro, carregar todas as habilidades BNCC da API
+                console.log("Carregando todas as habilidades BNCC...");
+                const allSkills = await loadBnccSkillsFromAPI(null, null);
+                
+                if (!allSkills || allSkills.length === 0) {
+                    throw new Error("Não foi possível carregar as habilidades BNCC");
+                }
+                
+                // Encontrar as habilidades que correspondem aos códigos da questão
+                const matchingSkills = [];
+                
+                for (const code of bnccCodes) {
+                    const skill = allSkills.find(s => s.codigo === code);
+                    if (skill) {
+                        // Carregar detalhes completos da habilidade usando seu ID
+                        console.log(`Carregando detalhes da habilidade ${code} (ID: ${skill.id})`);
+                        const detailedSkill = await loadBnccSkillDetails(skill.id);
+                        if (detailedSkill) {
+                            matchingSkills.push(detailedSkill);
+                        } else {
+                            // Se não conseguir carregar detalhes, usar dados básicos
+                            matchingSkills.push(skill);
+                        }
+                    } else {
+                        console.warn(`Habilidade BNCC não encontrada para o código: ${code}`);
+                    }
+                }
+                
+                // Atualizar input com códigos das habilidades encontradas
+                const codes = matchingSkills.map(skill => skill.codigo).filter(code => code);
+                inputElement.value = codes.join(", ");
+                
+                // Atualizar contagem
+                if (countElement) {
+                    countElement.textContent = matchingSkills.length > 0 ? `(${matchingSkills.length})` : "";
+                }
+                
+                // Atualizar lista visual
+                if (listElement) {
+                    listElement.innerHTML = "";
+                    matchingSkills.forEach((skill) => {
+                        const code = skill.codigo || `ID: ${skill.id}`;
+                        const description = skill.descricao || "Sem descrição";
+                        
+                        const div = document.createElement("div");
+                        div.className = "px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded flex justify-between items-center mb-1";
+                        div.innerHTML = `
+                            <div>
+                                <span class="font-medium">${code}</span>
+                                <div class="text-gray-600 text-xs">${description}</div>
+                            </div>
+                            <button type="button" class="remove-skill-edit text-blue-500 hover:text-blue-700 ml-2" data-code="${code}" data-id="${skill.id}">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        `;
+                        listElement.appendChild(div);
+                        
+                        // Adicionar evento para remover habilidade
+                        const removeBtn = div.querySelector(".remove-skill-edit");
+                        if (removeBtn) {
+                            removeBtn.addEventListener("click", function() {
+                                const codeToRemove = this.getAttribute("data-code");
+                                
+                                // Remover do input
+                                const currentCodes = inputElement.value.split(",").map(c => c.trim()).filter(c => c);
+                                const updatedCodes = currentCodes.filter(c => c !== codeToRemove);
+                                inputElement.value = updatedCodes.join(", ");
+                                
+                                // Remover elemento visual
+                                this.closest("div").remove();
+                                
+                                // Atualizar contagem
+                                if (countElement) {
+                                    countElement.textContent = updatedCodes.length > 0 ? `(${updatedCodes.length})` : "";
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Se não há habilidades válidas, mostrar mensagem
+                    if (matchingSkills.length === 0) {
+                        listElement.innerHTML = '<div class="text-center text-gray-500 text-xs py-2">Nenhuma habilidade BNCC encontrada</div>';
+                    }
+                }
+                
+            } catch (error) {
+                console.error("Erro ao carregar habilidades BNCC para edição:", error);
+                
+                // Em caso de erro, usar os códigos como estão
+                if (inputElement) {
+                    inputElement.value = bnccCodes.join(", ");
+                }
+                if (countElement) {
+                    countElement.textContent = bnccCodes.length > 0 ? `(${bnccCodes.length})` : "";
+                }
+                if (listElement) {
+                    listElement.innerHTML = '<div class="text-center text-red-500 text-xs py-2">Erro ao carregar detalhes das habilidades</div>';
+                }
             }
         }
 
@@ -22040,6 +22185,116 @@ async function populateSchoolSelector() {
                 imagePreview.classList.add("hidden");
                 previewImg.src = "";
             });
+            
+            // Configurar botão de seleção BNCC para edição
+            const selectBnccBtnEdit = document.getElementById("selectBnccBtnEdit");
+            console.log("=== DEBUG BNCC EDIT ===");
+            console.log("Botão selectBnccBtnEdit encontrado:", selectBnccBtnEdit);
+            console.log("Todos os elementos com ID:", document.querySelectorAll('[id*="selectBncc"]'));
+            
+            if (selectBnccBtnEdit) {
+                // Remover event listeners anteriores se existirem
+                const newSelectBnccBtnEdit = selectBnccBtnEdit.cloneNode(true);
+                selectBnccBtnEdit.parentNode.replaceChild(newSelectBnccBtnEdit, selectBnccBtnEdit);
+                
+                newSelectBnccBtnEdit.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("=== BOTÃO BNCC EDIT CLICADO! ===");
+                    
+                    // Usar a função existente, mas definir o input correto
+                    activeInputElement = document.getElementById("editBnccCodes");
+                    console.log("activeInputElement definido:", activeInputElement);
+                    
+                    // Verificar se o modal existe
+                    const bnccModal = document.getElementById("bnccModal");
+                    console.log("Modal BNCC encontrado:", bnccModal);
+                    
+                    if (bnccModal) {
+                        console.log("Chamando openBnccSelectorForEdit...");
+                        openBnccSelectorForEdit();
+                    } else {
+                        console.error("Modal BNCC não encontrado! Não é possível abrir.");
+                    }
+                });
+                console.log("Event listener adicionado com sucesso ao botão BNCC Edit");
+            } else {
+                console.error("Botão selectBnccBtnEdit não encontrado!");
+                console.log("Elementos encontrados no DOM:", document.querySelectorAll('button'));
+            }
+
+        }
+
+        // Função específica para abrir o seletor BNCC no modal de edição
+        function openBnccSelectorForEdit() {
+            console.log("=== FUNÇÃO openBnccSelectorForEdit CHAMADA ===");
+            
+            // activeInputElement já foi definido no botão
+            console.log("activeInputElement:", activeInputElement);
+            
+            // Limpar seleções anteriores
+            selectedSkills = [];
+            
+            // Carregar habilidades selecionadas atuais, se existirem
+            if (activeInputElement && activeInputElement.value) {
+                const codes = activeInputElement.value.split(",");
+                codes.forEach((code) => {
+                    const trimmedCode = code.trim();
+                    if (trimmedCode) {
+                        selectedSkills.push(trimmedCode);
+                    }
+                });
+            }
+            console.log("Habilidades já selecionadas:", selectedSkills);
+            
+            // Limpar filtros
+            const bnccComponent = document.getElementById("bnccComponent");
+            const bnccGrade = document.getElementById("bnccGrade");
+            const bnccSearch = document.getElementById("bnccSearch");
+            
+            if (bnccComponent) bnccComponent.selectedIndex = 0;
+            if (bnccGrade) bnccGrade.selectedIndex = 0;
+            if (bnccSearch) bnccSearch.value = "";
+            
+            // Atualizar contagem de selecionados
+            const selectedSkillsCount = document.getElementById("selectedSkillsCount");
+            if (selectedSkillsCount) {
+                selectedSkillsCount.textContent = selectedSkills.length.toString();
+            }
+            
+            // Mostrar mensagem inicial
+            const bnccSkillsList = document.getElementById("bnccSkillsList");
+            if (bnccSkillsList) {
+                bnccSkillsList.innerHTML = `
+                    <div class="text-center text-gray-500 py-4">
+                        Carregando todas as habilidades... Você pode usar os filtros para restringir a lista.
+                    </div>
+                `;
+            }
+            
+            // Abrir modal
+            const bnccModal = document.getElementById("bnccModal");
+            console.log("Tentando abrir modal BNCC:", bnccModal);
+            if (bnccModal) {
+                console.log("Removendo classe 'hidden' do modal");
+                bnccModal.classList.remove("hidden");
+                console.log("Classes do modal após remoção:", bnccModal.classList.toString());
+                console.log("Estilo computado do modal:", window.getComputedStyle(bnccModal).display);
+                console.log("Z-index computado do modal:", window.getComputedStyle(bnccModal).zIndex);
+                console.log("Visibilidade do modal:", window.getComputedStyle(bnccModal).visibility);
+                
+                // Forçar exibição
+                bnccModal.style.display = 'flex';
+                bnccModal.style.visibility = 'visible';
+                console.log("Modal forçado a ser visível");
+            } else {
+                console.error("Modal BNCC não encontrado!");
+                return;
+            }
+            
+            // Carregar todas as habilidades da API imediatamente
+            console.log("Chamando updateBnccSkillsList...");
+            updateBnccSkillsList();
         }
 
         // Função para atualizar uma questão
@@ -22118,7 +22373,7 @@ async function populateSchoolSelector() {
                     pontos: 1, // Valor padrão
                     prova_id: parseInt(examId),
                     componente_curricular_id: curriculumComponent ? parseInt(curriculumComponent) : 0,
-                    codigos_bncc: [], // Array vazio ou integre com a seleção de códigos BNCC se existir
+                    codigos_bncc: document.getElementById("editBnccCodes")?.value.split(",").map(c => c.trim()).filter(c => c) || [],
                     alternativas: alternativas
                 };
                 
@@ -22402,6 +22657,24 @@ async function populateSchoolSelector() {
                             <option value="7">Arte</option>
                             <option value="8">Inglês</option>
                         </select>
+                    </div>
+                </div>
+                
+                <!-- Habilidades BNCC -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Habilidades BNCC</label>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            Habilidades BNCC
+                            <span class="selected-skills-count-edit text-gray-500 text-xs"></span>
+                        </label>
+                        <div class="border border-gray-300 rounded-md p-2 bg-white relative">
+                            <div class="selected-skills-list-edit space-y-1 mb-2"></div>
+                            <button type="button" id="selectBnccBtnEdit" class="w-full py-2 px-3 border border-gray-300 bg-gray-100 rounded-md text-sm text-left text-gray-700 hover:bg-gray-200 focus:outline-none">
+                                <i class="fas fa-plus-circle mr-2"></i> Selecionar habilidades BNCC
+                            </button>
+                            <input type="hidden" id="editBnccCodes" class="bncc-codes-input-edit" />
+                        </div>
                     </div>
                 </div>
                 
