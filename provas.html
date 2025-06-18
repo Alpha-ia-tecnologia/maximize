@@ -22222,7 +22222,125 @@ async function populateSchoolSelector() {
                 console.error("Botão selectBnccBtnEdit não encontrado!");
                 console.log("Elementos encontrados no DOM:", document.querySelectorAll('button'));
             }
+            
+            // Configurar botões do modal BNCC para funcionar com edição
+            const confirmBnccBtn = document.getElementById("confirmBnccBtn");
+            const cancelBnccBtn = document.getElementById("cancelBnccBtn");
+            const closeBnccModalBtn = document.getElementById("closeBnccModal");
+            
+            // Remover event listeners anteriores e adicionar novos
+            if (confirmBnccBtn) {
+                const newConfirmBtn = confirmBnccBtn.cloneNode(true);
+                confirmBnccBtn.parentNode.replaceChild(newConfirmBtn, confirmBnccBtn);
+                
+                newConfirmBtn.addEventListener("click", function() {
+                    console.log("Botão Confirmar BNCC clicado no contexto de edição");
+                    confirmBnccSelectionForEdit();
+                });
+            }
+            
+            if (cancelBnccBtn) {
+                const newCancelBtn = cancelBnccBtn.cloneNode(true);
+                cancelBnccBtn.parentNode.replaceChild(newCancelBtn, cancelBnccBtn);
+                
+                newCancelBtn.addEventListener("click", function() {
+                    console.log("Botão Cancelar BNCC clicado");
+                    const bnccModal = document.getElementById("bnccModal");
+                    if (bnccModal) {
+                        bnccModal.classList.add("hidden");
+                        bnccModal.style.display = 'none';
+                    }
+                });
+            }
+            
+            if (closeBnccModalBtn) {
+                const newCloseBtn = closeBnccModalBtn.cloneNode(true);
+                closeBnccModalBtn.parentNode.replaceChild(newCloseBtn, closeBnccModalBtn);
+                
+                newCloseBtn.addEventListener("click", function() {
+                    console.log("Botão X (fechar) BNCC clicado");
+                    const bnccModal = document.getElementById("bnccModal");
+                    if (bnccModal) {
+                        bnccModal.classList.add("hidden");
+                        bnccModal.style.display = 'none';
+                    }
+                });
+            }
 
+        }
+
+        // Função específica para confirmar seleção BNCC no modal de edição
+        function confirmBnccSelectionForEdit() {
+            console.log("=== CONFIRMANDO SELEÇÃO BNCC PARA EDIÇÃO ===");
+            console.log("selectedSkills:", selectedSkills);
+            console.log("activeInputElement:", activeInputElement);
+            
+            if (activeInputElement) {
+                // Salvar códigos no input
+                activeInputElement.value = selectedSkills.join(", ");
+                console.log("Valor salvo no input:", activeInputElement.value);
+                
+                // Atualizar UI específica do modal de edição
+                const countElement = document.querySelector(".selected-skills-count-edit");
+                const listElement = document.querySelector(".selected-skills-list-edit");
+                
+                console.log("Elementos de UI encontrados:", { countElement, listElement });
+                
+                if (countElement) {
+                    countElement.textContent = selectedSkills.length > 0 ? `(${selectedSkills.length})` : "";
+                }
+                
+                if (listElement) {
+                    listElement.innerHTML = "";
+                    
+                    selectedSkills.forEach((code) => {
+                        const div = document.createElement("div");
+                        div.className = "px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded flex justify-between items-center mb-1";
+                        div.innerHTML = `
+                            <span>${code}</span>
+                            <button type="button" class="remove-skill-edit text-blue-500 hover:text-blue-700" data-code="${code}">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        `;
+                        
+                        listElement.appendChild(div);
+                        
+                        // Adicionar evento para remover habilidade
+                        const removeBtn = div.querySelector(".remove-skill-edit");
+                        if (removeBtn) {
+                            removeBtn.addEventListener("click", function() {
+                                const codeToRemove = this.getAttribute("data-code");
+                                
+                                // Remover do array
+                                const index = selectedSkills.indexOf(codeToRemove);
+                                if (index !== -1) {
+                                    selectedSkills.splice(index, 1);
+                                }
+                                
+                                // Atualizar input
+                                activeInputElement.value = selectedSkills.join(", ");
+                                
+                                // Remover elemento visual
+                                this.closest("div").remove();
+                                
+                                // Atualizar contagem
+                                if (countElement) {
+                                    countElement.textContent = selectedSkills.length > 0 ? `(${selectedSkills.length})` : "";
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+            
+            // Fechar modal
+            const bnccModal = document.getElementById("bnccModal");
+            if (bnccModal) {
+                bnccModal.classList.add("hidden");
+                bnccModal.style.display = 'none';
+            }
+            
+            console.log("Modal fechado e seleção confirmada");
         }
 
         // Função específica para abrir o seletor BNCC no modal de edição
@@ -22363,6 +22481,32 @@ async function populateSchoolSelector() {
                     return;
                 }
                 
+                // Obter códigos BNCC selecionados
+                const bnccCodesString = document.getElementById("editBnccCodes")?.value || "";
+                const bnccCodes = bnccCodesString.split(",").map(c => c.trim()).filter(c => c);
+                
+                // Converter códigos BNCC em IDs
+                let bnccIds = [];
+                if (bnccCodes.length > 0) {
+                    console.log("Convertendo códigos BNCC em IDs:", bnccCodes);
+                    
+                    // Usar as habilidades carregadas da API (se disponível)
+                    if (bnccSkillsFromAPI && bnccSkillsFromAPI.length > 0) {
+                        bnccIds = bnccCodes.map(code => {
+                            const skill = bnccSkillsFromAPI.find(s => s.codigo === code);
+                            if (skill && skill.id) {
+                                console.log(`Código ${code} → ID ${skill.id}`);
+                                return parseInt(skill.id);
+                            } else {
+                                console.warn(`Habilidade BNCC não encontrada para código: ${code}`);
+                                return null;
+                            }
+                        }).filter(id => id !== null);
+                    }
+                    
+                    console.log("IDs das habilidades BNCC:", bnccIds);
+                }
+
                 // Criar objeto da questão
                 const questionData = {
                     enunciado: questionText,
@@ -22373,7 +22517,7 @@ async function populateSchoolSelector() {
                     pontos: 1, // Valor padrão
                     prova_id: parseInt(examId),
                     componente_curricular_id: curriculumComponent ? parseInt(curriculumComponent) : 0,
-                    codigos_bncc: document.getElementById("editBnccCodes")?.value.split(",").map(c => c.trim()).filter(c => c) || [],
+                    codigos_bncc: bnccIds,
                     alternativas: alternativas
                 };
                 
