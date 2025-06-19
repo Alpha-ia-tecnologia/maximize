@@ -2075,6 +2075,8 @@
           '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i><p class="mt-2 text-gray-500">Carregando dados...</p></div>';
         document.getElementById("studentRankingList").innerHTML =
           '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Carregando ranking de alunos...</td></tr>';
+        document.getElementById("schoolRankingTableBody").innerHTML =
+          '<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Carregando ranking de escolas...</td></tr>';
 
         // Resetar páginas atuais ao aplicar novos filtros
         currentPage = 1;
@@ -2123,6 +2125,16 @@
           1
         ); // Sempre começar na página 1
         loadStudentRanking(
+          yearFilter,
+          regionFilter,
+          groupFilter,
+          schoolFilter,
+          gradeFilter,
+          classFilter,
+          resultsFilter,
+          1
+        ); // Sempre começar na página 1
+        loadSchoolRanking(
           yearFilter,
           regionFilter,
           groupFilter,
@@ -4901,10 +4913,15 @@
           // Extrair dados do gráfico
           const regioes = data.dados_grafico;
 
+          // Verificar se o canvas já tem um gráfico e destruí-lo
+          const chartCanvas = document.getElementById("regionalRankingChart");
+          const chartInstance = Chart.getChart(chartCanvas);
+          if (chartInstance) {
+            chartInstance.destroy();
+          }
+
           // Configurar o gráfico de ranking das regiões
-          const rankingCtx = document
-            .getElementById("regionalRankingChart")
-            .getContext("2d");
+          const rankingCtx = chartCanvas.getContext("2d");
           new Chart(rankingCtx, {
             type: "bar",
             data: {
