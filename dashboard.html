@@ -428,14 +428,14 @@
               </div>
             </div>
 
-            <!-- Evolução por Bimestre Chart -->
+            <!-- Ranking das Regiões Chart -->
             <div class="bg-white overflow-hidden shadow rounded-lg">
               <div class="px-4 py-5 sm:p-6">
                 <h3 class="text-lg leading-6 font-medium text-gray-900">
-                  Evolução por Bimestre
+                  Ranking das Regiões
                 </h3>
                 <div class="mt-5">
-                  <canvas id="evolutionByTermChart" height="300"></canvas>
+                  <canvas id="regionalRankingChart" height="300"></canvas>
                 </div>
               </div>
             </div>
@@ -658,17 +658,6 @@
                   </nav>
                 </div>
               </div>
-            </div>
-          </div>
-          <!-- Ranking das Regiões -->
-          <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
-              <h3 class="text-lg leading-6 font-medium text-gray-900">
-                Ranking das Regiões
-              </h3>
-            </div>
-            <div class="px-4 py-5 sm:p-6">
-              <canvas id="regionalRankingChart" height="100"></canvas>
             </div>
           </div>
         </div>
@@ -1270,9 +1259,6 @@
 
         // Gráfico de componentes curriculares - busca dados da API
         loadCurriculumComponentsChart(year);
-
-        // Gráfico de evolução por bimestre
-        renderEvolutionByTermChart(year);
 
         // Gráfico de ranking das regiões
         loadRegionalRanking();
@@ -2335,9 +2321,6 @@
         document
           .getElementById("curriculumComponentsChart")
           .getContext("2d").canvas.style.opacity = "0.5";
-        document
-          .getElementById("evolutionByTermChart")
-          .getContext("2d").canvas.style.opacity = "0.5";
         document.getElementById("bnccSkillsList").innerHTML =
           '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i><p class="mt-2 text-gray-500">Carregando dados...</p></div>';
         document.getElementById("studentRankingList").innerHTML =
@@ -2381,7 +2364,6 @@
           classFilter,
           resultsFilter
         );
-        renderEvolutionByTermChart(yearFilter, schoolFilter, resultsFilter);
         loadBnccSkills(
           yearFilter,
           regionFilter,
@@ -2417,9 +2399,6 @@
         setTimeout(() => {
           document
             .getElementById("curriculumComponentsChart")
-            .getContext("2d").canvas.style.opacity = "1";
-          document
-            .getElementById("evolutionByTermChart")
             .getContext("2d").canvas.style.opacity = "1";
         }, 500);
       }
@@ -2516,117 +2495,6 @@
                 title: {
                   display: true,
                   text: "Componentes Curriculares",
-                },
-              },
-            },
-          },
-        });
-      }
-
-      // Função para renderizar o gráfico de evolução por bimestre
-      function renderEvolutionByTermChart(
-        year = "all",
-        school = "all",
-        results = "all"
-      ) {
-        // Dados de exemplo para bimestres
-        const terms = [
-          "1º Bimestre",
-          "2º Bimestre",
-          "3º Bimestre",
-          "4º Bimestre",
-        ];
-
-        // Dados para diferentes componentes curriculares por bimestre
-        const components = [
-          "Língua Portuguesa",
-          "Matemática",
-          "Ciências",
-          "História",
-          "Geografia",
-        ];
-        const datasets = [];
-
-        // Cores para os diferentes componentes
-        const colors = [
-          { bg: "rgba(54, 162, 235, 0.6)", border: "rgb(54, 162, 235)" },
-          { bg: "rgba(255, 99, 132, 0.6)", border: "rgb(255, 99, 132)" },
-          { bg: "rgba(75, 192, 192, 0.6)", border: "rgb(75, 192, 192)" },
-          { bg: "rgba(255, 206, 86, 0.6)", border: "rgb(255, 206, 86)" },
-          { bg: "rgba(153, 102, 255, 0.6)", border: "rgb(153, 102, 255)" },
-        ];
-
-        // Simular dados de evolução para cada componente
-        components.forEach((component, index) => {
-          // Gerar dados com tendência de crescimento ao longo dos bimestres
-          let basePerformance;
-          if (results === "high") {
-            basePerformance = 70; // Começa mais alto para melhores resultados
-          } else if (results === "low") {
-            basePerformance = 40; // Começa mais baixo para resultados críticos
-          } else {
-            basePerformance = 50; // Valor intermediário para todos os resultados
-          }
-
-          // Gerar dados com leve tendência de aumento por bimestre
-          const termData = terms.map((_, termIndex) => {
-            // Aumento gradual de desempenho com variação aleatória
-            const increase = termIndex * 5; // 5% de aumento médio por bimestre
-            const randomFactor = Math.floor(Math.random() * 10) - 5; // Variação de -5 a +5
-            return Math.min(
-              Math.max(basePerformance + increase + randomFactor, 0),
-              100
-            ); // Garantir entre 0-100
-          });
-
-          datasets.push({
-            label: component,
-            data: termData,
-            backgroundColor: colors[index].bg,
-            borderColor: colors[index].border,
-            borderWidth: 2,
-            tension: 0.1,
-          });
-        });
-
-        // Verificar se o canvas já tem um gráfico e destruí-lo
-        const chartCanvas = document.getElementById("evolutionByTermChart");
-        const chartInstance = Chart.getChart(chartCanvas);
-        if (chartInstance) {
-          chartInstance.destroy();
-        }
-
-        // Criar novo gráfico de linha
-        new Chart(chartCanvas, {
-          type: "line",
-          data: {
-            labels: terms,
-            datasets: datasets,
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Evolução do Desempenho por Bimestre",
-              },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
-                title: {
-                  display: true,
-                  text: "Desempenho (%)",
-                },
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: "Bimestres",
                 },
               },
             },
