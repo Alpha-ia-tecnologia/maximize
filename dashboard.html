@@ -1796,7 +1796,8 @@
         school = "all",
         grade = "all",
         classId = "all",
-        results = "all"
+        results = "all",
+        page = 1
       ) {
         try {
           console.log("Carregando desempenho por escolas...");
@@ -1814,6 +1815,10 @@
           addGradeParameterToURL(params, grade);
 
           if (classId !== "all") params.append("turma_id", classId);
+
+          // Adicionar parâmetros de paginação
+          params.append("page", page);
+          params.append("limit", schoolChartItemsPerPage);
 
           // Adicionar parâmetro para resultados apenas se não for "all"
           if (results !== "all") {
@@ -1867,87 +1872,79 @@
             const data = await response.json();
             console.log("Desempenho por escolas carregado com sucesso:", data);
 
-            // Verificar se a resposta é um array
-            if (Array.isArray(data)) {
+            // Verificar se a resposta está no formato paginado
+            if (data && data.data && Array.isArray(data.data)) {
+              // Extrair informações de paginação
+              currentSchoolChartPage = data.page || page;
+              totalSchoolChartItems = data.total || 0;
+              const totalPages =
+                data.totalPages ||
+                Math.ceil(totalSchoolChartItems / schoolChartItemsPerPage);
+
+              // Armazenar dados
+              schoolChartData = data.data;
+
               // Filtrar escolas com dados de desempenho válidos (não null)
-              const schoolsWithData = data.filter(
+              const schoolsWithData = schoolChartData.filter(
                 (item) => item.media_desempenho !== null
               );
 
               // Se não houver escolas com dados, mostrar mensagem
               if (schoolsWithData.length === 0) {
-                tableDiv.innerHTML =
-                  '<div class="text-gray-500 text-center py-4">Não há dados de desempenho disponíveis para as escolas</div>';
+                tableDiv.innerHTML = createEmptySchoolChartMessage();
                 return;
               }
+
+              // Criar HTML da tabela com paginação
+              const tableWithPaginationHTML =
+                createSchoolChartTable(schoolsWithData);
+              tableDiv.innerHTML = tableWithPaginationHTML;
+
+              // Atualizar controles de paginação
+              updateSchoolChartPagination();
+            } else if (Array.isArray(data)) {
+              // Compatibilidade com APIs que ainda não implementaram paginação
+              console.warn(
+                "API retornou array sem paginação, simulando paginação no cliente"
+              );
+
+              // Filtrar escolas com dados de desempenho válidos (não null)
+              const schoolsWithData = data.filter(
+                (item) => item.media_desempenho !== null
+              );
 
               // Ordenar escolas por desempenho (do maior para o menor)
               schoolsWithData.sort(
                 (a, b) => b.media_desempenho - a.media_desempenho
               );
 
-              // Criar HTML da tabela
-              let tableHTML = `
-                  <table class="min-w-full divide-y divide-gray-200">
-                      <thead class="bg-gray-50">
-                          <tr>
-                              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posição</th>
-                              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escola</th>
-                              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Média</th>
-                              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alunos avaliados</th>
-                              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Alunos</th>
-                              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Turmas</th>
-                          </tr>
-                      </thead>
-                      <tbody class="bg-white divide-y divide-gray-200">
-              `;
+              // Simular paginação no cliente
+              totalSchoolChartItems = schoolsWithData.length;
+              const startIndex = (page - 1) * schoolChartItemsPerPage;
+              const endIndex = Math.min(
+                startIndex + schoolChartItemsPerPage,
+                schoolsWithData.length
+              );
+              schoolChartData = schoolsWithData.slice(startIndex, endIndex);
+              currentSchoolChartPage = page;
 
-              // Adicionar linhas da tabela
-              schoolsWithData.forEach((school, index) => {
-                const rowClass = index % 2 === 0 ? "bg-white" : "bg-gray-50";
-                let performanceColorClass = "";
+              if (schoolChartData.length === 0) {
+                tableDiv.innerHTML = createEmptySchoolChartMessage();
+                return;
+              }
 
-                if (school.media_desempenho >= 7) {
-                  performanceColorClass = "text-green-600";
-                } else if (school.media_desempenho < 6) {
-                  performanceColorClass = "text-red-600";
-                } else {
-                  performanceColorClass = "text-yellow-600";
-                }
+              // Criar HTML da tabela com paginação
+              const tableWithPaginationHTML =
+                createSchoolChartTable(schoolChartData);
+              tableDiv.innerHTML = tableWithPaginationHTML;
 
-                tableHTML += `
-                      <tr class="${rowClass}">
-                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${
-                            index + 1
-                          }º</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
-                            school.escola_nome
-                          }</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${performanceColorClass}">${school.media_desempenho.toFixed(
-                  1
-                )}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
-                  school.total_desempenhos || 0
-                }</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
-                            school.total_alunos || 0
-                          }</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
-                            school.total_turmas || 0
-                          }</td>
-                      </tr>
-                  `;
-              });
-
-              tableHTML += `
-                      </tbody>
-                  </table>
-              `;
-
-              // Atualizar o conteúdo da div
-              tableDiv.innerHTML = tableHTML;
+              // Atualizar controles de paginação
+              updateSchoolChartPagination();
             } else {
-              console.error("Resposta da API não é um array:", data);
+              console.error(
+                "Resposta da API não é um array nem formato paginado:",
+                data
+              );
               tableDiv.innerHTML =
                 '<div class="text-red-500 text-center py-4">Erro: Formato de resposta inválido</div>';
             }
@@ -1964,6 +1961,276 @@
           tableDiv.innerHTML = `<div class="text-red-500 text-center py-4">Erro: ${error.message}</div>`;
         }
       }
+
+      // ========== FUNÇÕES AUXILIARES PARA PAGINAÇÃO DO GRÁFICO DE ESCOLAS ==========
+
+      // Função para criar mensagem quando não há dados de escolas
+      function createEmptySchoolChartMessage() {
+        return '<div class="text-gray-500 text-center py-4">Não há dados de desempenho disponíveis para as escolas</div>';
+      }
+
+      // Função para criar a tabela de escolas com paginação
+      function createSchoolChartTable(schoolsData) {
+        let tableHTML = `
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posição</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escola</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Região</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grupo</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Média</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alunos avaliados</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Alunos</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Turmas</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+        `;
+
+        // Adicionar linhas da tabela
+        schoolsData.forEach((school, index) => {
+          const position =
+            (currentSchoolChartPage - 1) * schoolChartItemsPerPage + index + 1;
+          const rowClass = index % 2 === 0 ? "bg-white" : "bg-gray-50";
+          let performanceColorClass = "";
+
+          if (school.media_desempenho >= 70) {
+            performanceColorClass = "text-green-600 font-medium";
+          } else if (school.media_desempenho < 60) {
+            performanceColorClass = "text-red-600 font-medium";
+          } else {
+            performanceColorClass = "text-yellow-600 font-medium";
+          }
+
+          tableHTML += `
+            <tr class="${rowClass} hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${position}º</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+                school.escola_nome || "N/A"
+              }</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+                school.regiao_nome || "N/A"
+              }</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+                school.grupo_nome || "N/A"
+              }</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm ${performanceColorClass}">${(
+            school.media_desempenho || 0
+          ).toFixed(1)}%</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+                school.total_desempenhos || 0
+              }</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+                school.total_alunos || 0
+              }</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+                school.total_turmas || 0
+              }</td>
+            </tr>
+          `;
+        });
+
+        tableHTML += `
+            </tbody>
+          </table>
+        `;
+
+        // Adicionar controles de paginação
+        tableHTML += createSchoolChartPaginationControls();
+
+        return tableHTML;
+      }
+
+      // Função para criar controles de paginação do gráfico de escolas
+      function createSchoolChartPaginationControls() {
+        const totalPages = Math.ceil(
+          totalSchoolChartItems / schoolChartItemsPerPage
+        );
+        const startRange =
+          totalSchoolChartItems > 0
+            ? (currentSchoolChartPage - 1) * schoolChartItemsPerPage + 1
+            : 0;
+        const endRange = Math.min(
+          currentSchoolChartPage * schoolChartItemsPerPage,
+          totalSchoolChartItems
+        );
+
+        return `
+          <div class="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 bg-gray-50">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <button
+                type="button"
+                onclick="changeSchoolChartPage(-1)"
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${
+                  currentSchoolChartPage <= 1
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }"
+                ${currentSchoolChartPage <= 1 ? "disabled" : ""}
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                onclick="changeSchoolChartPage(1)"
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${
+                  currentSchoolChartPage >= totalPages
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }"
+                ${currentSchoolChartPage >= totalPages ? "disabled" : ""}
+              >
+                Próximo
+              </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Mostrando <span class="font-medium">${startRange}</span> a <span class="font-medium">${endRange}</span> de <span class="font-medium">${totalSchoolChartItems}</span> resultados
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    type="button"
+                    onclick="changeSchoolChartPage(-1)"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${
+                      currentSchoolChartPage <= 1
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }"
+                    ${currentSchoolChartPage <= 1 ? "disabled" : ""}
+                  >
+                    <span class="sr-only">Anterior</span>
+                    <i class="fas fa-chevron-left"></i>
+                  </button>
+                  ${createSchoolChartPageNumbers()}
+                  <button
+                    type="button"
+                    onclick="changeSchoolChartPage(1)"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${
+                      currentSchoolChartPage >= totalPages
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }"
+                    ${currentSchoolChartPage >= totalPages ? "disabled" : ""}
+                  >
+                    <span class="sr-only">Próximo</span>
+                    <i class="fas fa-chevron-right"></i>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Função para criar números de páginas do gráfico de escolas
+      function createSchoolChartPageNumbers() {
+        const totalPages = Math.ceil(
+          totalSchoolChartItems / schoolChartItemsPerPage
+        );
+        let paginationHTML = "";
+
+        const maxPageButtons = 5;
+        let startPage = Math.max(
+          1,
+          currentSchoolChartPage - Math.floor(maxPageButtons / 2)
+        );
+        let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+        // Ajustar startPage se necessário
+        if (endPage - startPage < maxPageButtons - 1) {
+          startPage = Math.max(1, endPage - maxPageButtons + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          const isActive = i === currentSchoolChartPage;
+          paginationHTML += `
+            <button
+              type="button"
+              onclick="goToSchoolChartPage(${i})"
+              class="relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                isActive
+                  ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                  : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+              }"
+            >
+              ${i}
+            </button>
+          `;
+        }
+
+        return paginationHTML;
+      }
+
+      // Função para atualizar controles de paginação do gráfico de escolas
+      function updateSchoolChartPagination() {
+        // Esta função é chamada após a tabela ser criada, então os controles já estão atualizados
+        console.log(
+          `Paginação do gráfico de escolas atualizada - Página ${currentSchoolChartPage} de ${Math.ceil(
+            totalSchoolChartItems / schoolChartItemsPerPage
+          )}`
+        );
+      }
+
+      // Função para mudar de página no gráfico de escolas
+      function changeSchoolChartPage(delta) {
+        const totalPages = Math.ceil(
+          totalSchoolChartItems / schoolChartItemsPerPage
+        );
+        const newPage = currentSchoolChartPage + delta;
+
+        if (newPage >= 1 && newPage <= totalPages) {
+          // Obter os filtros atuais
+          const yearFilter = document.getElementById("filterYear").value;
+          const regionFilter = document.getElementById("filterRegion").value;
+          const groupFilter = document.getElementById("filterGroup").value;
+          const schoolFilter = document.getElementById("filterSchool").value;
+          const gradeFilter = document.getElementById("filterGrade").value;
+          const classFilter = document.getElementById("filterClass").value;
+          const resultsFilter = document.getElementById("filterResults").value;
+
+          // Carregar dados da nova página
+          loadSchoolPerformanceChart(
+            yearFilter,
+            regionFilter,
+            groupFilter,
+            schoolFilter,
+            gradeFilter,
+            classFilter,
+            resultsFilter,
+            newPage
+          );
+        }
+      }
+
+      // Função para ir para uma página específica no gráfico de escolas
+      function goToSchoolChartPage(page) {
+        // Obter os filtros atuais
+        const yearFilter = document.getElementById("filterYear").value;
+        const regionFilter = document.getElementById("filterRegion").value;
+        const groupFilter = document.getElementById("filterGroup").value;
+        const schoolFilter = document.getElementById("filterSchool").value;
+        const gradeFilter = document.getElementById("filterGrade").value;
+        const classFilter = document.getElementById("filterClass").value;
+        const resultsFilter = document.getElementById("filterResults").value;
+
+        // Carregar dados da página específica
+        loadSchoolPerformanceChart(
+          yearFilter,
+          regionFilter,
+          groupFilter,
+          schoolFilter,
+          gradeFilter,
+          classFilter,
+          resultsFilter,
+          page
+        );
+      }
+
+      // ========== FIM DAS FUNÇÕES DE PAGINAÇÃO DO GRÁFICO DE ESCOLAS ==========
 
       // Função auxiliar para exibir mensagem de erro em um gráfico
       function displayErrorChart(canvas, errorMessage) {
@@ -2081,6 +2348,7 @@
         // Resetar páginas atuais ao aplicar novos filtros
         currentPage = 1;
         currentRankPage = 1;
+        currentSchoolChartPage = 1;
 
         // Recarregar os gráficos e tabelas com base nos filtros
         loadSchoolPerformanceChart(
@@ -3704,6 +3972,12 @@
       let currentRankPage = 1;
       const rankItemsPerPage = 10;
       let totalRankItems = 0; // Total de itens disponíveis no servidor
+
+      // Variáveis para controle de paginação do gráfico de desempenho por escolas
+      let currentSchoolChartPage = 1;
+      const schoolChartItemsPerPage = 10;
+      let totalSchoolChartItems = 0;
+      let schoolChartData = [];
 
       // Função para carregar o ranking de alunos da API
       async function loadStudentRanking(
