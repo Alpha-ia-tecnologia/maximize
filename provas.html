@@ -22433,7 +22433,117 @@ async function populateSchoolSelector() {
                 const educationLevel = document.getElementById("editEducationLevel").value;
                 const gradeLevel = document.getElementById("editGradeLevel").value;
                 const difficultyLevel = document.getElementById("editDifficultyLevel").value;
-                const curriculumComponent = document.getElementById("editCurriculumComponent").value;
+                // Obter componentes curriculares selecionados
+                const curriculumComponentString = document.getElementById("editCurriculumComponent")?.value || "";
+                console.log("=== DEBUG COMPONENTE CURRICULAR ===");
+                console.log("Valor bruto do campo editCurriculumComponent:", curriculumComponentString);
+                console.log("Tipo do valor:", typeof curriculumComponentString);
+                
+                // FORÇAR LIMPEZA: Se detectar objetos complexos nos componentes curriculares, limpar e usar apenas IDs
+                let cleanCurriculumString = curriculumComponentString;
+                if (curriculumComponentString.includes('componente_id') || curriculumComponentString.includes('questao_id') || curriculumComponentString.includes('created_at')) {
+                    console.warn("🚨 DETECTADO: Campo componente curricular contém dados complexos indevidos!");
+                    console.warn("Dados problemáticos:", curriculumComponentString);
+                    
+                    try {
+                        // Tentar extrair apenas os componente_id
+                        const match = curriculumComponentString.match(/componente_id['":\s]*(\d+)/g);
+                        if (match) {
+                            const ids = match.map(m => m.match(/\d+/)[0]).filter(id => id);
+                            cleanCurriculumString = ids.join(", ");
+                            console.log("✅ IDs de componentes extraídos e limpos:", cleanCurriculumString);
+                        } else {
+                            cleanCurriculumString = "";
+                            console.warn("⚠️ Não foi possível extrair IDs de componentes, usando string vazia");
+                        }
+                    } catch (e) {
+                        console.error("❌ Erro ao limpar dados complexos de componentes:", e);
+                        cleanCurriculumString = "";
+                    }
+                    
+                    // Atualizar o campo com dados limpos
+                    document.getElementById("editCurriculumComponent").value = cleanCurriculumString;
+                    console.log("🔄 Campo componente atualizado com dados limpos:", cleanCurriculumString);
+                }
+                
+                // Processar componentes curriculares
+                let curriculumComponents = [];
+                if (cleanCurriculumString) {
+                    // Verificar se o valor é uma string JSON (objetos complexos)
+                    if (cleanCurriculumString.startsWith('[') && cleanCurriculumString.includes('{')) {
+                        console.warn("DETECTADO: Campo componente contém objetos JSON complexos!");
+                        console.warn("Valor problemático:", cleanCurriculumString);
+                        
+                        try {
+                            // Tentar parsear como JSON e extrair apenas os IDs
+                            const parsedArray = JSON.parse(cleanCurriculumString);
+                            console.log("Array de componentes parseado:", parsedArray);
+                            
+                            curriculumComponents = parsedArray.map(item => {
+                                if (typeof item === 'object' && item !== null) {
+                                    // Extrair apenas o componente_id ou id
+                                    return item.componente_id || item.id || null;
+                                }
+                                return item;
+                            }).filter(id => id !== null && id !== undefined);
+                            
+                            console.log("IDs de componentes extraídos dos objetos JSON:", curriculumComponents);
+                        } catch (e) {
+                            console.error("Erro ao parsear JSON dos componentes curriculares:", e);
+                            curriculumComponents = [];
+                        }
+                    } else {
+                        // Processar como string normal separada por vírgulas ou valor único
+                        if (cleanCurriculumString.includes(',')) {
+                            curriculumComponents = cleanCurriculumString.split(",").map(c => c.trim()).filter(c => c);
+                        } else {
+                            // Valor único
+                            curriculumComponents = [cleanCurriculumString.trim()].filter(c => c);
+                        }
+                    }
+                }
+                
+                console.log("Componentes curriculares processados do campo:", curriculumComponents);
+                
+                // Converter componentes curriculares em IDs - GARANTIR QUE SEJA SEMPRE ARRAY DE NÚMEROS SIMPLES
+                let curriculumIds = [];
+                if (curriculumComponents.length > 0) {
+                    console.log("=== PROCESSAMENTO COMPONENTES CURRICULARES PARA EDIÇÃO ===");
+                    console.log("Componentes a serem processados:", curriculumComponents);
+                    
+                    // Converter todos para números válidos
+                    curriculumIds = curriculumComponents.map(component => {
+                        const id = parseInt(component);
+                        if (!isNaN(id) && id > 0) {
+                            console.log(`Componente ${component} → ID ${id}`);
+                            return id;
+                        } else {
+                            console.warn(`Componente curricular inválido: ${component}`);
+                            return null;
+                        }
+                    }).filter(id => id !== null);
+                }
+                
+                // VALIDAÇÃO FINAL RIGOROSA: Garantir que componentes_curriculares seja SEMPRE um array de números simples
+                const validCurriculumIds = curriculumIds.filter(id => {
+                    // Aceitar apenas números válidos
+                    if (typeof id === 'number' && Number.isInteger(id) && id > 0) {
+                        return true;
+                    }
+                    console.error("REJEITADO componente curricular: Valor inválido detectado:", id, "Tipo:", typeof id);
+                    return false;
+                });
+                
+                console.log("=== VALIDAÇÃO FINAL COMPONENTES CURRICULARES ===");
+                console.log("IDs de componentes que serão enviados para a API:", validCurriculumIds);
+                console.log("Tipo do array:", typeof validCurriculumIds);
+                console.log("É array?", Array.isArray(validCurriculumIds));
+                console.log("Quantidade de elementos:", validCurriculumIds.length);
+                if (validCurriculumIds.length > 0) {
+                    console.log("Tipos dos elementos:", validCurriculumIds.map(id => typeof id));
+                    console.log("Valores dos elementos:", validCurriculumIds);
+                }
+                console.log("================================================");
                 
                 // Verificar se há alternativa correta selecionada
                 const correctAnswerElement = document.querySelector('input[name="editCorrectAnswer"]:checked');
@@ -22492,184 +22602,58 @@ async function populateSchoolSelector() {
                     return;
                 }
                 
-                // Obter códigos BNCC selecionados
-                const bnccCodesString = document.getElementById("editBnccCodes")?.value || "";
-                console.log("=== DEBUG CAMPO BNCC INPUT ===");
-                console.log("Valor bruto do campo editBnccCodes:", bnccCodesString);
-                console.log("Tipo do valor:", typeof bnccCodesString);
+                // CONVERTER CÓDIGOS BNCC DE selectedSkills PARA IDs
+                console.log("=== CONVERTENDO selectedSkills (CÓDIGOS) PARA IDs ===");
+                console.log("selectedSkills atual (códigos):", selectedSkills);
+                console.log("Tipo de selectedSkills:", typeof selectedSkills);
+                console.log("É array?", Array.isArray(selectedSkills));
                 
-                // FORÇAR LIMPEZA: Se detectar objetos complexos, limpar e usar apenas IDs
-                let cleanBnccCodesString = bnccCodesString;
-                if (bnccCodesString.includes('bncc_id') || bnccCodesString.includes('questao_id') || bnccCodesString.includes('created_at')) {
-                    console.warn("🚨 DETECTADO: Campo contém dados complexos indevidos!");
-                    console.warn("Dados problemáticos:", bnccCodesString);
+                // Converter códigos BNCC para IDs usando a API de habilidades
+                let finalBnccIds = [];
+                
+                if (Array.isArray(selectedSkills) && selectedSkills.length > 0) {
+                    console.log("Convertendo códigos BNCC para IDs...");
                     
-                    try {
-                        // Tentar extrair apenas os bncc_id
-                        const match = bnccCodesString.match(/bncc_id['":\s]*(\d+)/g);
-                        if (match) {
-                            const ids = match.map(m => m.match(/\d+/)[0]).filter(id => id);
-                            cleanBnccCodesString = ids.join(", ");
-                            console.log("✅ IDs extraídos e limpos:", cleanBnccCodesString);
-                        } else {
-                            cleanBnccCodesString = "";
-                            console.warn("⚠️ Não foi possível extrair IDs, usando string vazia");
-                        }
-                    } catch (e) {
-                        console.error("❌ Erro ao limpar dados complexos:", e);
-                        cleanBnccCodesString = "";
-                    }
-                    
-                    // Atualizar o campo com dados limpos
-                    document.getElementById("editBnccCodes").value = cleanBnccCodesString;
-                    console.log("🔄 Campo atualizado com dados limpos:", cleanBnccCodesString);
-                }
-                
-                let bnccCodes = [];
-                if (cleanBnccCodesString) {
-                    // Verificar se o valor é uma string JSON (objetos complexos)
-                    if (cleanBnccCodesString.startsWith('[') && cleanBnccCodesString.includes('{')) {
-                        console.warn("DETECTADO: Campo contém objetos JSON complexos!");
-                        console.warn("Valor problemático:", cleanBnccCodesString);
-                        
-                        try {
-                            // Tentar parsear como JSON e extrair apenas os IDs
-                            const parsedArray = JSON.parse(cleanBnccCodesString);
-                            console.log("Array parseado:", parsedArray);
-                            
-                            bnccCodes = parsedArray.map(item => {
-                                if (typeof item === 'object' && item !== null) {
-                                    // Extrair apenas o bncc_id ou id
-                                    return item.bncc_id || item.id || null;
-                                }
-                                return item;
-                            }).filter(id => id !== null && id !== undefined);
-                            
-                            console.log("IDs extraídos dos objetos JSON:", bnccCodes);
-                        } catch (e) {
-                            console.error("Erro ao parsear JSON dos códigos BNCC:", e);
-                            bnccCodes = [];
-                        }
-                    } else {
-                        // Processar como string normal separada por vírgulas
-                        bnccCodes = cleanBnccCodesString.split(",").map(c => c.trim()).filter(c => c);
-                    }
-                }
-                
-                console.log("Códigos BNCC processados do campo:", bnccCodes);
-                
-                // Converter códigos BNCC em IDs - GARANTIR QUE SEJA SEMPRE ARRAY DE NÚMEROS SIMPLES
-                let bnccIds = [];
-                if (bnccCodes.length > 0) {
-                    console.log("=== PROCESSAMENTO CÓDIGOS BNCC PARA EDIÇÃO ===");
-                    console.log("Códigos BNCC a serem processados:", bnccCodes);
-                    
-                    // Primeiro, verificar se já são números (IDs)
-                    const directIds = bnccCodes.map(code => {
-                        const id = parseInt(code);
-                        return isNaN(id) ? null : id;
-                    }).filter(id => id !== null);
-                    
-                    if (directIds.length === bnccCodes.length) {
-                        // Todos os códigos são números válidos, usar diretamente
-                        bnccIds = directIds;
-                        console.log("Usando IDs diretos:", bnccIds);
-                    } else {
-                        // Alguns não são números, tentar converter usando a API de habilidades
-                        if (bnccSkillsFromAPI && bnccSkillsFromAPI.length > 0) {
-                            bnccIds = bnccCodes.map(code => {
-                                // Primeiro tentar como número
-                                const directId = parseInt(code);
-                                if (!isNaN(directId)) {
-                                    console.log(`Código ${code} é um ID direto: ${directId}`);
-                                    return directId;
-                                }
-                                
-                                // Se não é número, procurar na API
-                                const skill = bnccSkillsFromAPI.find(s => s.codigo === code);
-                                if (skill && skill.id) {
-                                    console.log(`Código ${code} → ID ${skill.id}`);
-                                    return parseInt(skill.id);
-                                } else {
-                                    console.warn(`Habilidade BNCC não encontrada para código: ${code}`);
-                                    return null;
-                                }
-                            }).filter(id => id !== null);
-                        } else {
-                            console.warn("bnccSkillsFromAPI não disponível, usando apenas IDs diretos");
-                            bnccIds = directIds;
-                        }
-                    }
-                }
-                
-                // VALIDAÇÃO FINAL RIGOROSA: Garantir que codigos_bncc seja SEMPRE um array de números simples
-                let validBnccIds = [];
-                
-                if (Array.isArray(bnccIds)) {
-                    validBnccIds = bnccIds.filter(id => {
-                        // Aceitar apenas números válidos
-                        if (typeof id === 'number' && !isNaN(id) && id > 0) {
-                            return true;
-                        }
-                        // Se for string que representa número, converter
-                        if (typeof id === 'string') {
-                            const numId = parseInt(id);
-                            if (!isNaN(numId) && numId > 0) {
-                                return true;
+                    // Verificar se temos dados da API disponíveis
+                    if (bnccSkillsFromAPI && bnccSkillsFromAPI.length > 0) {
+                        finalBnccIds = selectedSkills.map(code => {
+                            // Primeiro verificar se já é um número (ID)
+                            const directId = parseInt(code);
+                            if (!isNaN(directId)) {
+                                console.log(`Código ${code} já é um ID: ${directId}`);
+                                return directId;
                             }
-                        }
-                        // Rejeitar qualquer objeto, null, undefined, etc.
-                        console.error("REJEITADO: Valor inválido detectado:", id, "Tipo:", typeof id);
-                        return false;
-                    }).map(id => {
-                        // Garantir que seja sempre número inteiro
-                        return parseInt(id);
-                    });
-                } else {
-                    console.warn("bnccIds não é um array, convertendo para array vazio");
-                    validBnccIds = [];
-                }
-                
-                // Verificação adicional para garantir que não há objetos
-                const hasInvalidItems = validBnccIds.some(id => typeof id !== 'number' || isNaN(id));
-                if (hasInvalidItems) {
-                    console.error("ERRO CRÍTICO: Ainda há itens inválidos no array!");
-                    console.error("Array problemático:", validBnccIds);
-                    validBnccIds = validBnccIds.filter(id => typeof id === 'number' && !isNaN(id));
-                }
-                
-                console.log("=== VALIDAÇÃO FINAL RIGOROSA EDIÇÃO ===");
-                console.log("IDs BNCC que serão enviados para a API:", validBnccIds);
-                console.log("Tipo do array:", typeof validBnccIds);
-                console.log("É array?", Array.isArray(validBnccIds));
-                console.log("Quantidade de elementos:", validBnccIds.length);
-                if (validBnccIds.length > 0) {
-                    console.log("Tipos dos elementos:", validBnccIds.map(id => typeof id));
-                    console.log("Valores dos elementos:", validBnccIds);
-                    
-                    // Verificação final - garantir que cada elemento é um número
-                    validBnccIds.forEach((id, index) => {
-                        if (typeof id !== 'number' || isNaN(id)) {
-                            console.error(`ELEMENTO ${index} INVÁLIDO:`, id, "Tipo:", typeof id);
-                        }
-                    });
-                }
-                console.log("=====================================");
-
-                // VERIFICAÇÃO ULTRA RIGOROSA FINAL
-                const finalBnccIds = validBnccIds.filter(id => {
-                    // Aceitar APENAS números inteiros positivos
-                    if (typeof id === 'number' && Number.isInteger(id) && id > 0) {
-                        return true;
+                            
+                            // Se não é número, procurar na API pelo código
+                            const skill = bnccSkillsFromAPI.find(s => s.codigo === code);
+                            if (skill && skill.id) {
+                                console.log(`Código ${code} → ID ${skill.id}`);
+                                return parseInt(skill.id);
+                            } else {
+                                console.warn(`Habilidade BNCC não encontrada para código: ${code}`);
+                                return null;
+                            }
+                        }).filter(id => id !== null && id !== undefined);
+                    } else {
+                        console.warn("bnccSkillsFromAPI não disponível, tentando converter códigos para números");
+                        // Tentar converter códigos para números se possível
+                        finalBnccIds = selectedSkills.map(code => {
+                            const id = parseInt(code);
+                            return isNaN(id) ? null : id;
+                        }).filter(id => id !== null);
                     }
-                    console.error("🚨 REJEITADO na verificação final:", id, "Tipo:", typeof id);
-                    return false;
-                });
+                } else {
+                    console.log("selectedSkills está vazio ou não é array");
+                    finalBnccIds = [];
+                }
                 
-                console.log("🔒 ARRAY FINAL ULTRA VALIDADO:", finalBnccIds);
-                console.log("🔒 Todos os elementos são números?", finalBnccIds.every(id => typeof id === 'number'));
-                console.log("🔒 Todos os elementos são inteiros?", finalBnccIds.every(id => Number.isInteger(id)));
-                console.log("🔒 Todos os elementos são positivos?", finalBnccIds.every(id => id > 0));
+                console.log("🔒 IDs FINAIS CONVERTIDOS:", finalBnccIds);
+                console.log("🔒 Quantidade de elementos:", finalBnccIds.length);
+                if (finalBnccIds.length > 0) {
+                    console.log("🔒 Valores dos elementos:", finalBnccIds);
+                    console.log("🔒 Tipos dos elementos:", finalBnccIds.map(item => typeof item));
+                    console.log("🔒 Todos são números?", finalBnccIds.every(id => typeof id === 'number'));
+                }
 
                 // Criar objeto da questão
                 const questionData = {
@@ -22680,7 +22664,7 @@ async function populateSchoolSelector() {
                     serie: gradeLevel || "PRIMEIRO_ANO",
                     pontos: 1, // Valor padrão
                     prova_id: parseInt(examId),
-                    componente_curricular_id: curriculumComponent ? parseInt(curriculumComponent) : 0,
+                    componente_curricular_id: validCurriculumIds,
                     codigos_bncc: finalBnccIds,
                     alternativas: alternativas
                 };
@@ -22688,8 +22672,11 @@ async function populateSchoolSelector() {
                 console.log("=== OBJETO FINAL SENDO ENVIADO PARA API ===");
                 console.log("questionData completo:", questionData);
                 console.log("questionData.codigos_bncc especificamente:", questionData.codigos_bncc);
+                console.log("questionData.componente_curricular_id especificamente:", questionData.componente_curricular_id);
                 console.log("Tipo de questionData.codigos_bncc:", typeof questionData.codigos_bncc);
-                console.log("É array?", Array.isArray(questionData.codigos_bncc));
+                console.log("Tipo de questionData.componente_curricular_id:", typeof questionData.componente_curricular_id);
+                console.log("É array codigos_bncc?", Array.isArray(questionData.codigos_bncc));
+                console.log("É array componente_curricular_id?", Array.isArray(questionData.componente_curricular_id));
                 if (Array.isArray(questionData.codigos_bncc)) {
                     console.log("Elementos do array codigos_bncc:");
                     questionData.codigos_bncc.forEach((item, index) => {
@@ -22704,6 +22691,25 @@ async function populateSchoolSelector() {
                         }
                     });
                 }
+                
+                // Verificar elementos do array componente_curricular_id
+                if (Array.isArray(questionData.componente_curricular_id)) {
+                    console.log("Elementos do array componente_curricular_id:");
+                    questionData.componente_curricular_id.forEach((item, index) => {
+                        console.log(`  [${index}]:`, item, "Tipo:", typeof item);
+                        if (typeof item === 'object' && item !== null) {
+                            console.error(`  🚨 ERRO CRÍTICO: Elemento componente ${index} é um objeto!`, item);
+                            console.error("  🚨 ISSO NÃO DEVERIA ACONTECER APÓS TODAS AS VALIDAÇÕES!");
+                        } else if (typeof item === 'number' && Number.isInteger(item) && item > 0) {
+                            console.log(`  ✅ Elemento componente ${index} está correto`);
+                        } else {
+                            console.error(`  ❌ Elemento componente ${index} tem formato inválido`);
+                        }
+                    });
+                } else if (questionData.componente_curricular_id) {
+                    console.log("componente_curricular_id não é array:", questionData.componente_curricular_id);
+                }
+                
                 console.log("JSON que será enviado:", JSON.stringify(questionData, null, 2));
                 console.log("===========================================");
                 
@@ -22729,9 +22735,6 @@ async function populateSchoolSelector() {
                     throw new Error(`Erro ao atualizar questão. Status: ${response.status}. Detalhes: ${errorText}`);
                 }
                 
-                const updatedQuestion = await response.json();
-                console.log("Questão atualizada com sucesso:", updatedQuestion);
-                
                 // Fechar o modal
                 document.getElementById("editQuestionModal").classList.add("hidden");
                 
@@ -22751,7 +22754,6 @@ async function populateSchoolSelector() {
             }
         }
 
-                        // Função para excluir uma questão - removida        async function deleteQuestion(questionId, examId) {            // Esta função foi desativada            console.log("Função de exclusão de questão foi desativada");            alert("A funcionalidade de exclusão de questões foi desativada.");            return false;        }
     </script>
     
     <!-- Edit Questions Modal -->
