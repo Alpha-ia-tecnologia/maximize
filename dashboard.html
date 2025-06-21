@@ -720,7 +720,10 @@
         // Atualizar o filtro de turmas quando a escola é alterada
         document
           .getElementById("filterSchool")
-          .addEventListener("change", updateClassesFilter);
+          .addEventListener("change", async function () {
+            await updateClassesFilter();
+            await updateDashboardStatistics();
+          });
 
         // Filtros em cascata: região → grupos → escolas
         document
@@ -729,6 +732,14 @@
         document
           .getElementById("filterGroup")
           .addEventListener("change", updateSchoolsFilter);
+
+        // Atualizar estatísticas quando outros filtros mudarem
+        document
+          .getElementById("filterYear")
+          ?.addEventListener("change", updateDashboardStatistics);
+        document
+          .getElementById("filterGrade")
+          ?.addEventListener("change", updateDashboardStatistics);
 
         // Configurar eventos de paginação
         document
@@ -901,19 +912,43 @@
       }
 
       // Função para carregar estatísticas gerais da API
-      async function loadStatisticsFromAPI() {
+      async function loadStatisticsFromAPI(filters = {}) {
         try {
           console.log("Carregando estatísticas gerais da API...");
 
-          const response = await fetch(
-            "https://sag-sag.rak8a3.easypanel.host/api/dashboard/statistics",
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          // Construir parâmetros da URL com os filtros
+          const params = new URLSearchParams();
+
+          // Adicionar filtros se fornecidos
+          if (filters.regiao_id && filters.regiao_id !== "all") {
+            params.append("regiao_id", filters.regiao_id);
+          }
+          if (filters.grupo_id && filters.grupo_id !== "all") {
+            params.append("grupo_id", filters.grupo_id);
+          }
+          if (filters.escola_id && filters.escola_id !== "all") {
+            params.append("escola_id", filters.escola_id);
+          }
+          if (filters.ano_letivo && filters.ano_letivo !== "all") {
+            params.append("ano_letivo", filters.ano_letivo);
+          }
+          if (filters.serie && filters.serie !== "all") {
+            params.append("serie", filters.serie);
+          }
+
+          const queryString = params.toString();
+          const url = `https://sag-sag.rak8a3.easypanel.host/api/dashboard/statistics${
+            queryString ? "?" + queryString : ""
+          }`;
+
+          console.log("URL das estatísticas com filtros:", url);
+
+          const response = await fetch(url, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
 
           if (response.ok) {
             const data = await response.json();
@@ -2318,15 +2353,34 @@
             '<div class="text-gray-500 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Carregando dados...</div>';
         }
 
-        document
-          .getElementById("curriculumComponentsChart")
-          .getContext("2d").canvas.style.opacity = "0.5";
-        document.getElementById("bnccSkillsList").innerHTML =
-          '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i><p class="mt-2 text-gray-500">Carregando dados...</p></div>';
-        document.getElementById("studentRankingList").innerHTML =
-          '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Carregando ranking de alunos...</td></tr>';
-        document.getElementById("schoolRankingTableBody").innerHTML =
-          '<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Carregando ranking de escolas...</td></tr>';
+        // Verificar e atualizar elementos que existem
+        const curriculumChart = document.getElementById(
+          "curriculumComponentsChart"
+        );
+        if (curriculumChart) {
+          curriculumChart.getContext("2d").canvas.style.opacity = "0.5";
+        }
+
+        const bnccSkillsList = document.getElementById("bnccSkillsList");
+        if (bnccSkillsList) {
+          bnccSkillsList.innerHTML =
+            '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i><p class="mt-2 text-gray-500">Carregando dados...</p></div>';
+        }
+
+        const studentRankingList =
+          document.getElementById("studentRankingList");
+        if (studentRankingList) {
+          studentRankingList.innerHTML =
+            '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Carregando ranking de alunos...</td></tr>';
+        }
+
+        const schoolRankingTableBody = document.getElementById(
+          "schoolRankingTableBody"
+        );
+        if (schoolRankingTableBody) {
+          schoolRankingTableBody.innerHTML =
+            '<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Carregando ranking de escolas...</td></tr>';
+        }
 
         // Resetar páginas atuais ao aplicar novos filtros
         currentPage = 1;
@@ -2384,22 +2438,26 @@
           resultsFilter,
           1
         ); // Sempre começar na página 1
-        loadSchoolRanking(
-          yearFilter,
-          regionFilter,
-          groupFilter,
-          schoolFilter,
-          gradeFilter,
-          classFilter,
-          resultsFilter,
-          1
-        ); // Sempre começar na página 1
+        // loadSchoolRanking - função não implementada ainda
+        // loadSchoolRanking(
+        //   yearFilter,
+        //   regionFilter,
+        //   groupFilter,
+        //   schoolFilter,
+        //   gradeFilter,
+        //   classFilter,
+        //   resultsFilter,
+        //   1
+        // ); // Sempre começar na página 1
 
         // Restaurar opacidade dos gráficos após a renderização
         setTimeout(() => {
-          document
-            .getElementById("curriculumComponentsChart")
-            .getContext("2d").canvas.style.opacity = "1";
+          const curriculumChart = document.getElementById(
+            "curriculumComponentsChart"
+          );
+          if (curriculumChart) {
+            curriculumChart.getContext("2d").canvas.style.opacity = "1";
+          }
         }, 500);
       }
 
@@ -4994,6 +5052,9 @@
             // Resetar o filtro de turmas quando escolas mudam
             document.getElementById("filterClass").innerHTML =
               '<option value="all">Todas as turmas</option>';
+
+            // ATUALIZAR ESTATÍSTICAS quando escola muda
+            await updateDashboardStatistics();
           } catch (error) {
             console.error("Erro ao buscar escolas por filtros:", error);
             schoolSelector.innerHTML =
@@ -5030,6 +5091,9 @@
           // Utilizamos a função populateGroupsFilter que já tem toda a lógica necessária
           await populateGroupsFilter(regionId);
           groupSelector.disabled = false;
+
+          // ATUALIZAR ESTATÍSTICAS quando região muda
+          await updateDashboardStatistics();
         } catch (error) {
           console.error("Erro ao atualizar filtro de grupos:", error);
           document.getElementById("filterGroup").innerHTML =
@@ -5038,6 +5102,55 @@
 
           // Mesmo com erro, tentar atualizar escolas
           updateSchoolsFilter();
+        }
+      }
+
+      // Função para atualizar as estatísticas do dashboard com base nos filtros atuais
+      async function updateDashboardStatistics() {
+        try {
+          console.log("🔄 Atualizando estatísticas com filtros aplicados...");
+
+          // Obter valores dos filtros
+          const regionId = document.getElementById("filterRegion").value;
+          const groupId = document.getElementById("filterGroup").value;
+          const schoolId = document.getElementById("filterSchool").value;
+          const yearId = document.getElementById("filterYear").value;
+          const gradeId = document.getElementById("filterGrade").value;
+
+          // Criar objeto de filtros
+          const filters = {
+            regiao_id: regionId,
+            grupo_id: groupId,
+            escola_id: schoolId,
+            ano_letivo: yearId,
+            serie: gradeId,
+          };
+
+          console.log("🎯 Filtros aplicados:", filters);
+
+          // Mostrar indicadores de carregamento
+          document.getElementById("schoolCount").innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i>';
+          document.getElementById("classCount").innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i>';
+          document.getElementById("studentCount").innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i>';
+          document.getElementById("examCount").innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i>';
+          document.getElementById("participationRate").innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i>';
+
+          // Carregar estatísticas com filtros
+          await loadStatisticsFromAPI(filters);
+
+          console.log("✅ Estatísticas atualizadas com sucesso!");
+        } catch (error) {
+          console.error(
+            "❌ Erro ao atualizar estatísticas do dashboard:",
+            error
+          );
+          // Em caso de erro, voltar para estatísticas básicas
+          updateBasicStatistics();
         }
       }
 

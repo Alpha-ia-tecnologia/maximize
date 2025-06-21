@@ -21972,7 +21972,22 @@ async function populateSchoolSelector() {
         // Função para carregar habilidades BNCC para edição
         async function loadBnccSkillsForEdit(bnccCodes, inputElement, countElement, listElement) {
             try {
-                console.log("Carregando habilidades BNCC para edição:", bnccCodes);
+                console.log("Carregando habilidades BNCC para edição (dados originais da API):", bnccCodes);
+                
+                // Extrair apenas os bncc_id dos objetos complexos
+                let extractedIds = [];
+                if (Array.isArray(bnccCodes)) {
+                    extractedIds = bnccCodes.map(item => {
+                        // Se é um objeto com bncc_id, extrair apenas o ID
+                        if (typeof item === 'object' && item !== null && item.bncc_id) {
+                            return item.bncc_id;
+                        }
+                        // Se já é um número simples, manter
+                        return item;
+                    }).filter(id => id !== null && id !== undefined);
+                }
+                
+                console.log("IDs BNCC extraídos:", extractedIds);
                 
                 // Mostrar indicador de carregamento
                 if (listElement) {
@@ -21987,14 +22002,14 @@ async function populateSchoolSelector() {
                     throw new Error("Não foi possível carregar as habilidades BNCC");
                 }
                 
-                // Encontrar as habilidades que correspondem aos códigos da questão
+                // Encontrar as habilidades que correspondem aos IDs extraídos
                 const matchingSkills = [];
                 
-                for (const code of bnccCodes) {
-                    const skill = allSkills.find(s => s.codigo === code);
+                for (const id of extractedIds) {
+                    const skill = allSkills.find(s => s.id === parseInt(id));
                     if (skill) {
                         // Carregar detalhes completos da habilidade usando seu ID
-                        console.log(`Carregando detalhes da habilidade ${code} (ID: ${skill.id})`);
+                        console.log(`Carregando detalhes da habilidade ID: ${id} (Código: ${skill.codigo})`);
                         const detailedSkill = await loadBnccSkillDetails(skill.id);
                         if (detailedSkill) {
                             matchingSkills.push(detailedSkill);
@@ -22003,13 +22018,18 @@ async function populateSchoolSelector() {
                             matchingSkills.push(skill);
                         }
                     } else {
-                        console.warn(`Habilidade BNCC não encontrada para o código: ${code}`);
+                        console.warn(`Habilidade BNCC não encontrada para o ID: ${id}`);
                     }
                 }
                 
                 // Atualizar input com códigos das habilidades encontradas
                 const codes = matchingSkills.map(skill => skill.codigo).filter(code => code);
                 inputElement.value = codes.join(", ");
+                
+                console.log("=== CAMPO INPUT ATUALIZADO ===");
+                console.log("Códigos colocados no campo editBnccCodes:", codes);
+                console.log("Valor final do campo:", inputElement.value);
+                console.log("===============================");
                 
                 // Atualizar contagem
                 if (countElement) {
@@ -22067,12 +22087,22 @@ async function populateSchoolSelector() {
             } catch (error) {
                 console.error("Erro ao carregar habilidades BNCC para edição:", error);
                 
-                // Em caso de erro, usar os códigos como estão
+                // Em caso de erro, extrair IDs e usar como fallback
+                let fallbackIds = [];
+                if (Array.isArray(bnccCodes)) {
+                    fallbackIds = bnccCodes.map(item => {
+                        if (typeof item === 'object' && item !== null && item.bncc_id) {
+                            return item.bncc_id;
+                        }
+                        return item;
+                    }).filter(id => id !== null && id !== undefined);
+                }
+                
                 if (inputElement) {
-                    inputElement.value = bnccCodes.join(", ");
+                    inputElement.value = fallbackIds.join(", ");
                 }
                 if (countElement) {
-                    countElement.textContent = bnccCodes.length > 0 ? `(${bnccCodes.length})` : "";
+                    countElement.textContent = fallbackIds.length > 0 ? `(${fallbackIds.length})` : "";
                 }
                 if (listElement) {
                     listElement.innerHTML = '<div class="text-center text-red-500 text-xs py-2">Erro ao carregar detalhes das habilidades</div>';
@@ -22464,29 +22494,182 @@ async function populateSchoolSelector() {
                 
                 // Obter códigos BNCC selecionados
                 const bnccCodesString = document.getElementById("editBnccCodes")?.value || "";
-                const bnccCodes = bnccCodesString.split(",").map(c => c.trim()).filter(c => c);
+                console.log("=== DEBUG CAMPO BNCC INPUT ===");
+                console.log("Valor bruto do campo editBnccCodes:", bnccCodesString);
+                console.log("Tipo do valor:", typeof bnccCodesString);
                 
-                // Converter códigos BNCC em IDs
-                let bnccIds = [];
-                if (bnccCodes.length > 0) {
-                    console.log("Convertendo códigos BNCC em IDs:", bnccCodes);
+                // FORÇAR LIMPEZA: Se detectar objetos complexos, limpar e usar apenas IDs
+                let cleanBnccCodesString = bnccCodesString;
+                if (bnccCodesString.includes('bncc_id') || bnccCodesString.includes('questao_id') || bnccCodesString.includes('created_at')) {
+                    console.warn("🚨 DETECTADO: Campo contém dados complexos indevidos!");
+                    console.warn("Dados problemáticos:", bnccCodesString);
                     
-                    // Usar as habilidades carregadas da API (se disponível)
-                    if (bnccSkillsFromAPI && bnccSkillsFromAPI.length > 0) {
-                        bnccIds = bnccCodes.map(code => {
-                            const skill = bnccSkillsFromAPI.find(s => s.codigo === code);
-                            if (skill && skill.id) {
-                                console.log(`Código ${code} → ID ${skill.id}`);
-                                return parseInt(skill.id);
-                            } else {
-                                console.warn(`Habilidade BNCC não encontrada para código: ${code}`);
-                                return null;
-                            }
-                        }).filter(id => id !== null);
+                    try {
+                        // Tentar extrair apenas os bncc_id
+                        const match = bnccCodesString.match(/bncc_id['":\s]*(\d+)/g);
+                        if (match) {
+                            const ids = match.map(m => m.match(/\d+/)[0]).filter(id => id);
+                            cleanBnccCodesString = ids.join(", ");
+                            console.log("✅ IDs extraídos e limpos:", cleanBnccCodesString);
+                        } else {
+                            cleanBnccCodesString = "";
+                            console.warn("⚠️ Não foi possível extrair IDs, usando string vazia");
+                        }
+                    } catch (e) {
+                        console.error("❌ Erro ao limpar dados complexos:", e);
+                        cleanBnccCodesString = "";
                     }
                     
-                    console.log("IDs das habilidades BNCC:", bnccIds);
+                    // Atualizar o campo com dados limpos
+                    document.getElementById("editBnccCodes").value = cleanBnccCodesString;
+                    console.log("🔄 Campo atualizado com dados limpos:", cleanBnccCodesString);
                 }
+                
+                let bnccCodes = [];
+                if (cleanBnccCodesString) {
+                    // Verificar se o valor é uma string JSON (objetos complexos)
+                    if (cleanBnccCodesString.startsWith('[') && cleanBnccCodesString.includes('{')) {
+                        console.warn("DETECTADO: Campo contém objetos JSON complexos!");
+                        console.warn("Valor problemático:", cleanBnccCodesString);
+                        
+                        try {
+                            // Tentar parsear como JSON e extrair apenas os IDs
+                            const parsedArray = JSON.parse(cleanBnccCodesString);
+                            console.log("Array parseado:", parsedArray);
+                            
+                            bnccCodes = parsedArray.map(item => {
+                                if (typeof item === 'object' && item !== null) {
+                                    // Extrair apenas o bncc_id ou id
+                                    return item.bncc_id || item.id || null;
+                                }
+                                return item;
+                            }).filter(id => id !== null && id !== undefined);
+                            
+                            console.log("IDs extraídos dos objetos JSON:", bnccCodes);
+                        } catch (e) {
+                            console.error("Erro ao parsear JSON dos códigos BNCC:", e);
+                            bnccCodes = [];
+                        }
+                    } else {
+                        // Processar como string normal separada por vírgulas
+                        bnccCodes = cleanBnccCodesString.split(",").map(c => c.trim()).filter(c => c);
+                    }
+                }
+                
+                console.log("Códigos BNCC processados do campo:", bnccCodes);
+                
+                // Converter códigos BNCC em IDs - GARANTIR QUE SEJA SEMPRE ARRAY DE NÚMEROS SIMPLES
+                let bnccIds = [];
+                if (bnccCodes.length > 0) {
+                    console.log("=== PROCESSAMENTO CÓDIGOS BNCC PARA EDIÇÃO ===");
+                    console.log("Códigos BNCC a serem processados:", bnccCodes);
+                    
+                    // Primeiro, verificar se já são números (IDs)
+                    const directIds = bnccCodes.map(code => {
+                        const id = parseInt(code);
+                        return isNaN(id) ? null : id;
+                    }).filter(id => id !== null);
+                    
+                    if (directIds.length === bnccCodes.length) {
+                        // Todos os códigos são números válidos, usar diretamente
+                        bnccIds = directIds;
+                        console.log("Usando IDs diretos:", bnccIds);
+                    } else {
+                        // Alguns não são números, tentar converter usando a API de habilidades
+                        if (bnccSkillsFromAPI && bnccSkillsFromAPI.length > 0) {
+                            bnccIds = bnccCodes.map(code => {
+                                // Primeiro tentar como número
+                                const directId = parseInt(code);
+                                if (!isNaN(directId)) {
+                                    console.log(`Código ${code} é um ID direto: ${directId}`);
+                                    return directId;
+                                }
+                                
+                                // Se não é número, procurar na API
+                                const skill = bnccSkillsFromAPI.find(s => s.codigo === code);
+                                if (skill && skill.id) {
+                                    console.log(`Código ${code} → ID ${skill.id}`);
+                                    return parseInt(skill.id);
+                                } else {
+                                    console.warn(`Habilidade BNCC não encontrada para código: ${code}`);
+                                    return null;
+                                }
+                            }).filter(id => id !== null);
+                        } else {
+                            console.warn("bnccSkillsFromAPI não disponível, usando apenas IDs diretos");
+                            bnccIds = directIds;
+                        }
+                    }
+                }
+                
+                // VALIDAÇÃO FINAL RIGOROSA: Garantir que codigos_bncc seja SEMPRE um array de números simples
+                let validBnccIds = [];
+                
+                if (Array.isArray(bnccIds)) {
+                    validBnccIds = bnccIds.filter(id => {
+                        // Aceitar apenas números válidos
+                        if (typeof id === 'number' && !isNaN(id) && id > 0) {
+                            return true;
+                        }
+                        // Se for string que representa número, converter
+                        if (typeof id === 'string') {
+                            const numId = parseInt(id);
+                            if (!isNaN(numId) && numId > 0) {
+                                return true;
+                            }
+                        }
+                        // Rejeitar qualquer objeto, null, undefined, etc.
+                        console.error("REJEITADO: Valor inválido detectado:", id, "Tipo:", typeof id);
+                        return false;
+                    }).map(id => {
+                        // Garantir que seja sempre número inteiro
+                        return parseInt(id);
+                    });
+                } else {
+                    console.warn("bnccIds não é um array, convertendo para array vazio");
+                    validBnccIds = [];
+                }
+                
+                // Verificação adicional para garantir que não há objetos
+                const hasInvalidItems = validBnccIds.some(id => typeof id !== 'number' || isNaN(id));
+                if (hasInvalidItems) {
+                    console.error("ERRO CRÍTICO: Ainda há itens inválidos no array!");
+                    console.error("Array problemático:", validBnccIds);
+                    validBnccIds = validBnccIds.filter(id => typeof id === 'number' && !isNaN(id));
+                }
+                
+                console.log("=== VALIDAÇÃO FINAL RIGOROSA EDIÇÃO ===");
+                console.log("IDs BNCC que serão enviados para a API:", validBnccIds);
+                console.log("Tipo do array:", typeof validBnccIds);
+                console.log("É array?", Array.isArray(validBnccIds));
+                console.log("Quantidade de elementos:", validBnccIds.length);
+                if (validBnccIds.length > 0) {
+                    console.log("Tipos dos elementos:", validBnccIds.map(id => typeof id));
+                    console.log("Valores dos elementos:", validBnccIds);
+                    
+                    // Verificação final - garantir que cada elemento é um número
+                    validBnccIds.forEach((id, index) => {
+                        if (typeof id !== 'number' || isNaN(id)) {
+                            console.error(`ELEMENTO ${index} INVÁLIDO:`, id, "Tipo:", typeof id);
+                        }
+                    });
+                }
+                console.log("=====================================");
+
+                // VERIFICAÇÃO ULTRA RIGOROSA FINAL
+                const finalBnccIds = validBnccIds.filter(id => {
+                    // Aceitar APENAS números inteiros positivos
+                    if (typeof id === 'number' && Number.isInteger(id) && id > 0) {
+                        return true;
+                    }
+                    console.error("🚨 REJEITADO na verificação final:", id, "Tipo:", typeof id);
+                    return false;
+                });
+                
+                console.log("🔒 ARRAY FINAL ULTRA VALIDADO:", finalBnccIds);
+                console.log("🔒 Todos os elementos são números?", finalBnccIds.every(id => typeof id === 'number'));
+                console.log("🔒 Todos os elementos são inteiros?", finalBnccIds.every(id => Number.isInteger(id)));
+                console.log("🔒 Todos os elementos são positivos?", finalBnccIds.every(id => id > 0));
 
                 // Criar objeto da questão
                 const questionData = {
@@ -22498,11 +22681,31 @@ async function populateSchoolSelector() {
                     pontos: 1, // Valor padrão
                     prova_id: parseInt(examId),
                     componente_curricular_id: curriculumComponent ? parseInt(curriculumComponent) : 0,
-                    codigos_bncc: bnccIds,
+                    codigos_bncc: finalBnccIds,
                     alternativas: alternativas
                 };
                 
-                console.log("Enviando atualização de questão:", questionData);
+                console.log("=== OBJETO FINAL SENDO ENVIADO PARA API ===");
+                console.log("questionData completo:", questionData);
+                console.log("questionData.codigos_bncc especificamente:", questionData.codigos_bncc);
+                console.log("Tipo de questionData.codigos_bncc:", typeof questionData.codigos_bncc);
+                console.log("É array?", Array.isArray(questionData.codigos_bncc));
+                if (Array.isArray(questionData.codigos_bncc)) {
+                    console.log("Elementos do array codigos_bncc:");
+                    questionData.codigos_bncc.forEach((item, index) => {
+                        console.log(`  [${index}]:`, item, "Tipo:", typeof item);
+                        if (typeof item === 'object' && item !== null) {
+                            console.error(`  🚨 ERRO CRÍTICO: Elemento ${index} é um objeto!`, item);
+                            console.error("  🚨 ISSO NÃO DEVERIA ACONTECER APÓS TODAS AS VALIDAÇÕES!");
+                        } else if (typeof item === 'number' && Number.isInteger(item) && item > 0) {
+                            console.log(`  ✅ Elemento ${index} está correto`);
+                        } else {
+                            console.error(`  ❌ Elemento ${index} tem formato inválido`);
+                        }
+                    });
+                }
+                console.log("JSON que será enviado:", JSON.stringify(questionData, null, 2));
+                console.log("===========================================");
                 
                 // Enviar para a API
                 const response = await fetch(`https://sag-sag.rak8a3.easypanel.host/api/questoes/${questionId}`, {
