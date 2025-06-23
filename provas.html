@@ -22008,15 +22008,9 @@ async function populateSchoolSelector() {
                 for (const id of extractedIds) {
                     const skill = allSkills.find(s => s.id === parseInt(id));
                     if (skill) {
-                        // Carregar detalhes completos da habilidade usando seu ID
-                        console.log(`Carregando detalhes da habilidade ID: ${id} (Código: ${skill.codigo})`);
-                        const detailedSkill = await loadBnccSkillDetails(skill.id);
-                        if (detailedSkill) {
-                            matchingSkills.push(detailedSkill);
-                        } else {
-                            // Se não conseguir carregar detalhes, usar dados básicos
-                            matchingSkills.push(skill);
-                        }
+                        // Usar dados básicos da habilidade (não precisa carregar detalhes)
+                        console.log(`Usando habilidade ID: ${id} (Código: ${skill.codigo})`);
+                        matchingSkills.push(skill);
                     } else {
                         console.warn(`Habilidade BNCC não encontrada para o ID: ${id}`);
                     }
@@ -22141,28 +22135,24 @@ async function populateSchoolSelector() {
         function setupEditQuestionButtons(questionId, examId) {
             // Botão de fechar o modal
             const closeBtn = document.getElementById("closeEditQuestionModal");
-            const cancelBtn = document.getElementById("cancelEditQuestionBtn");
-            const deleteBtn = document.getElementById("deleteQuestionBtn");
             const editForm = document.getElementById("editQuestionForm");
             
             // Remover event listeners anteriores
             const newCloseBtn = closeBtn.cloneNode(true);
             closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
             
-            const newCancelBtn = cancelBtn.cloneNode(true);
-            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-            
-            
             const newEditForm = editForm.cloneNode(true);
             editForm.parentNode.replaceChild(newEditForm, editForm);
             
             // Adicionar event listeners
-            newCloseBtn.addEventListener("click", function() {
-                document.getElementById("editQuestionModal").classList.add("hidden");
-            });
-            
-            newCancelBtn.addEventListener("click", function() {
-                document.getElementById("editQuestionModal").classList.add("hidden");
+            newCloseBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Botão fechar (X) clicado - fechando modal");
+                const modal = document.getElementById("editQuestionModal");
+                if (modal) {
+                    modal.classList.add("hidden");
+                }
             });
             
                                     // Configuração do botão de exclusão removida
@@ -23037,10 +23027,6 @@ async function populateSchoolSelector() {
                 </div>
                 
                 <div class="flex justify-end space-x-2">
-                                                            <!-- Botão de exclusão removido -->
-                    <button type="button" id="cancelEditQuestionBtn" class="bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                        Cancelar
-                    </button>
                     <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Salvar Alterações
                     </button>
