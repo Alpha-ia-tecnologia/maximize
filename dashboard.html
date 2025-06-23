@@ -5207,11 +5207,11 @@
                     label: function (context) {
                       const regiao = regioes[context.dataIndex];
                       return [
-                        `Desempenho: ${regiao.media_percentual.toFixed(1)}%`,
-                        `Total Escolas: ${regiao.total_escolas}`,
-                        `Total Turmas: ${regiao.total_turmas}`,
-                        `Total Alunos: ${regiao.total_alunos}`,
-                        `Participação: ${regiao.percentual_participacao}%`,
+                        `Desempenho: ${regiao.media_desempenho.toFixed(1)}%`,
+                        `Total De Escolas: ${regiao.total_escolas}`,
+                        `Escolas Avaliadas: ${regiao.escolas_com_provas}`,
+                        `Turmas Avaliadas: ${regiao.turmas_com_provas}`,
+                        `Alunos Avaliadas: ${regiao.alunos_com_provas}`,
                         `Maior Nota: ${regiao.maior_nota}`,
                         `Menor Nota: ${regiao.menor_nota}`,
                         `Classificação: ${regiao.classificacao}`,
