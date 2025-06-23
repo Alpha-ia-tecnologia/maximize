@@ -4194,9 +4194,9 @@
 
           // Preparar dados de maior/menor nota
           let highestGradeDisplay =
-            student.highestGrade !== null ? `${student.highestGrade}%` : "N/A";
+            student.highestGrade !== null ? `${student.highestGrade}` : "N/A";
           let lowestGradeDisplay =
-            student.lowestGrade !== null ? `${student.lowestGrade}%` : "N/A";
+            student.lowestGrade !== null ? `${student.lowestGrade}` : "N/A";
 
           // Definir cores para maior/menor nota
           let highestGradeClass = "";
@@ -4317,11 +4317,9 @@
               student.performance === "N/A" ? "N/A" : `${student.performance}%`,
             avaliacoes: student.totalEvaluations || 0,
             maior_nota:
-              student.highestGrade !== null
-                ? `${student.highestGrade}%`
-                : "N/A",
+              student.highestGrade !== null ? `${student.highestGrade}` : "N/A",
             menor_nota:
-              student.lowestGrade !== null ? `${student.lowestGrade}%` : "N/A",
+              student.lowestGrade !== null ? `${student.lowestGrade}` : "N/A",
           })),
         };
 
