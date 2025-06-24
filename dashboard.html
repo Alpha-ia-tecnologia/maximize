@@ -2148,9 +2148,25 @@
         const totalPages = Math.ceil(
           totalSchoolChartItems / schoolChartItemsPerPage
         );
-        const newPage = currentSchoolChartPage + delta;
 
-        if (newPage >= 1 && newPage <= totalPages) {
+        // Definir nova página baseada no delta
+        let newPage;
+        if (delta === -1) {
+          // Botão Anterior vai para primeira página
+          newPage = 1;
+        } else if (delta === 1) {
+          // Botão Próximo vai para última página
+          newPage = totalPages;
+        } else {
+          // Comportamento padrão (caso seja usado com outros valores)
+          newPage = currentSchoolChartPage + delta;
+        }
+
+        if (
+          newPage >= 1 &&
+          newPage <= totalPages &&
+          newPage !== currentSchoolChartPage
+        ) {
           // Obter os filtros atuais
           const yearFilter = document.getElementById("filterYear").value;
           const regionFilter = document.getElementById("filterRegion").value;
@@ -3592,9 +3608,21 @@
       function changePage(delta) {
         // Calcular número total de páginas com base no total de itens retornado pelo servidor
         const totalPages = Math.ceil(totalBnccItems / itemsPerPage);
-        const newPage = currentPage + delta;
 
-        if (newPage >= 1 && newPage <= totalPages) {
+        // Definir nova página baseada no delta
+        let newPage;
+        if (delta === -1) {
+          // Botão Anterior vai para primeira página
+          newPage = 1;
+        } else if (delta === 1) {
+          // Botão Próximo vai para última página
+          newPage = totalPages;
+        } else {
+          // Comportamento padrão (caso seja usado com outros valores)
+          newPage = currentPage + delta;
+        }
+
+        if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
           // Recarregar dados do servidor para a nova página
           // Obter os filtros atuais de forma segura
           const yearFilter =
@@ -3620,10 +3648,6 @@
             classFilter,
             currentBnccFilter, // Usar o filtro ativo armazenado
             newPage
-          );
-        } else {
-          console.warn(
-            `Página ${newPage} está fora do intervalo válido (1-${totalPages})`
           );
         }
       }
@@ -4324,9 +4348,25 @@
       function changeRankPage(delta) {
         // Calcular número total de páginas com base no total de itens retornado pelo servidor
         const totalPages = Math.ceil(totalRankItems / rankItemsPerPage);
-        const newPage = currentRankPage + delta;
 
-        if (newPage >= 1 && newPage <= totalPages) {
+        // Definir nova página baseada no delta
+        let newPage;
+        if (delta === -1) {
+          // Botão Anterior vai para primeira página
+          newPage = 1;
+        } else if (delta === 1) {
+          // Botão Próximo vai para última página
+          newPage = totalPages;
+        } else {
+          // Comportamento padrão (caso seja usado com outros valores)
+          newPage = currentRankPage + delta;
+        }
+
+        if (
+          newPage >= 1 &&
+          newPage <= totalPages &&
+          newPage !== currentRankPage
+        ) {
           // Recarregar dados do servidor para a nova página
           // Obter os filtros atuais
           const yearFilter = document.getElementById("filterYear").value;
