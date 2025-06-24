@@ -705,16 +705,10 @@
         const btnMostCritical = document.getElementById("btnMostCritical");
         const btnBestResults = document.getElementById("btnBestResults");
 
-        console.log("🔍 Verificando botões BNCC:", {
-          btnMostCritical: !!btnMostCritical,
-          btnBestResults: !!btnBestResults,
-        });
-
         if (btnMostCritical) {
           btnMostCritical.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
-            console.log("🔴 Botão Mais Críticas clicado");
             // Atualizar estado visual dos botões
             updateBnccFilterButtons("critical");
             filterBnccSkills("critical");
@@ -727,7 +721,6 @@
           btnBestResults.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
-            console.log("🟢 Botão Melhores Resultados clicado");
             // Atualizar estado visual dos botões
             updateBnccFilterButtons("best");
             filterBnccSkills("best");
@@ -742,7 +735,6 @@
           btnAllResults.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
-            console.log("🔵 Botão Todos os Resultados clicado");
             // Atualizar estado visual dos botões
             updateBnccFilterButtons("all");
             filterBnccSkills("all");
@@ -925,13 +917,6 @@
           // Calcular e atualizar a taxa de participação
           document.getElementById("participationRate").textContent =
             calculateParticipationRate() + "%";
-
-          console.log("Estatísticas básicas atualizadas:", {
-            escolas: schools.length,
-            turmas: classes.length,
-            alunos: students.length,
-            provas: exams.length,
-          });
         } catch (error) {
           console.error("Erro ao atualizar estatísticas básicas:", error);
           // Definir valores padrão em caso de erro
@@ -946,8 +931,6 @@
       // Função para carregar estatísticas gerais da API
       async function loadStatisticsFromAPI(filters = {}) {
         try {
-          console.log("Carregando estatísticas gerais da API...");
-
           // Construir parâmetros da URL com os filtros
           const params = new URLSearchParams();
 
@@ -973,8 +956,6 @@
             queryString ? "?" + queryString : ""
           }`;
 
-          console.log("URL das estatísticas com filtros:", url);
-
           const response = await fetch(url, {
             method: "GET",
             headers: {
@@ -984,7 +965,6 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log("Estatísticas gerais carregadas com sucesso:", data);
 
             // Atualizar contadores com os dados da API usando os nomes de campo corretos
             document.getElementById("schoolCount").textContent =
@@ -1036,8 +1016,6 @@
             document.getElementById("participationRate").textContent =
               stats.participacao;
           }
-
-          console.log("Estatísticas da API atualizadas com sucesso");
         } catch (error) {
           console.error("Erro ao atualizar estatísticas da API:", error);
         }
@@ -1046,8 +1024,6 @@
       // Função para carregar escolas da API
       async function loadSchoolsFromAPI() {
         try {
-          console.log("Carregando escolas da API...");
-
           const response = await fetch(
             "https://sag-sag.rak8a3.easypanel.host/api/escolas?limit=1000",
             {
@@ -1060,7 +1036,6 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log("Escolas carregadas com sucesso:", data);
 
             // Verificar estrutura da resposta e extrair escolas
             let schools = [];
@@ -1115,8 +1090,6 @@
       // Função para carregar turmas da API
       async function loadClassesFromAPI() {
         try {
-          console.log("Carregando turmas da API...");
-
           const response = await fetch(
             "https://sag-sag.rak8a3.easypanel.host/api/turmas?limit=1000",
             {
@@ -1129,7 +1102,6 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log("Turmas carregadas com sucesso:", data);
 
             // Verificar estrutura da resposta e extrair turmas
             let classes = [];
@@ -1186,8 +1158,6 @@
       // Função para carregar alunos da API
       async function loadStudentsFromAPI() {
         try {
-          console.log("Carregando alunos da API...");
-
           const response = await fetch(
             "https://sag-sag.rak8a3.easypanel.host/api/alunos",
             {
@@ -1200,7 +1170,6 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log("Alunos carregados com sucesso:", data);
 
             // Verificar estrutura da resposta e extrair alunos
             let students = [];
@@ -1262,8 +1231,6 @@
         // Nota: esta é uma função placeholder até que a API de provas esteja disponível
         // Retorna dados simulados por enquanto
         try {
-          console.log("Simulando carregamento de provas...");
-
           // Dados simulados
           const exams = [
             {
@@ -1334,8 +1301,6 @@
       // Função para popular todos os filtros usando os dados da API
       async function populateFiltersFromAPI() {
         try {
-          console.log("Populando filtros com dados da API...");
-
           // Obter dados do localStorage (que foram carregados da API)
           const schools = getSchools();
           const classes = getClasses();
@@ -1359,8 +1324,6 @@
           // Outros filtros independentes
           populateGradeFilter();
           populateClassesFilter(classes);
-
-          console.log("Filtros populados com sucesso");
         } catch (error) {
           console.error("Erro ao popular filtros:", error);
         }
@@ -1369,7 +1332,6 @@
       // NOVA FUNÇÃO: Carregar todos os grupos sem filtrar por região
       async function loadAllGroups() {
         try {
-          console.log("Carregando todos os grupos inicialmente...");
           const selector = document.getElementById("filterGroup");
 
           // Limpar opções existentes exceto a primeira
@@ -1392,7 +1354,6 @@
           }
 
           const grupos = await response.json();
-          console.log("Todos os grupos carregados inicialmente:", grupos);
 
           if (Array.isArray(grupos)) {
             grupos.forEach((grupo) => {
@@ -1402,10 +1363,6 @@
               selector.appendChild(option);
             });
           }
-
-          console.log(
-            `Filtro de grupos populado inicialmente com ${grupos.length} grupos`
-          );
         } catch (error) {
           console.error(
             "Erro ao carregar todos os grupos inicialmente:",
@@ -1426,7 +1383,6 @@
       // NOVA FUNÇÃO: Carregar todas as escolas sem filtrar
       async function loadAllSchools() {
         try {
-          console.log("Carregando todas as escolas inicialmente...");
           const selector = document.getElementById("filterSchool");
 
           // Limpar opções existentes exceto a primeira
@@ -1449,7 +1405,6 @@
           }
 
           const data = await response.json();
-          console.log("Todas as escolas carregadas inicialmente:", data);
 
           // Verificar estrutura da resposta e extrair escolas
           let schools = [];
@@ -1481,10 +1436,6 @@
             option.textContent = escola.nome || escola.name;
             selector.appendChild(option);
           });
-
-          console.log(
-            `Filtro de escolas populado inicialmente com ${schools.length} escolas`
-          );
         } catch (error) {
           console.error(
             "Erro ao carregar todas as escolas inicialmente:",
@@ -1521,10 +1472,6 @@
             option.textContent = school.name;
             selector.appendChild(option);
           });
-
-          console.log(
-            `Filtro de escolas populado com ${schoolsData.length} escolas`
-          );
         } catch (error) {
           console.error("Erro ao popular filtro de escolas:", error);
         }
@@ -1555,7 +1502,6 @@
           }
 
           const regioes = await response.json();
-          console.log("Regiões carregadas:", regioes);
 
           if (Array.isArray(regioes)) {
             regioes.forEach((regiao) => {
@@ -1565,10 +1511,6 @@
               selector.appendChild(option);
             });
           }
-
-          console.log(
-            `Filtro de regiões populado com ${regioes.length} regiões`
-          );
         } catch (error) {
           console.error("Erro ao carregar regiões:", error);
         }
@@ -1598,7 +1540,6 @@
             throw new Error(`Erro ao carregar grupos: ${response.status}`);
           }
           const grupos = await response.json();
-          console.log("Grupos carregados:", grupos);
           if (Array.isArray(grupos)) {
             // Se não houver grupos, mostrar mensagem
             if (grupos.length === 0 && regionId) {
@@ -1615,8 +1556,6 @@
               });
             }
           }
-
-          console.log(`Filtro de grupos populado com ${grupos.length} grupos`);
 
           // Após popular grupos, atualizar o filtro de escolas se necessário
           if (regionId) {
@@ -1677,10 +1616,6 @@
             option.textContent = grade.label;
             selector.appendChild(option);
           });
-
-          console.log(
-            `Filtro de séries populado com ${gradeDisplay.length} séries`
-          );
         } catch (error) {
           console.error("Erro ao popular filtro de séries:", error);
         }
@@ -1705,10 +1640,6 @@
             option.textContent = cls.name;
             selector.appendChild(option);
           });
-
-          console.log(
-            `Filtro de turmas populado com ${classesData.length} turmas`
-          );
         } catch (error) {
           console.error("Erro ao popular filtro de turmas:", error);
         }
@@ -1753,7 +1684,6 @@
             }
 
             const data = await response.json();
-            console.log("API turmas por escola response:", data);
 
             // Verificar estrutura da resposta e extrair turmas
             let classes = [];
@@ -1815,9 +1745,6 @@
             });
 
             classSelector.disabled = false;
-            console.log(
-              `Filtro de turmas populado com ${formattedClasses.length} turmas relacionadas à escola ID ${schoolId}`
-            );
           } catch (error) {
             console.error("Erro ao buscar turmas por escola:", error);
             classSelector.innerHTML =
@@ -1837,7 +1764,6 @@
           // Since we're now using the exact enum values in the dropdown,
           // we can simply pass the value directly to the API
           params.append("serie", grade);
-          console.log(`Usando valor de enum diretamente: "${grade}"`);
         }
       }
 
@@ -1853,8 +1779,6 @@
         page = 1
       ) {
         try {
-          console.log("Carregando desempenho por escolas...");
-
           // Construir parâmetros da URL para a API com formato consistente
           const params = new URLSearchParams();
 
@@ -1885,12 +1809,6 @@
             // Por padrão, usar acertos
             params.append("query", "acertos");
           }
-
-          console.log(
-            "Parâmetros para API de desempenho escolar:",
-            params.toString()
-          );
-
           // Obter o elemento onde estava o canvas
           const chartElement = document.getElementById(
             "schoolPerformanceChart"
@@ -1923,7 +1841,6 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log("Desempenho por escolas carregado com sucesso:", data);
 
             // Verificar se a resposta está no formato paginado
             if (data && data.data && Array.isArray(data.data)) {
@@ -1952,9 +1869,6 @@
               const tableWithPaginationHTML =
                 createSchoolChartTable(schoolsWithData);
               tableDiv.innerHTML = tableWithPaginationHTML;
-
-              // Atualizar controles de paginação
-              updateSchoolChartPagination();
             } else if (Array.isArray(data)) {
               // Compatibilidade com APIs que ainda não implementaram paginação
               console.warn(
@@ -1990,9 +1904,6 @@
               const tableWithPaginationHTML =
                 createSchoolChartTable(schoolChartData);
               tableDiv.innerHTML = tableWithPaginationHTML;
-
-              // Atualizar controles de paginação
-              updateSchoolChartPagination();
             } else {
               console.error(
                 "Resposta da API não é um array nem formato paginado:",
@@ -2221,11 +2132,6 @@
       // Função para atualizar controles de paginação do gráfico de escolas
       function updateSchoolChartPagination() {
         // Esta função é chamada após a tabela ser criada, então os controles já estão atualizados
-        console.log(
-          `Paginação do gráfico de escolas atualizada - Página ${currentSchoolChartPage} de ${Math.ceil(
-            totalSchoolChartItems / schoolChartItemsPerPage
-          )}`
-        );
       }
 
       // Função para mudar de página no gráfico de escolas
@@ -2357,8 +2263,6 @@
         const cleanLogParams = Object.fromEntries(
           Object.entries(logParams).filter(([_, v]) => v !== undefined)
         );
-
-        console.log("Filtros aplicados:", cleanLogParams);
 
         // Mostrar alerta visual de que filtros estão sendo aplicados
         const mainContent = document.querySelector("main");
@@ -2608,19 +2512,6 @@
         results = "all",
         page = 1
       ) {
-        // LOG DE DEBUG: Rastrear todas as chamadas da função
-        console.log(`🔍 loadBnccSkills chamada com parâmetros:`, {
-          year,
-          region,
-          group,
-          school,
-          grade,
-          classId,
-          results,
-          page,
-          currentPageAntes: currentPage,
-        });
-
         // Exibir indicador de carregamento
         document.getElementById("bnccSkillsList").innerHTML =
           '<div class="col-span-full text-center py-8"><i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i><p class="mt-2 text-gray-500">Carregando habilidades...</p></div>';
@@ -2640,25 +2531,9 @@
 
           if (classId !== "all") params.append("turma_id", classId);
 
-          // Adicionar parâmetro para filtros apenas se não for "all"
-          if (results !== "all") {
-            const filtroParam = results === "high" ? "acertos" : "erros";
-            params.append("filtro", filtroParam);
-            console.log(
-              `🔍 Filtro aplicado: ${results} → filtro=${filtroParam}`
-            );
-          } else {
-            console.log("🔍 Nenhum filtro aplicado (mostrando todos)");
-          }
-
           // Adicionar parâmetros de paginação
           params.append("page", page);
           params.append("limit", itemsPerPage);
-
-          console.log(
-            "Parâmetros para API de habilidades BNCC:",
-            params.toString()
-          );
 
           const response = await fetch(
             `https://sag-sag.rak8a3.easypanel.host/api/dashboard/bncc-skills?${params.toString()}`,
@@ -2672,18 +2547,11 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log("Habilidades BNCC carregadas com sucesso:", data);
-
             // Verificar formato da resposta paginada
             if (data && (data.content || data.items || data.data)) {
               // Extrair conteúdo e informações de paginação
               const content = data.content || data.items || data.data || [];
 
-              // CORREÇÃO: Atualizar currentPage apenas se a requisição foi bem-sucedida
-              // e garantir que a página solicitada seja a página atual
-              console.log(
-                `📄 Atualizando currentPage de ${currentPage} para ${page}`
-              );
               currentPage = page;
               totalBnccItems =
                 data.totalElements || data.total || data.count || 0;
@@ -2735,24 +2603,6 @@
                 };
               });
 
-              // Log para debug: mostrar os valores de performance das habilidades
-              console.log(
-                "🎯 Habilidades filtradas (primeiras 5):",
-                formattedSkills.slice(0, 5).map((skill) => ({
-                  code: skill.code,
-                  performance: skill.performance,
-                  isCritical:
-                    skill.performance !== "N/A" && skill.performance < 60,
-                  isGood:
-                    skill.performance !== "N/A" && skill.performance >= 70,
-                  isMedium:
-                    skill.performance !== "N/A" &&
-                    skill.performance >= 60 &&
-                    skill.performance < 70,
-                }))
-              );
-
-              // Armazenar os dados paginados e exibir
               filteredSkills = formattedSkills;
               displayBnccSkills();
               updatePagination();
@@ -2813,16 +2663,6 @@
               bnccSkillsData = formattedSkills;
               totalBnccItems = formattedSkills.length;
 
-              // Log antes do filtro local
-              console.log("📊 Dados antes do filtro local:", {
-                total: formattedSkills.length,
-                results: results,
-                amostra: formattedSkills.slice(0, 3).map((skill) => ({
-                  code: skill.code,
-                  performance: skill.performance,
-                })),
-              });
-
               // Filtrar localmente para compatibilidade
               if (results === "high") {
                 filteredSkills = formattedSkills.filter(
@@ -2838,17 +2678,6 @@
                 filteredSkills = formattedSkills;
               }
 
-              // Log após o filtro local
-              console.log("📊 Dados após filtro local:", {
-                filtradas: filteredSkills.length,
-                amostra: filteredSkills.slice(0, 3).map((skill) => ({
-                  code: skill.code,
-                  performance: skill.performance,
-                  isCritical:
-                    skill.performance !== "N/A" && skill.performance < 60,
-                })),
-              });
-
               // Simular paginação local
               const startIndex = (page - 1) * itemsPerPage;
               const endIndex = Math.min(
@@ -2857,10 +2686,6 @@
               );
               filteredSkills = filteredSkills.slice(startIndex, endIndex);
 
-              // CORREÇÃO: Definir currentPage corretamente para paginação local
-              console.log(
-                `📄 (Array) Atualizando currentPage de ${currentPage} para ${page}`
-              );
               currentPage = page;
 
               // Exibir os dados e atualizar paginação
@@ -2982,15 +2807,10 @@
           btnAllResults.classList.remove("bg-blue-100", "text-blue-800");
           btnAllResults.classList.add("bg-blue-500", "text-white");
         }
-
-        console.log(
-          `🎨 Estado visual dos botões atualizado para: ${activeType}`
-        );
       }
 
       // Função para filtrar habilidades por críticas ou melhores
       function filterBnccSkills(type) {
-        console.log(`🎯 filterBnccSkills chamada com tipo: ${type}`);
 
         try {
           // Mostrar indicador de carregamento
@@ -3011,38 +2831,16 @@
           const classFilter =
             document.getElementById("filterClass")?.value || "all";
 
-          console.log("📊 Filtros atuais:", {
-            yearFilter,
-            regionFilter,
-            groupFilter,
-            schoolFilter,
-            gradeFilter,
-            classFilter,
-            type,
-          });
+         
 
           // Definir o tipo de resultados e carregar da API
           const resultsFilter =
             type === "critical" ? "low" : type === "best" ? "high" : "all";
 
-          console.log(
-            `📈 Tipo de resultado mapeado: ${type} → ${resultsFilter}`
-          );
-
           // Resetar para a primeira página ao aplicar um novo filtro
           currentPage = 1;
 
-          console.log("🔄 Chamando loadBnccSkills com filtro:", resultsFilter);
-          console.log("🔄 Parâmetros completos:", {
-            yearFilter,
-            regionFilter,
-            groupFilter,
-            schoolFilter,
-            gradeFilter,
-            classFilter,
-            resultsFilter,
-            currentPage,
-          });
+         
 
           // Carregar dados com os filtros aplicados
           loadBnccSkills(
@@ -3080,23 +2878,7 @@
         document.getElementById("endRange").textContent = endIndex;
         document.getElementById("totalItems").textContent = totalBnccItems;
 
-        // Log para debug: mostrar as habilidades que serão exibidas
-        console.log(
-          "🎨 Exibindo habilidades:",
-          filteredSkills.map((skill) => ({
-            code: skill.code,
-            performance: skill.performance,
-            cor:
-              skill.performance === "N/A"
-                ? "cinza"
-                : skill.performance < 60
-                ? "vermelha"
-                : skill.performance >= 70
-                ? "verde"
-                : "amarela",
-          }))
-        );
-
+       
         // Se não houver resultados
         if (filteredSkills.length === 0) {
           const emptyMessage = document.createElement("div");
@@ -3482,10 +3264,6 @@
           );
 
           if (!historyData || historyData.length === 0) {
-            console.log(
-              "Nenhum histórico encontrado para a habilidade:",
-              skillCode
-            );
             return [];
           }
 
@@ -3803,10 +3581,6 @@
         const totalPages = Math.ceil(totalBnccItems / itemsPerPage);
         const newPage = currentPage + delta;
 
-        console.log(
-          `Mudando página: currentPage=${currentPage}, delta=${delta}, newPage=${newPage}, totalPages=${totalPages}`
-        );
-
         if (newPage >= 1 && newPage <= totalPages) {
           // Recarregar dados do servidor para a nova página
           // Obter os filtros atuais de forma segura
@@ -3855,9 +3629,7 @@
 
       // Função para ir para uma página específica
       function goToPage(page) {
-        console.log(
-          `Indo para página específica: ${page}, currentPage atual: ${currentPage}`
-        );
+       
 
         // Obter os filtros atuais de forma segura
         const yearFilter =
@@ -4113,10 +3885,6 @@
           params.append("page", page);
           params.append("size", rankItemsPerPage);
 
-          console.log(
-            "Carregando ranking de alunos da API com parâmetros:",
-            params.toString()
-          );
 
           const response = await fetch(
             `https://sag-sag.rak8a3.easypanel.host/api/dashboard/student-ranking?${params.toString()}`,
@@ -4130,7 +3898,6 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log("Ranking de alunos carregado com sucesso:", data);
 
             // Verificar formato da resposta paginada
             if (data && (data.content || data.items || data.data)) {
@@ -4633,7 +4400,6 @@
         results = "all"
       ) {
         try {
-          console.log("Carregando desempenho por avaliação...");
 
           // Construir parâmetros da URL para a API com formato consistente
           const params = new URLSearchParams();
@@ -4657,10 +4423,6 @@
             );
           }
 
-          console.log(
-            "Parâmetros para API de desempenho por avaliação:",
-            params.toString()
-          );
 
           // Verificar se o canvas já tem um gráfico e destruí-lo
           const chartCanvas = document.getElementById("examPerformanceChart");
@@ -4693,7 +4455,6 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log("Desempenho por provas carregado com sucesso:", data);
 
             // Verificar se a resposta é um array
             if (Array.isArray(data) && data.length > 0) {
@@ -4818,11 +4579,7 @@
           // Desenhar mensagem de "Sem dados"
           ctx.fillText(message || "Nenhum dado disponível", x, y + 15);
 
-          console.log(
-            `Exibindo mensagem de "Sem dados" no gráfico: ${
-              message || "Nenhum dado disponível"
-            }`
-          );
+         
         } catch (error) {
           console.error("Erro ao exibir mensagem de sem dados:", error);
         }
@@ -4839,7 +4596,6 @@
         results = "all"
       ) {
         try {
-          console.log("Carregando desempenho por componentes curriculares...");
 
           // Construir parâmetros da URL para a API com formato consistente
           const params = new URLSearchParams();
@@ -4863,10 +4619,6 @@
             );
           }
 
-          console.log(
-            "Parâmetros para API de componentes curriculares:",
-            params.toString()
-          );
 
           // Verificar se o canvas já tem um gráfico e destruí-lo
           const chartCanvas = document.getElementById(
@@ -4901,10 +4653,7 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log(
-              "Desempenho por componentes curriculares carregado com sucesso:",
-              data
-            );
+          
 
             // Verificar se a resposta é um array
             if (Array.isArray(data) && data.length > 0) {
@@ -5128,7 +4877,6 @@
             return;
           }
 
-          console.log("Carregando escolas filtradas por:", params.toString());
 
           try {
             const response = await fetch(
@@ -5146,7 +4894,6 @@
             }
 
             const data = await response.json();
-            console.log("API escolas filtradas response:", data);
 
             // Verificar estrutura da resposta e extrair escolas
             let schools = [];
@@ -5209,9 +4956,7 @@
             });
 
             schoolSelector.disabled = false;
-            console.log(
-              `Filtro de escolas populado com ${formattedSchools.length} escolas relacionadas`
-            );
+            
 
             // Resetar o filtro de turmas quando escolas mudam
             document.getElementById("filterClass").innerHTML =
@@ -5272,7 +5017,6 @@
       // Função para atualizar as estatísticas do dashboard com base nos filtros atuais
       async function updateDashboardStatistics() {
         try {
-          console.log("🔄 Atualizando estatísticas com filtros aplicados...");
 
           // Obter valores dos filtros
           const regionId = document.getElementById("filterRegion").value;
@@ -5290,7 +5034,6 @@
             serie: gradeId,
           };
 
-          console.log("🎯 Filtros aplicados:", filters);
 
           // Mostrar indicadores de carregamento
           document.getElementById("schoolCount").innerHTML =
@@ -5306,8 +5049,6 @@
 
           // Carregar estatísticas com filtros
           await loadStatisticsFromAPI(filters);
-
-          console.log("✅ Estatísticas atualizadas com sucesso!");
         } catch (error) {
           console.error(
             "❌ Erro ao atualizar estatísticas do dashboard:",
