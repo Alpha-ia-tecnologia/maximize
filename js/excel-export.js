@@ -58,7 +58,7 @@ async function exportAllDataToExcel() {
         if (value !== "all") params.append(key, value);
       });
       params.append("page", "1");
-      params.append("limit", "1000");
+      params.append("limit", "2000");
 
       const schoolResponse = await fetch(
         `https://sag-sag.rak8a3.easypanel.host/api/dashboard/school-performance?${params.toString()}`
@@ -110,6 +110,8 @@ async function exportAllDataToExcel() {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== "all") params.append(key, value);
       });
+      params.append("page", "1");
+      params.append("limit", "2000");
 
       const examResponse = await fetch(
         `https://sag-sag.rak8a3.easypanel.host/api/dashboard/provas-desempenho?${params.toString()}`
@@ -152,6 +154,8 @@ async function exportAllDataToExcel() {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== "all") params.append(key, value);
       });
+      params.append("page", "1");
+      params.append("limit", "2000");
 
       const curriculumResponse = await fetch(
         `https://sag-sag.rak8a3.easypanel.host/api/dashboard/componentes-curriculares?${params.toString()}`
@@ -233,7 +237,7 @@ async function exportAllDataToExcel() {
         if (value !== "all") params.append(key, value);
       });
       params.append("page", "1");
-      params.append("limit", "1000");
+      params.append("limit", "2000");
 
       const bnccResponse = await fetch(
         `https://sag-sag.rak8a3.easypanel.host/api/dashboard/bncc-skills?${params.toString()}`
@@ -281,7 +285,7 @@ async function exportAllDataToExcel() {
         if (value !== "all") params.append(key, value);
       });
       params.append("page", "1");
-      params.append("limit", "1000");
+      params.append("limit", "2000");
 
       const rankingResponse = await fetch(
         `https://sag-sag.rak8a3.easypanel.host/api/dashboard/alunos-ranking?${params.toString()}`
