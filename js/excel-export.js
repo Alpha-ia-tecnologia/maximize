@@ -340,7 +340,6 @@ async function exportAllDataToExcel() {
     btnExportExcel.innerHTML = originalText;
     btnExportExcel.disabled = false;
 
-    alert("Dados exportados com sucesso para Excel!");
   } catch (error) {
     console.error("Erro ao exportar dados para Excel:", error);
 
