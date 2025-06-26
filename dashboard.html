@@ -276,7 +276,7 @@
 
           <!-- Stats overview -->
           <div
-            class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-6 mb-6"
+            class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-6"
           >
             <!-- School stats -->
             <div class="bg-white overflow-hidden shadow rounded-lg">
@@ -1007,6 +1007,9 @@
           if (filters.serie && filters.serie !== "all") {
             params.append("serie", filters.serie);
           }
+          if (filters.turma_id && filters.turma_id !== "all") {
+            params.append("turma_id", filters.turma_id);
+          }
 
           const queryString = params.toString();
           const url = `https://sag-sag.rak8a3.easypanel.host/api/dashboard/statistics${
@@ -1036,6 +1039,15 @@
             // Exibir o valor da participação exatamente como está no JSON
             document.getElementById("participationRate").textContent =
               data.participacao !== null ? data.participacao : 0;
+
+            // Atualizar quadrado dinâmico de média
+            if (data.elemento) {
+              document.getElementById("averageLabel").textContent = data.elemento.nome;
+              document.getElementById("averageScore").textContent = data.elemento.media ? data.elemento.media.toFixed(1) : "0.0";
+            } else {
+              document.getElementById("averageLabel").textContent = "Média Geral";
+              document.getElementById("averageScore").textContent = data.media_geral ? data.media_geral.toFixed(1) : "0.0";
+            }
 
             return data;
           } else {
@@ -4229,6 +4241,9 @@
           if (filters.serie && filters.serie !== "all") {
             params.append("serie", filters.serie);
           }
+          if (filters.turma_id && filters.turma_id !== "all") {
+            params.append("turma_id", filters.turma_id);
+          }
 
           const queryString = params.toString();
           const url = `https://sag-sag.rak8a3.easypanel.host/api/dashboard/statistics${
@@ -4258,6 +4273,15 @@
             // Exibir o valor da participação exatamente como está no JSON
             document.getElementById("participationRate").textContent =
               data.participacao !== null ? data.participacao : 0;
+
+            // Atualizar quadrado dinâmico de média
+            if (data.elemento) {
+              document.getElementById("averageLabel").textContent = data.elemento.nome;
+              document.getElementById("averageScore").textContent = data.elemento.media ? data.elemento.media.toFixed(1) : "0.0";
+            } else {
+              document.getElementById("averageLabel").textContent = "Média Geral";
+              document.getElementById("averageScore").textContent = data.media_geral ? data.media_geral.toFixed(1) : "0.0";
+            }
 
             return data;
           } else {
