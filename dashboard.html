@@ -7190,6 +7190,18 @@
           params.append("page", page);
           params.append("size", rankItemsPerPage);
 
+          // Debug: Log para verificar filtros aplicados no ranking de alunos
+          console.log("🎯 Filtros do ranking de alunos:", {
+            year: year,
+            region: region,
+            group: group,
+            school: school,
+            grade: grade,
+            classId: classId,
+            results: results,
+            urlParams: params.toString()
+          });
+
           const response = await fetch(
             `https://sag-sag.rak8a3.easypanel.host/api/dashboard/student-ranking?${params.toString()}`,
             {
@@ -7202,6 +7214,9 @@
 
           if (response.ok) {
             const data = await response.json();
+
+            // Debug: Log para verificar dados retornados pela API
+            console.log("📊 Dados retornados pela API de ranking:", data);
 
             // Verificar formato da resposta paginada
             if (data && (data.content || data.items || data.data)) {
