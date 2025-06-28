@@ -52,26 +52,126 @@ function checkAuth() {
   return true;
 }
 
+// Função para verificar e corrigir dados inconsistentes do usuário
+function validateAndFixUserData() {
+  const currentUser = sessionStorage.getItem("currentUser");
+  if (!currentUser) return null;
+
+  try {
+    const userData = JSON.parse(currentUser);
+    console.log("🔧 ValidateAndFix: Verificando dados do usuário:", userData);
+
+    // Lista de emails conhecidos de administradores
+    const knownAdminEmails = [
+      "sag@gmail.com",
+      "admin@sag.com",
+      "maximiza@gmail.com",
+      "luiz@maximiza.com",
+      "drive@sag.com",
+    ];
+
+    // Se o email está na lista de admins conhecidos, mas o tipo está errado, corrigir
+    if (
+      knownAdminEmails.includes(userData.email) &&
+      userData.type !== "ADMINISTRADOR"
+    ) {
+      console.log(
+        "🔧 ValidateAndFix: Email de admin detectado, corrigindo tipo de usuário..."
+      );
+
+      userData.type = "ADMINISTRADOR";
+      userData.role = "ADMINISTRADOR";
+      userData.originalType = "ADMINISTRADOR";
+
+      // Salvar os dados corrigidos
+      sessionStorage.setItem("currentUser", JSON.stringify(userData));
+      console.log("✅ ValidateAndFix: Dados corrigidos e salvos:", userData);
+
+      return userData;
+    }
+
+    // Se o token JWT contém informações sobre admin, verificar
+    if (userData.token) {
+      try {
+        // Decodificar o payload do JWT (parte do meio)
+        const tokenParts = userData.token.split(".");
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          console.log("🔧 ValidateAndFix: Payload do JWT:", payload);
+
+          // Se o JWT indica que é admin mas os dados locais estão errados
+          if (
+            payload.tipo_usuario === "ADMINISTRADOR" &&
+            userData.type !== "ADMINISTRADOR"
+          ) {
+            console.log(
+              "🔧 ValidateAndFix: JWT indica ADMINISTRADOR, corrigindo dados locais..."
+            );
+
+            userData.type = "ADMINISTRADOR";
+            userData.role = "ADMINISTRADOR";
+            userData.originalType = payload.tipo_usuario;
+
+            sessionStorage.setItem("currentUser", JSON.stringify(userData));
+            console.log(
+              "✅ ValidateAndFix: Dados corrigidos baseados no JWT:",
+              userData
+            );
+
+            return userData;
+          }
+        }
+      } catch (jwtError) {
+        console.log(
+          "🔧 ValidateAndFix: Não foi possível decodificar JWT:",
+          jwtError
+        );
+      }
+    }
+
+    return userData;
+  } catch (error) {
+    console.error("❌ ValidateAndFix: Erro ao processar dados:", error);
+    return null;
+  }
+}
+
 // Função para verificar se é administrador
 function isAdmin(user) {
-  if (!user) return false;
+  if (!user) {
+    console.log("❌ isAdmin: Usuário não fornecido");
+    return false;
+  }
 
   // Se for um objeto string, parsear
   const userData = typeof user === "string" ? JSON.parse(user) : user;
+  console.log("🔍 isAdmin: Dados do usuário:", userData);
 
-  // Lista de valores que identificam um administrador
-  const adminValues = [
-    "ADMINISTRADOR",
-    "ADMIN",
-    "admin",
-    "Administrador",
-    "Administrator",
-  ];
+  // Lista de valores que identificam um administrador (todos em uppercase para comparação)
+  const adminValues = ["ADMINISTRADOR", "ADMIN", "ADMINISTRATOR"];
 
-  // Verificar type e role
-  return (
-    adminValues.includes(userData.type) || adminValues.includes(userData.role)
-  );
+  // Normalizar valores para comparação (remover espaços e converter para uppercase)
+  const normalizeValue = (value) => {
+    if (!value || typeof value !== "string") return "";
+    return value.trim().toUpperCase();
+  };
+
+  const normalizedType = normalizeValue(userData.type);
+  const normalizedRole = normalizeValue(userData.role);
+  const normalizedOriginalType = normalizeValue(userData.originalType);
+
+  console.log("🔍 isAdmin: Type normalizado:", normalizedType);
+  console.log("🔍 isAdmin: Role normalizado:", normalizedRole);
+  console.log("🔍 isAdmin: OriginalType normalizado:", normalizedOriginalType);
+
+  // Verificar type, role e originalType (comparação case-insensitive)
+  const isAdminResult =
+    adminValues.includes(normalizedType) ||
+    adminValues.includes(normalizedRole) ||
+    adminValues.includes(normalizedOriginalType);
+
+  console.log("✅ isAdmin: Resultado final:", isAdminResult);
+  return isAdminResult;
 }
 
 // Função de login simulada
@@ -680,13 +780,31 @@ document.addEventListener("DOMContentLoaded", function () {
   // Verificar e exibir nome do usuário em todas as páginas
   const userNameDisplay = document.getElementById("userNameDisplay");
   if (userNameDisplay) {
-    const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+    // Primeiro, validar e corrigir dados inconsistentes
+    console.log("🔧 App.js: Iniciando validação dos dados do usuário...");
+    let currentUser = validateAndFixUserData();
+
     if (currentUser) {
       userNameDisplay.textContent = currentUser.name;
 
       // Debug para verificação de tipo
-      console.log("Tipo de usuário carregado:", currentUser.type);
-      console.log("É administrador:", isAdmin(currentUser));
+      console.log("🔍 App.js: Página atual:", window.location.pathname);
+      console.log(
+        "🔍 App.js: Dados completos do usuário (após validação):",
+        currentUser
+      );
+      console.log(
+        "🔍 App.js: Tipo de usuário carregado (type):",
+        currentUser.type
+      );
+      console.log("🔍 App.js: Role do usuário (role):", currentUser.role);
+      console.log(
+        "🔍 App.js: Tipo original da API (originalType):",
+        currentUser.originalType
+      );
+      console.log("🔍 App.js: É administrador:", isAdmin(currentUser));
+    } else {
+      console.log("❌ App.js: currentUser não encontrado no sessionStorage");
     }
   }
 });

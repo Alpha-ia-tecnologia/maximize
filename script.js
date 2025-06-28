@@ -25,18 +25,20 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           body: JSON.stringify({
             email: email,
-            senha: password, 
+            senha: password,
           }),
         }
       );
       // Obter o texto da resposta para análise
       const responseText = await response.text();
+      console.log("Resposta da API de login:", responseText);
 
       // Tentar converter para JSON se possível
       let data;
       try {
         if (responseText) {
           data = JSON.parse(responseText);
+          console.log("Dados do usuário da API:", data);
         }
       } catch (e) {
         console.error("Resposta não é um JSON válido:", e);
@@ -44,25 +46,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (response.ok) {
         let userType = data.tipo_usuario || "USUARIO";
+        console.log("Tipo de usuário original da API:", userType);
 
-        const adminTypes = [
-          "ADMINISTRADOR"
-        ];
+        const adminTypes = ["ADMINISTRADOR"];
         if (adminTypes.includes(userType)) {
           userType = "ADMINISTRADOR";
-        } 
+        }
+
+        console.log("Tipo de usuário após processamento:", userType);
+
         // Criar objeto de usuário para armazenar na sessão
         const userData = {
           id: data.id,
           name: data.nome || "Usuário",
           email: data.email,
           type: userType,
-          role: userType, 
+          role: userType,
           token: data.token || "token-mock",
           apiId: data.id,
+          originalType: data.tipo_usuario, // Preservar o tipo original da API
         };
+
+        console.log("Objeto userData criado:", userData);
+
         // Armazenar dados do usuário na sessão
         sessionStorage.setItem("currentUser", JSON.stringify(userData));
+
+        // Verificar se foi salvo corretamente
+        const savedUser = JSON.parse(sessionStorage.getItem("currentUser"));
+        console.log("Usuário salvo no sessionStorage:", savedUser);
 
         // Se a API enviou um token, armazená-lo também
         if (data.token) {
