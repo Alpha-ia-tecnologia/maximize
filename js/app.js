@@ -120,6 +120,44 @@ function validateAndFixUserData() {
 
             return userData;
           }
+
+          // Se o JWT indica que é gestor mas os dados locais estão errados
+          if (payload.tipo_usuario === "GESTOR" && userData.type !== "GESTOR") {
+            console.log(
+              "🔧 ValidateAndFix: JWT indica GESTOR, corrigindo dados locais..."
+            );
+
+            userData.type = "GESTOR";
+            userData.role = "GESTOR";
+            userData.originalType = payload.tipo_usuario;
+
+            sessionStorage.setItem("currentUser", JSON.stringify(userData));
+            console.log(
+              "✅ ValidateAndFix: Dados corrigidos baseados no JWT:",
+              userData
+            );
+
+            return userData;
+          }
+
+          // Se o JWT indica qualquer outro tipo mas os dados locais estão errados
+          if (payload.tipo_usuario && userData.type !== payload.tipo_usuario) {
+            console.log(
+              `🔧 ValidateAndFix: JWT indica ${payload.tipo_usuario}, corrigindo dados locais...`
+            );
+
+            userData.type = payload.tipo_usuario;
+            userData.role = payload.tipo_usuario;
+            userData.originalType = payload.tipo_usuario;
+
+            sessionStorage.setItem("currentUser", JSON.stringify(userData));
+            console.log(
+              "✅ ValidateAndFix: Dados corrigidos baseados no JWT:",
+              userData
+            );
+
+            return userData;
+          }
         }
       } catch (jwtError) {
         console.log(
@@ -172,6 +210,153 @@ function isAdmin(user) {
 
   console.log("✅ isAdmin: Resultado final:", isAdminResult);
   return isAdminResult;
+}
+
+// Função para verificar se é gestor
+function isGestor(user) {
+  if (!user) {
+    console.log("❌ isGestor: Usuário não fornecido");
+    return false;
+  }
+
+  // Se for um objeto string, parsear
+  const userData = typeof user === "string" ? JSON.parse(user) : user;
+  console.log("🔍 isGestor: Dados do usuário:", userData);
+
+  // Lista de valores que identificam um gestor (todos em uppercase para comparação)
+  const gestorValues = ["GESTOR"];
+
+  // Normalizar valores para comparação (remover espaços e converter para uppercase)
+  const normalizeValue = (value) => {
+    if (!value || typeof value !== "string") return "";
+    return value.trim().toUpperCase();
+  };
+
+  const normalizedType = normalizeValue(userData.type);
+  const normalizedRole = normalizeValue(userData.role);
+  const normalizedOriginalType = normalizeValue(userData.originalType);
+
+  console.log("🔍 isGestor: Type normalizado:", normalizedType);
+  console.log("🔍 isGestor: Role normalizado:", normalizedRole);
+  console.log("🔍 isGestor: OriginalType normalizado:", normalizedOriginalType);
+
+  // Verificar type, role e originalType (comparação case-insensitive)
+  const isGestorResult =
+    gestorValues.includes(normalizedType) ||
+    gestorValues.includes(normalizedRole) ||
+    gestorValues.includes(normalizedOriginalType);
+
+  console.log("✅ isGestor: Resultado final:", isGestorResult);
+  return isGestorResult;
+}
+
+// Definir permissões de acesso por tipo de usuário
+function getPagePermissions() {
+  return {
+    "dashboard.html": [
+      "ADMINISTRADOR",
+      "COORDENADOR",
+      "PROFESSOR",
+      "GESTOR",
+      "SECRETARIA",
+      "USUARIO",
+    ],
+    "escolas.html": ["ADMINISTRADOR", "COORDENADOR"],
+    "turmas.html": ["ADMINISTRADOR", "COORDENADOR", "PROFESSOR"],
+    "alunos.html": ["ADMINISTRADOR", "COORDENADOR", "PROFESSOR", "SECRETARIA"],
+    "provas.html": ["ADMINISTRADOR", "COORDENADOR", "PROFESSOR"],
+    "usuarios.html": ["ADMINISTRADOR"],
+    "gabaritos_geracao.html": ["ADMINISTRADOR", "COORDENADOR", "PROFESSOR"],
+  };
+}
+
+// Função para verificar se o usuário tem permissão para acessar uma página
+function hasPagePermission(userType, page) {
+  const permissions = getPagePermissions();
+  const allowedTypes = permissions[page];
+
+  if (!allowedTypes) {
+    // Se a página não está definida nas permissões, permitir acesso
+    return true;
+  }
+
+  return allowedTypes.includes(userType);
+}
+
+// Função para verificar acesso a páginas específicas
+function checkPageAccess() {
+  const currentUser = sessionStorage.getItem("currentUser");
+
+  if (!currentUser) {
+    console.log("❌ checkPageAccess: Usuário não autenticado");
+    window.location.href = "index.html";
+    return false;
+  }
+
+  // Primeiro, validar e corrigir dados inconsistentes
+  const userData = validateAndFixUserData();
+
+  if (!userData) {
+    console.log(
+      "❌ checkPageAccess: Não foi possível validar dados do usuário"
+    );
+    window.location.href = "index.html";
+    return false;
+  }
+
+  const currentPage = window.location.pathname.split("/").pop();
+  const userType = userData.type || userData.originalType || "USUARIO";
+
+  console.log("🔍 checkPageAccess: Página atual:", currentPage);
+  console.log(
+    "🔍 checkPageAccess: Dados do usuário (após validação):",
+    userData
+  );
+  console.log("🔍 checkPageAccess: Tipo do usuário:", userType);
+
+  // Verificar se o usuário tem permissão para acessar a página atual
+  if (!hasPagePermission(userType, currentPage)) {
+    console.log(
+      `❌ checkPageAccess: Usuário ${userType} tentando acessar página restrita: ${currentPage}`
+    );
+
+    let redirectPage = "dashboard.html";
+    let message = `Usuários do tipo ${userType} não têm acesso a esta página.`;
+
+    // Definir página de redirecionamento específica para cada tipo
+    switch (userType) {
+      case "GESTOR":
+        message = "Gestores têm acesso apenas ao Dashboard.";
+        break;
+      case "SECRETARIA":
+        message = "Usuários da Secretaria têm acesso ao Dashboard e Alunos.";
+        redirectPage = "dashboard.html";
+        break;
+      case "PROFESSOR":
+        message =
+          "Professores têm acesso ao Dashboard, Turmas, Alunos e Provas.";
+        redirectPage = "dashboard.html";
+        break;
+      case "COORDENADOR":
+        message =
+          "Coordenadores têm acesso a todas as páginas exceto Usuários.";
+        redirectPage = "dashboard.html";
+        break;
+      case "USUARIO":
+        message = "Você tem acesso apenas ao Dashboard.";
+        break;
+    }
+
+    showAlert("warning", "Acesso Restrito", message, 3000, function () {
+      window.location.href = redirectPage;
+    });
+    return false;
+  }
+
+  console.log(
+    `✅ checkPageAccess: Usuário ${userType} tem acesso à página ${currentPage}`
+  );
+  return true;
 }
 
 // Função de login simulada
@@ -748,6 +933,73 @@ function showMessage(message, isError = false) {
   alert(message);
 }
 
+// Função para configurar o menu baseado no tipo de usuário
+function setupUserMenu() {
+  const currentUser = sessionStorage.getItem("currentUser");
+
+  if (!currentUser) {
+    return;
+  }
+
+  // Validar e corrigir dados do usuário primeiro
+  const userData = validateAndFixUserData();
+
+  if (!userData) {
+    console.log("❌ setupUserMenu: Não foi possível validar dados do usuário");
+    return;
+  }
+
+  const userType = userData.type || userData.originalType || "USUARIO";
+  console.log("🔧 setupUserMenu: Configurando menu para tipo:", userType);
+  console.log("🔧 setupUserMenu: Dados do usuário:", userData);
+
+  // Obter todas as páginas e suas permissões
+  const permissions = getPagePermissions();
+
+  // Lista de todos os links possíveis no menu
+  const menuLinks = [
+    { selector: 'a[href="dashboard.html"]', page: "dashboard.html" },
+    { selector: 'a[href="escolas.html"]', page: "escolas.html" },
+    { selector: 'a[href="turmas.html"]', page: "turmas.html" },
+    { selector: 'a[href="alunos.html"]', page: "alunos.html" },
+    { selector: 'a[href="provas.html"]', page: "provas.html" },
+    { selector: 'a[href="usuarios.html"]', page: "usuarios.html" },
+    {
+      selector: 'a[href="gabaritos_geracao.html"]',
+      page: "gabaritos_geracao.html",
+    },
+  ];
+
+  // Verificar cada link do menu
+  menuLinks.forEach(({ selector, page }) => {
+    const links = document.querySelectorAll(selector);
+    const hasPermission = hasPagePermission(userType, page);
+
+    links.forEach((link) => {
+      if (hasPermission) {
+        link.style.display = "";
+        console.log(
+          `✅ setupUserMenu: Mostrando link ${page} para ${userType}`
+        );
+      } else {
+        link.style.display = "none";
+        console.log(
+          `❌ setupUserMenu: Ocultando link ${page} para ${userType}`
+        );
+      }
+    });
+  });
+
+  // Log resumo das permissões
+  const allowedPages = Object.keys(permissions).filter((page) =>
+    hasPagePermission(userType, page)
+  );
+  console.log(
+    `📋 setupUserMenu: Páginas permitidas para ${userType}:`,
+    allowedPages
+  );
+}
+
 // Exportar funções para uso global
 window.appUtils = {
   checkAuth,
@@ -755,6 +1007,13 @@ window.appUtils = {
   logout,
   formatDate,
   showMessage,
+  isAdmin,
+  isGestor,
+  checkPageAccess,
+  setupUserMenu,
+  getPagePermissions,
+  hasPagePermission,
+  validateAndFixUserData,
 };
 
 // Verificar autenticação ao carregar a página, exceto na página de login
@@ -766,6 +1025,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!isLoginPage) {
     checkAuth();
+    // Verificar acesso específico da página baseado no tipo de usuário
+    checkPageAccess();
   }
 
   // Configurar evento de logout nos botões correspondentes
@@ -803,8 +1064,23 @@ document.addEventListener("DOMContentLoaded", function () {
         currentUser.originalType
       );
       console.log("🔍 App.js: É administrador:", isAdmin(currentUser));
+      console.log("🔍 App.js: É gestor:", isGestor(currentUser));
+
+      // Configurar menu baseado no tipo de usuário
+      setupUserMenu();
     } else {
       console.log("❌ App.js: currentUser não encontrado no sessionStorage");
+    }
+  }
+
+  // Verificar o elemento userName também (usado em algumas páginas)
+  const userName = document.getElementById("userName");
+  if (userName) {
+    let currentUser = validateAndFixUserData();
+    if (currentUser) {
+      userName.textContent = currentUser.name;
+      // Configurar menu baseado no tipo de usuário
+      setupUserMenu();
     }
   }
 });
