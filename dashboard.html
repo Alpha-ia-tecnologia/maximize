@@ -199,15 +199,6 @@
                       class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
                     >
                       <option value="all">Todos os anos</option>
-                      <option value="1">1º Ano</option>
-                      <option value="2">2º Ano</option>
-                      <option value="3">3º Ano</option>
-                      <option value="4">4º Ano</option>
-                      <option value="5">5º Ano</option>
-                      <option value="6">6º Ano</option>
-                      <option value="7">7º Ano</option>
-                      <option value="8">8º Ano</option>
-                      <option value="9">9º Ano</option>
                     </select>
                   </div>
                 </div>
@@ -417,7 +408,10 @@
                   </div>
                   <div class="ml-5 w-0 flex-1">
                     <dl>
-                      <dt class="text-sm font-medium text-gray-500 truncate" id="averageLabel">
+                      <dt
+                        class="text-sm font-medium text-gray-500 truncate"
+                        id="averageLabel"
+                      >
                         Média Geral
                       </dt>
                       <dd>
@@ -1650,39 +1644,28 @@
       }
 
       // Função para popular o filtro de séries
-      function populateGradeFilter() {
+      async function populateGradeFilter() {
         try {
-          // Usar exatamente os valores do enum como value, com labels amigáveis para exibição
-          const gradeDisplay = [
-            { value: "PRIMEIRO_ANO", label: "1º Ano" },
-            { value: "SEGUNDO_ANO", label: "2º Ano" },
-            { value: "TERCEIRO_ANO", label: "3º Ano" },
-            { value: "QUARTO_ANO", label: "4º Ano" },
-            { value: "QUINTO_ANO", label: "5º Ano" },
-            { value: "SEXTO_ANO", label: "6º Ano" },
-            { value: "SETIMO_ANO", label: "7º Ano" },
-            { value: "OITAVO_ANO", label: "8º Ano" },
-            { value: "NONO_ANO", label: "9º Ano" },
-            { value: "PRIMEIRA_SERIE", label: "1ª Série" },
-            { value: "SEGUNDA_SERIE", label: "2ª Série" },
-            { value: "TERCEIRA_SERIE", label: "3ª Série" },
-            { value: "PRIMEIRO_E_SEGUNDO_ANOS", label: "1º e 2º Anos" },
-            { value: "TERCEIRO_AO_QUINTO_ANO", label: "3º ao 5º Ano" },
-            { value: "PRIMEIRO_AO_QUINTO_ANO", label: "1º ao 5º Ano" },
-          ];
+          const response = await fetch("/api/obter-series-escola");
+
+          if (!response.ok) {
+            throw new Error(`Erro na requisição: ${response.status}`);
+          }
+
+          const grades = await response.json();
 
           const selector = document.getElementById("filterGrade");
 
-          // Limpar opções existentes exceto a primeira
+          // Limpa todas as opções exceto a primeira
           while (selector.options.length > 1) {
             selector.remove(1);
           }
 
-          // Adicionar as séries ao seletor
-          gradeDisplay.forEach((grade) => {
+          // Adiciona as opções retornadas pela API
+          grades.forEach((grade) => {
             const option = document.createElement("option");
-            option.value = grade.value; // Usando diretamente os valores do enum
-            option.textContent = grade.label;
+            option.value = grade.value || grade.id || grade.nome; // ajuste conforme estrutura da API
+            option.textContent = grade.label || grade.nome || grade.display; // ajuste conforme estrutura da API
             selector.appendChild(option);
           });
         } catch (error) {
@@ -3937,597 +3920,6 @@
           if (year !== "all") params.append("ano_letivo", year);
           if (region !== "all") params.append("regiao_id", region);
           if (group !== "all") params.append("grupo_id", group);
-<!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - SAG</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Removido SheetJS - agora usando API para exportação Excel -->
-  </head>
-  <body class="bg-gray-100 min-h-screen">
-    
-    <script src="js/app.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Atualizar nome do usuário
-        const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
-        if (currentUser) {
-          document.getElementById("userName").textContent = currentUser.name;
-        }
-
-        // Configurar menu mobile
-        const mobileMenuBtn = document.querySelector("#mobileMenuBtn");
-        const mobileMenu = document.querySelector("#mobileMenu");
-
-        if (mobileMenuBtn) {
-          mobileMenuBtn.addEventListener("click", function () {
-            mobileMenu.classList.toggle("hidden");
-          });
-        }
-
-        // Carregar dados da API e atualizar UI
-        loadDashboardData();
-
-        // Configurar eventos dos filtros
-        document
-          .getElementById("applyFilters")
-          .addEventListener("click", function () {
-            // Remover a chamada de populateFiltersFromAPI que estava resetando os filtros
-            applyFilters();
-          });
-
-        // Verificar se os botões existem antes de adicionar event listeners
-        const btnMostCritical = document.getElementById("btnMostCritical");
-        const btnBestResults = document.getElementById("btnBestResults");
-
-        if (btnMostCritical) {
-          btnMostCritical.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            // Atualizar estado visual dos botões
-            updateBnccFilterButtons("critical");
-            filterBnccSkills("critical");
-          });
-        } else {
-          console.error("❌ Botão btnMostCritical não encontrado!");
-        }
-
-        if (btnBestResults) {
-          btnBestResults.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            // Atualizar estado visual dos botões
-            updateBnccFilterButtons("best");
-            filterBnccSkills("best");
-          });
-        } else {
-          console.error("❌ Botão btnBestResults não encontrado!");
-        }
-
-        // Verificar se existe o botão "Todos os Resultados"
-        const btnAllResults = document.getElementById("btnAllResults");
-        if (btnAllResults) {
-          btnAllResults.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            // Atualizar estado visual dos botões
-            updateBnccFilterButtons("all");
-            filterBnccSkills("all");
-          });
-        }
-
-        // Atualizar o filtro de turmas quando a escola é alterada
-        document
-          .getElementById("filterSchool")
-          .addEventListener("change", async function () {
-            await updateClassesFilter();
-            await updateDashboardStatistics();
-          });
-
-        // Filtros em cascata: região → grupos → escolas
-        document
-          .getElementById("filterRegion")
-          .addEventListener("change", updateGroupsFilter);
-        document
-          .getElementById("filterGroup")
-          .addEventListener("change", updateSchoolsFilter);
-
-        // Atualizar estatísticas quando outros filtros mudarem
-        document
-          .getElementById("filterYear")
-          ?.addEventListener("change", updateDashboardStatistics);
-        document
-          .getElementById("filterGrade")
-          ?.addEventListener("change", updateDashboardStatistics);
-
-        // Configurar eventos de paginação
-        document
-          .getElementById("prevPage")
-          ?.addEventListener("click", (event) => {
-            event.preventDefault();
-            changePage(-1);
-          });
-        document
-          .getElementById("nextPage")
-          ?.addEventListener("click", (event) => {
-            event.preventDefault();
-            changePage(1);
-          });
-        document
-          .getElementById("prevPageMobile")
-          ?.addEventListener("click", (event) => {
-            event.preventDefault();
-            changePage(-1);
-          });
-        document
-          .getElementById("nextPageMobile")
-          ?.addEventListener("click", (event) => {
-            event.preventDefault();
-            changePage(1);
-          });
-
-        // Adicionar evento para o botão de exportar DOCX
-        const btnExportDocx = document.getElementById("btnExportDocx");
-        if (btnExportDocx) {
-          btnExportDocx.addEventListener("click", exportToDocx);
-        }
-
-        // Adicionar evento para o botão de exportar Ranking
-        const btnExportRanking = document.getElementById("btnExportRanking");
-        if (btnExportRanking) {
-          btnExportRanking.addEventListener("click", exportRankingToExcel);
-        }
-
-        // Configurar eventos de paginação do ranking
-        document
-          .getElementById("prevRankPage")
-          ?.addEventListener("click", (event) => {
-            event.preventDefault();
-            changeRankPage(-1);
-          });
-        document
-          .getElementById("nextRankPage")
-          ?.addEventListener("click", (event) => {
-            event.preventDefault();
-            changeRankPage(1);
-          });
-        document
-          .getElementById("prevRankPageMobile")
-          ?.addEventListener("click", (event) => {
-            event.preventDefault();
-            changeRankPage(-1);
-          });
-        document
-          .getElementById("nextRankPageMobile")
-          ?.addEventListener("click", (event) => {
-            event.preventDefault();
-            changeRankPage(1);
-          });
-      });
-
-      // Função para carregar todos os dados do dashboard da API
-      async function loadDashboardData() {
-        try {
-          // Mostrar indicadores de carregamento
-          document.getElementById("schoolCount").innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i>';
-          document.getElementById("classCount").innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i>';
-          document.getElementById("studentCount").innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i>';
-          document.getElementById("examCount").innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i>';
-          document.getElementById("participationRate").innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i>';
-
-          // Carregar dados de escolas, turmas, alunos e estatísticas da API
-          try {
-            await Promise.all([
-              loadSchoolsFromAPI(),
-              loadClassesFromAPI(),
-              loadStudentsFromAPI(),
-              loadExamsFromAPI(),
-              loadRegionalRanking(), // Adicionando a chamada do ranking das regiões
-            ]);
-
-            // Depois que todas as chamadas básicas forem concluídas, atualizar a interface
-            updateBasicStatistics();
-
-            // Popular os seletores de filtro com os dados da API
-            await populateFiltersFromAPI();
-
-            // Carregar estatísticas após termos os dados básicos
-            try {
-              await loadStatisticsFromAPI();
-            } catch (error) {
-              console.error("Erro ao carregar estatísticas:", error);
-              // Se falhar, garantimos que os contadores básicos continuam atualizados
-              updateBasicStatistics();
-            }
-          } catch (error) {
-            console.error("Erro ao carregar dados da API:", error);
-            updateBasicStatistics();
-
-            // Mesmo com erro, tentar popular filtros com dados locais disponíveis
-            await populateFiltersFromAPI();
-          }
-
-          // Obter o valor do filtro de ano (se houver)
-          const yearFilter = document.getElementById("filterYear").value;
-
-          // Renderizar gráficos com o filtro de ano aplicado
-          renderDashboardCharts(yearFilter);
-
-          // Carregar dados de habilidades e ranking com o filtro de ano aplicado
-          loadBnccSkills(
-            yearFilter,
-            "all",
-            "all",
-            "all",
-            "all",
-            "all",
-            "all",
-            1
-          );
-          loadStudentRanking(yearFilter);
-        } catch (error) {
-          console.error("Erro ao carregar dados do dashboard:", error);
-          // Garantir que a interface seja atualizada mesmo em caso de erro geral
-          updateBasicStatistics();
-
-          // Tentar popular filtros mesmo com erro
-          await populateFiltersFromAPI();
-
-          // Forçar carregamento da interface básica
-          renderDashboardCharts();
-        }
-      }
-
-      // Função para atualizar as estatísticas básicas com os dados locais
-      function updateBasicStatistics() {
-        try {
-          // Obter os dados atuais do localStorage
-          const schools = getSchools();
-          const classes = getClasses();
-          const students = getStudents();
-          const exams = getExams();
-
-          // Atualizar contadores com os dados do localStorage
-          document.getElementById("schoolCount").textContent = schools.length;
-          document.getElementById("classCount").textContent = classes.length;
-          document.getElementById("studentCount").textContent = students.length;
-          document.getElementById("examCount").textContent = exams.length;
-
-          // Calcular e atualizar a taxa de participação
-          document.getElementById("participationRate").textContent =
-            calculateParticipationRate() + "%";
-        } catch (error) {
-          console.error("Erro ao atualizar estatísticas básicas:", error);
-          // Definir valores padrão em caso de erro
-          document.getElementById("schoolCount").textContent = "0";
-          document.getElementById("classCount").textContent = "0";
-          document.getElementById("studentCount").textContent = "0";
-          document.getElementById("examCount").textContent = "0";
-          document.getElementById("participationRate").textContent = "0%";
-        }
-      }
-
-      // Função para carregar estatísticas gerais da API
-      async function loadStatisticsFromAPI(filters = {}) {
-        try {
-          // Construir parâmetros da URL com os filtros
-          const params = new URLSearchParams();
-
-          // Adicionar filtros se fornecidos
-          if (filters.regiao_id && filters.regiao_id !== "all") {
-            params.append("regiao_id", filters.regiao_id);
-          }
-          if (filters.grupo_id && filters.grupo_id !== "all") {
-            params.append("grupo_id", filters.grupo_id);
-          }
-          if (filters.escola_id && filters.escola_id !== "all") {
-            params.append("escola_id", filters.escola_id);
-          }
-          if (filters.ano_letivo && filters.ano_letivo !== "all") {
-            params.append("ano_letivo", filters.ano_letivo);
-          }
-          if (filters.serie && filters.serie !== "all") {
-            params.append("serie", filters.serie);
-          }
-          if (filters.turma_id && filters.turma_id !== "all") {
-            params.append("turma_id", filters.turma_id);
-          }
-
-          const queryString = params.toString();
-          const url = `https://sag-sag.rak8a3.easypanel.host/api/dashboard/statistics${
-            queryString ? "?" + queryString : ""
-          }`;
-
-          const response = await fetch(url, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-
-            // Atualizar contadores com os dados da API usando os nomes de campo corretos
-            document.getElementById("schoolCount").textContent =
-              data.total_escolas || 0;
-            document.getElementById("classCount").textContent =
-              data.total_turmas || 0;
-            document.getElementById("studentCount").textContent =
-              data.total_alunos || 0;
-            document.getElementById("examCount").textContent =
-              data.total_provas || 0;
-
-            // Exibir o valor da participação exatamente como está no JSON
-            document.getElementById("participationRate").textContent =
-              data.participacao !== null ? data.participacao : 0;
-
-            // Atualizar quadrado dinâmico de média
-            if (data.elemento) {
-              document.getElementById("averageLabel").textContent = data.elemento.nome;
-              document.getElementById("averageScore").textContent = data.elemento.media ? data.elemento.media.toFixed(1) : "0.0";
-            } else {
-              document.getElementById("averageLabel").textContent = "Média Geral";
-              document.getElementById("averageScore").textContent = data.media_geral ? data.media_geral.toFixed(1) : "0.0";
-            }
-
-            return data;
-          } else {
-            console.error(
-              "Erro ao carregar estatísticas gerais da API:",
-              response.status
-            );
-            throw new Error(
-              `Erro ao carregar estatísticas: ${response.status}`
-            );
-          }
-        } catch (error) {
-          console.error("Erro ao carregar estatísticas gerais da API:", error);
-          throw error;
-        }
-      }
-
-      // Função para atualizar estatísticas a partir da API
-      function updateStatisticsFromAPI(stats) {
-        if (!stats) return;
-
-        try {
-          // Atualizar os contadores com os dados da API se estiverem disponíveis
-          if (stats.total_alunos !== undefined) {
-            document.getElementById("studentCount").textContent =
-              stats.total_alunos;
-          }
-
-          if (stats.total_provas !== undefined) {
-            document.getElementById("examCount").textContent =
-              stats.total_provas;
-          }
-
-          if (stats.participacao !== undefined) {
-            document.getElementById("participationRate").textContent =
-              stats.participacao;
-          }
-        } catch (error) {
-          console.error("Erro ao atualizar estatísticas da API:", error);
-        }
-      }
-
-      // Função para carregar escolas da API
-      async function loadSchoolsFromAPI() {
-        try {
-          const response = await fetch(
-            "https://sag-sag.rak8a3.easypanel.host/api/escolas?limit=1000",
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-
-            // Verificar estrutura da resposta e extrair escolas
-            let schools = [];
-            if (Array.isArray(data)) {
-              schools = data;
-            } else if (data && typeof data === "object") {
-              // Tentar diferentes propriedades possíveis
-              if (Array.isArray(data.escolas)) schools = data.escolas;
-              else if (Array.isArray(data.items)) schools = data.items;
-              else if (Array.isArray(data.data)) schools = data.data;
-              else if (Array.isArray(data.content)) schools = data.content;
-              // Última tentativa: extrair valores que sejam objetos com id e nome
-              else {
-                schools = Object.values(data).filter(
-                  (item) =>
-                    item &&
-                    typeof item === "object" &&
-                    item.id &&
-                    (item.nome || item.name)
-                );
-              }
-            }
-
-            if (schools.length > 0) {
-              // Limpar escolas existentes e adicionar as novas
-              localStorage.setItem("schools", JSON.stringify([]));
-
-              // Converter dados da API para o formato local
-              const formattedSchools = schools.map((escola) => ({
-                id: escola.id,
-                name: escola.nome || escola.name,
-                region: escola.regiao || escola.region || "",
-                group: escola.grupo || escola.group || "",
-              }));
-
-              localStorage.setItem("schools", JSON.stringify(formattedSchools));
-              return formattedSchools;
-            } else {
-              console.warn("Nenhuma escola encontrada na resposta da API");
-              return [];
-            }
-          } else {
-            console.error("Erro ao carregar escolas da API:", response.status);
-            return [];
-          }
-        } catch (error) {
-          console.error("Erro ao carregar escolas da API:", error);
-          return [];
-        }
-      }
-
-      // Função para carregar turmas da API
-      async function loadClassesFromAPI() {
-        try {
-          const response = await fetch(
-            "https://sag-sag.rak8a3.easypanel.host/api/turmas?limit=1000",
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-
-            // Verificar estrutura da resposta e extrair turmas
-            let classes = [];
-            if (Array.isArray(data)) {
-              classes = data;
-            } else if (data && typeof data === "object") {
-              // Tentar diferentes propriedades possíveis
-              if (Array.isArray(data.turmas)) classes = data.turmas;
-              else if (Array.isArray(data.items)) classes = data.items;
-              else if (Array.isArray(data.data)) classes = data.data;
-              else if (Array.isArray(data.content)) classes = data.content;
-              // Última tentativa: extrair valores que sejam objetos com id e nome
-              else {
-                classes = Object.values(data).filter(
-                  (item) =>
-                    item &&
-                    typeof item === "object" &&
-                    item.id &&
-                    (item.nome || item.name)
-                );
-              }
-            }
-
-            if (classes.length > 0) {
-              // Limpar turmas existentes e adicionar as novas
-              localStorage.setItem("classes", JSON.stringify([]));
-
-              // Converter dados da API para o formato local
-              const formattedClasses = classes.map((turma) => ({
-                id: turma.id,
-                name: turma.nome || turma.name,
-                series: turma.serie,
-                schoolId: turma.escola_id || turma.schoolId,
-                shift: turma.turno || turma.shift || "",
-                apiId: turma.id,
-              }));
-
-              localStorage.setItem("classes", JSON.stringify(formattedClasses));
-              return formattedClasses;
-            } else {
-              console.warn("Nenhuma turma encontrada na resposta da API");
-              return [];
-            }
-          } else {
-            console.error("Erro ao carregar turmas da API:", response.status);
-            return [];
-          }
-        } catch (error) {
-          console.error("Erro ao carregar turmas da API:", error);
-          return [];
-        }
-      }
-
-      // Função para carregar alunos da API
-      async function loadStudentsFromAPI() {
-        try {
-          const response = await fetch(
-            "https://sag-sag.rak8a3.easypanel.host/api/alunos",
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-
-            // Verificar estrutura da resposta e extrair alunos
-            let students = [];
-            if (Array.isArray(data)) {
-              students = data;
-            } else if (data && typeof data === "object") {
-              // Tentar diferentes propriedades possíveis
-              if (Array.isArray(data.alunos)) students = data.alunos;
-              else if (Array.isArray(data.items)) students = data.items;
-              else if (Array.isArray(data.data)) students = data.data;
-              else if (Array.isArray(data.content)) students = data.content;
-              // Última tentativa: extrair valores que sejam objetos com id e nome
-              else {
-                students = Object.values(data).filter(
-                  (item) =>
-                    item &&
-                    typeof item === "object" &&
-                    item.id &&
-                    (item.nome || item.name)
-                );
-              }
-            }
-
-            if (students.length > 0) {
-              // Limpar alunos existentes e adicionar os novos
-              localStorage.setItem("students", JSON.stringify([]));
-
-              // Converter dados da API para o formato local
-              const formattedStudents = students.map((aluno) => ({
-                id: aluno.id,
-                name: aluno.nome || aluno.name,
-                registration: aluno.matricula || aluno.registration,
-                birthdate: aluno.data_nascimento || aluno.birthdate,
-                schoolId: aluno.escola_id || aluno.schoolId,
-                classId: aluno.turma_id || aluno.classId,
-              }));
-
-              localStorage.setItem(
-                "students",
-                JSON.stringify(formattedStudents)
-              );
-              return formattedStudents;
-            } else {
-              console.warn("Nenhum aluno encontrado na resposta da API");
-              return [];
-            }
-          } else {
-            console.error("Erro ao carregar alunos da API:", response.status);
-            return [];
-          }
-        } catch (error) {
-          console.error("Erro ao carregar alunos da API:", error);
-          return [];
-        }
-      }
 
       // Função para carregar provas (simulação por enquanto)
       async function loadExamsFromAPI() {
@@ -4883,46 +4275,6 @@
         }
       }
 
-      // Função para popular o filtro de séries
-      function populateGradeFilter() {
-        try {
-          // Usar exatamente os valores do enum como value, com labels amigáveis para exibição
-          const gradeDisplay = [
-            { value: "PRIMEIRO_ANO", label: "1º Ano" },
-            { value: "SEGUNDO_ANO", label: "2º Ano" },
-            { value: "TERCEIRO_ANO", label: "3º Ano" },
-            { value: "QUARTO_ANO", label: "4º Ano" },
-            { value: "QUINTO_ANO", label: "5º Ano" },
-            { value: "SEXTO_ANO", label: "6º Ano" },
-            { value: "SETIMO_ANO", label: "7º Ano" },
-            { value: "OITAVO_ANO", label: "8º Ano" },
-            { value: "NONO_ANO", label: "9º Ano" },
-            { value: "PRIMEIRA_SERIE", label: "1ª Série" },
-            { value: "SEGUNDA_SERIE", label: "2ª Série" },
-            { value: "TERCEIRA_SERIE", label: "3ª Série" },
-            { value: "PRIMEIRO_E_SEGUNDO_ANOS", label: "1º e 2º Anos" },
-            { value: "TERCEIRO_AO_QUINTO_ANO", label: "3º ao 5º Ano" },
-            { value: "PRIMEIRO_AO_QUINTO_ANO", label: "1º ao 5º Ano" },
-          ];
-
-          const selector = document.getElementById("filterGrade");
-
-          // Limpar opções existentes exceto a primeira
-          while (selector.options.length > 1) {
-            selector.remove(1);
-          }
-
-          // Adicionar as séries ao seletor
-          gradeDisplay.forEach((grade) => {
-            const option = document.createElement("option");
-            option.value = grade.value; // Usando diretamente os valores do enum
-            option.textContent = grade.label;
-            selector.appendChild(option);
-          });
-        } catch (error) {
-          console.error("Erro ao popular filtro de séries:", error);
-        }
-      }
 
       // Função para popular o filtro de turmas com dados da API
       function populateClassesFilter(classes = null) {
@@ -8557,27 +7909,27 @@
           if (contentType && contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
             // Obter o blob do arquivo
             const blob = await response.blob();
-            
+
             // Criar URL temporária para download
             const url = window.URL.createObjectURL(blob);
-            
+
             // Criar elemento de link temporário para download
             const link = document.createElement('a');
             link.href = url;
-            
+
             // Definir nome do arquivo
             const now = new Date();
             const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, '');
             link.download = `Dashboard_SAG_${timestamp}.xlsx`;
-            
+
             // Adicionar ao documento, clicar e remover
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Limpar URL temporária
             window.URL.revokeObjectURL(url);
-            
+
             alert("Arquivo Excel baixado com sucesso!");
           } else {
             // Se não for um arquivo, pode ser uma resposta JSON com erro
